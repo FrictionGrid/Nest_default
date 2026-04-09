@@ -3,12 +3,12 @@ import { MigrationInterface, QueryRunner } from "typeorm";
 export class TaskTeam1775716540953 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`DROP TYPE IF EXISTS task_status CASCADE`);
         await queryRunner.query(`
             CREATE TYPE task_status AS ENUM (
-                'overdue',
-                'near_deadline',
-                'has_time',
-                'just_started'
+                'in_progress',
+                'problem',
+                'completed'
             )
         `);
 
@@ -20,7 +20,7 @@ export class TaskTeam1775716540953 implements MigrationInterface {
                 task_name        VARCHAR(255) NOT NULL,
                 task_description TEXT,
                 end_date         DATE,
-                status           task_status NOT NULL DEFAULT 'just_started',
+                status           task_status NOT NULL DEFAULT 'in_progress',
                 created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )

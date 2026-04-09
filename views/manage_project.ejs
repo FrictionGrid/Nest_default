@@ -124,7 +124,7 @@
               }
             %>
             <tr data-id="<%= p.id %>" data-status="<%= p.status %>">
-              <td><strong><%= p.project_name || '—' %></strong></td>
+              <td><a href="/detail-project/<%= p.project_id %>" style="color:var(--primary);font-weight:700;text-decoration:none;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--primary)'"><%= p.project_name || '—' %></a></td>
               <td><%= p.team_name || '—' %></td>
               <td><%= fmtDate(p.start_date) %></td>
               <td><%= fmtDate(p.end_date) %></td>

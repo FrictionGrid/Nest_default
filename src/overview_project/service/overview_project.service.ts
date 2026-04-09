@@ -22,36 +22,45 @@ export class OverviewProjectService {
       .select('COUNT(*)', 'total_projects')
       .addSelect('COALESCE(SUM(p.po_value), 0)', 'total_revenue')
       .addSelect("COUNT(*) FILTER (WHERE p.status = 'completed')", 'completed')
-      .addSelect("COUNT(*) FILTER (WHERE p.status != 'completed')", 'incomplete')
+      .addSelect("COUNT(*) FILTER (WHERE p.status = 'delayed')", 'delayed')
       .getRawOne();
 
     return {
       total_projects: Number(result.total_projects),
       total_revenue: Number(result.total_revenue),
       completed: Number(result.completed),
-      incomplete: Number(result.incomplete),
+      delayed: Number(result.delayed),
     };
   }
 
-  async getTeamStats() {
-    const rows = await this.projectTeamRepo
+  async getTeamStats(range: string = 'all') {
+    let qb = this.projectTeamRepo
       .createQueryBuilder('pt')
       .leftJoin('pt.team', 'team')
       .leftJoin('pt.project', 'project')
       .select('team.name', 'team_name')
       .addSelect('COUNT(pt.id)', 'total_projects')
       .addSelect("COUNT(pt.id) FILTER (WHERE project.status = 'completed')", 'completed')
-      .addSelect("COUNT(pt.id) FILTER (WHERE project.status != 'completed')", 'incomplete')
+      .addSelect("COUNT(pt.id) FILTER (WHERE project.status = 'delayed')", 'delayed')
       .groupBy('team.id')
       .addGroupBy('team.name')
-      .orderBy('team.id', 'ASC')
-      .getRawMany();
+      .orderBy('team.id', 'ASC');
 
+    if (range !== 'all') {
+      const months = { '1m': 1, '3m': 3, '6m': 6, '12m': 12 }[range] ?? 0;
+      if (months > 0) {
+        qb = qb.andWhere(
+          `project.created_at >= NOW() - INTERVAL '${months} months'`,
+        );
+      }
+    }
+
+    const rows = await qb.getRawMany();
     return rows.map((r) => ({
       team_name: r.team_name,
       total_projects: Number(r.total_projects),
       completed: Number(r.completed),
-      incomplete: Number(r.incomplete),
+      delayed: Number(r.delayed),
     }));
   }
 

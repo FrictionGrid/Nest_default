@@ -24,6 +24,23 @@ export class ManageTeamService {
     private readonly projectRepo: Repository<ProjectIncoming>,
   ) {}
 
+  // ── Timeline calculation ─────────────────────────────────────────────────
+
+  private calcTimeline(startDate: Date | null, endDate: Date | null): string {
+    if (!startDate || !endDate) return 'just_started';
+    const start = new Date(startDate).getTime();
+    const end = new Date(endDate).getTime();
+    const now = Date.now();
+    const total = end - start;
+    if (total <= 0) return 'overdue';
+    const pct = ((now - start) / total) * 100;
+    if (pct < 0) return 'just_started';
+    if (pct < 20) return 'just_started';
+    if (pct < 70) return 'normal';
+    if (pct <= 100) return 'near_deadline';
+    return 'overdue';
+  }
+
   // ── User-Team members ────────────────────────────────────────────────────
 
   async findAll() {
@@ -80,6 +97,7 @@ export class ManageTeamService {
       task_description: r.task_description,
       end_date: r.end_date,
       status: r.status,
+      timeline: this.calcTimeline(r.project?.start_date ?? null, r.end_date ?? null),
       username: r.user?.username,
       display_name: r.user?.display_name,
       project_name: r.project?.project_name,

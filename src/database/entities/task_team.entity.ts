@@ -11,10 +11,9 @@ import { User } from './user.entity';
 import { ProjectIncoming } from './project_incoming.entity';
 
 export enum TaskStatus {
-  OVERDUE = 'overdue',
-  NEAR_DEADLINE = 'near_deadline',
-  HAS_TIME = 'has_time',
-  JUST_STARTED = 'just_started',
+  IN_PROGRESS = 'in_progress',
+  PROBLEM = 'problem',
+  COMPLETED = 'completed',
 }
 
 @Entity('task_team')
@@ -41,7 +40,7 @@ export class TaskTeam {
     type: 'enum',
     enum: TaskStatus,
     enumName: 'task_status',
-    default: TaskStatus.JUST_STARTED,
+    default: TaskStatus.IN_PROGRESS,
   })
   status: TaskStatus;
 

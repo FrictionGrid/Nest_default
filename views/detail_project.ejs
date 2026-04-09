@@ -264,6 +264,23 @@
 
   
 
+    /* Status badges */
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 600; white-space: nowrap;
+    }
+    .badge::before { content:""; width:6px; height:6px; border-radius:50%; background:currentColor; }
+    .b-completed  { background: rgba(53,179,126,0.13); color: #1a7a54; }
+    .b-processing { background: rgba(74,144,226,0.14); color: #1d5fa8; }
+    .b-blocked    { background: rgba(228,87,87,0.12);  color: #c0392b; }
+    .b-pending    { background: rgba(244,166,42,0.14); color: #9a6000; }
+
+    .ts-overdue      { background: rgba(220,53,69,0.12);  color: #b91c1c; }
+    .ts-near_deadline{ background: rgba(234,179,8,0.13);  color: #8a6400; }
+    .ts-has_time     { background: rgba(53,179,126,0.12); color: #1a7a54; }
+    .ts-just_started { background: rgba(65,121,191,0.12); color: #2a5fa0; }
+
     /* Responsive */
     @media (max-width: 1100px) {
       .detail-grid { grid-template-columns: 1fr; }
@@ -293,7 +310,7 @@
 
         <div class="contact-item">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span>วันที่เข้า: <%= project.dateIn %></span>
+          <span>Start: <%= project.dateIn %></span>
         </div>
         <div class="contact-item">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -304,14 +321,11 @@
   </div>
 
   <div class="profile-actions">
-    <a href="/incoming-project" class="btn btn-back">
+    <span class="badge <%= project.statusCls %>" style="font-size:13px;padding:6px 14px;"><%= project.statusLabel %></span>
+    <a href="javascript:history.back()" class="btn btn-back">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-      กลับ
+      Back
     </a>
-    <button class="btn btn-outline">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      แก้ไข
-    </button>
   </div>
 </div>
 
@@ -331,7 +345,7 @@
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
                   </svg>
-                  ข้อมูลเชิงวิเคราะห์ด้วย AI
+                  AI Analytics
                 </div>
                 <span class="ai-badge">AI Powered</span>
               </div>
@@ -347,27 +361,33 @@
                 <!-- Value boxes -->
                 <div class="ai-values">
                   <div class="ai-val-box">
-                    <div class="label">-----</div>
-                    <div class="value">0</div>
-                    <div class="sub">ประมาณการ AI</div>
+                    <div class="label">Total Tasks</div>
+                    <div class="value"><%= tasks.length %></div>
+                    <div class="sub">Tasks in this project</div>
                   </div>
                   <div class="ai-val-box">
-                    <div class="label">สถานะ</div>
-                    <div class="value" style="font-size:15px; color:#35B37E;">กำลังอยู่ในเฟส</div>
-                    <div class="sub">อัปเดตล่าสุดวันนี้</div>
+                    <div class="label">Status</div>
+                    <div class="value" style="font-size:15px;"><%= project.statusLabel %></div>
+                    <div class="sub">Current project status</div>
                   </div>
                 </div>
 
-                <!-- AI Insight box -->
+                <!-- Teams box -->
                 <div class="ai-insight-box">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <path d="M12 16v-4"/><path d="M12 8h.01"/>
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                   </svg>
                   <div class="ai-insight-text">
-                    <div class="title">AI Insight: ควรติดตามเพิ่มเติม</div>
+                    <div class="title">Assigned Teams</div>
                     <div class="body">
-                      เเนะนำให้เพิ่มจำนวนคนเนื่องจากโปรเจคล่าช้า
+                      <% if (teams.length === 0) { %>
+                        No team assigned yet.
+                      <% } else { %>
+                        <%= teams.map(function(t){ return t.team_name; }).join(', ') %>
+                      <% } %>
                     </div>
                   </div>
                 </div>
@@ -380,11 +400,11 @@
       <div class="card-header">
         <div class="card-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          เอกสารที่เกี่ยวข้อง
+          Documents
         </div>
         <button class="btn-upload">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-          อัปโหลด
+          Upload
         </button>
       </div>
       <div class="card-body">
@@ -395,7 +415,7 @@
             <line x1="9" y1="15" x2="15" y2="15"/>
             <line x1="12" y1="12" x2="12" y2="18"/>
           </svg>
-          <p>ยังไม่มีเอกสารที่แนบ<br/>อัปโหลดไฟล์เพื่อเก็บประวัติ</p>
+          <p>No documents attached.<br/>Upload files to keep records.</p>
         </div>
       </div>
     </div>
@@ -410,7 +430,7 @@
       <div class="card-header">
         <div class="card-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          ข้อมูลโปรเจคหลัก
+          Project Information
         </div>
       </div>
       <div class="card-body" style="padding-bottom:8px;">
@@ -426,12 +446,21 @@
           </div>
 
           <div class="info-item">
-            <div class="info-label">วันที่เข้า</div>
+            <div class="info-label">Start Date</div>
             <div class="info-value"><%= project.dateIn %></div>
           </div>
           <div class="info-item">
+            <div class="info-label">End Date</div>
+            <div class="info-value"><%= project.endDate %></div>
+          </div>
+
+          <div class="info-item">
             <div class="info-label">Sales Name</div>
             <div class="info-value"><%= project.salesName %></div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">PO No.</div>
+            <div class="info-value"><%= project.poNo %></div>
           </div>
 
           <div class="info-item">
@@ -439,30 +468,53 @@
             <div class="info-value success"><%= project.poValue %></div>
           </div>
           <div class="info-item">
-            <div class="info-label">PO No.</div>
-            <div class="info-value"><%= project.poNo %></div>
+            <div class="info-label">Status</div>
+            <div class="info-value"><%= project.statusLabel %></div>
           </div>
 
         </div>
       </div>
     </div>
 
-    <!-- Related Items Card -->
-             <div class="card">
-            <div class="card-header">
-              <div class="card-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                โปรเจกต์ที่เกี่ยวข้อง
-              </div>
-              <button class="btn btn-outline" style="padding:7px 14px; font-size:13px;">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                เพิ่มโปรเจกต์
-              </button>
-            </div>
-            <div class="card-body">
-            
-            </div>
-          </div>
+    <!-- Tasks Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          Tasks
+        </div>
+        <span style="font-size:12px;color:var(--muted);"><%= tasks.length %> tasks</span>
+      </div>
+      <% if (tasks.length === 0) { %>
+        <div class="empty-related">No tasks assigned to this project yet.</div>
+      <% } else { %>
+        <table class="related-table">
+          <thead>
+            <tr>
+              <th>Task Name</th>
+              <th>Assigned To</th>
+              <th>End Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% tasks.forEach(function(t) { %>
+            <tr>
+              <td>
+                <div style="font-weight:600;color:var(--primary)"><%= t.task_name %></div>
+                <% if (t.task_description) { %>
+                  <div style="font-size:11px;color:#7a99b8;margin-top:2px;"><%= t.task_description %></div>
+                <% } %>
+              </td>
+              <td><%= t.user_name %></td>
+              <td><%= t.end_date %></td>
+              <td><span class="badge ts-badge ts-<%= t.status %>"><%= t.statusLabel %></span></td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
 
   </div>
 </div>

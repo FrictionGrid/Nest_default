@@ -333,7 +333,7 @@
           </div>
         </div>
 
-        <!-- Incomplete -->
+        <!-- Delayed -->
         <div class="stat-card">
           <div class="stat-icon si-orange">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -343,9 +343,9 @@
             </svg>
           </div>
           <div class="stat-body">
-            <div class="stat-label">Incomplete</div>
-            <div class="stat-value"><%= summary.incomplete %></div>
-            <div class="stat-from">In progress / delayed</div>
+            <div class="stat-label">Delayed</div>
+            <div class="stat-value"><%= summary.delayed %></div>
+            <div class="stat-from">Behind schedule</div>
           </div>
         </div>
 
@@ -358,7 +358,13 @@
         <div class="card">
           <div class="card-header">
             <span class="card-title">Projects by Team</span>
-            <span class="card-sub">Total / Completed / Incomplete</span>
+            <div class="chart-filters" id="teamRangeFilters">
+              <button class="filter-btn active" data-range="all">ALL</button>
+              <button class="filter-btn" data-range="1m">1M</button>
+              <button class="filter-btn" data-range="3m">3M</button>
+              <button class="filter-btn" data-range="6m">6M</button>
+              <button class="filter-btn" data-range="12m">12M</button>
+            </div>
           </div>
           <div class="card-body">
             <div class="chart-wrap">
@@ -372,7 +378,7 @@
                 <div class="ld-bar" style="background:#35B37E;"></div>Completed
               </div>
               <div class="legend-item">
-                <div class="ld-bar" style="background:#E45757;"></div>Incomplete
+                <div class="ld-bar" style="background:#E45757;"></div>Delayed
               </div>
             </div>
           </div>
@@ -453,7 +459,7 @@
                     <div class="order-sub"><%= dateStr %></div>
                   </td>
                   <td>
-                    <div style="font-weight:600;color:var(--primary);"><%= p.project_name || '—' %></div>
+                    <a href="/detail-project/<%= p.id %>" style="font-weight:600;color:var(--primary);text-decoration:none;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--primary)'"><%= p.project_name || '—' %></a>
                     <div class="order-sub"><%= p.sales_name || '' %></div>
                   </td>
                   <td><%= p.team_name || '—' %></td>
@@ -514,7 +520,7 @@
   const _teams = <%- JSON.stringify(teams) %>;
   const teamCtx = document.getElementById("teamProjectChart").getContext("2d");
 
-  new Chart(teamCtx, {
+  const teamChart = new Chart(teamCtx, {
     type: "bar",
     data: {
       labels: _teams.map(t => t.team_name),
@@ -536,8 +542,8 @@
           borderRadius: 5
         },
         {
-          label: "Incomplete",
-          data: _teams.map(t => Number(t.incomplete)),
+          label: "Delayed",
+          data: _teams.map(t => Number(t.delayed)),
           backgroundColor: "rgba(228,87,87,0.18)",
           borderColor: "#E45757",
           borderWidth: 1.5,
@@ -585,13 +591,61 @@
   /* ============================================
      Animate progress bars ตอนโหลดหน้า
   ============================================ */
-  window.addEventListener("load", () => {
+  function animateProgressBars() {
     document.querySelectorAll(".prog-fill").forEach(el => {
       const target = el.dataset.w + "%";
       el.style.width = "0%";
       requestAnimationFrame(() => {
-        setTimeout(() => { el.style.width = target; }, 350);
+        setTimeout(() => { el.style.width = target; }, 100);
       });
+    });
+  }
+  window.addEventListener("load", animateProgressBars);
+
+  /* ============================================
+     Team filter buttons (ALL / 1M / 3M / 6M / 12M)
+  ============================================ */
+  const teamColors     = ['#4A90E2','#35B37E','#F4A62A','#9B59B6','#E45757'];
+  const teamColorPairs = [['#4A90E2','#6baef5'],['#35B37E','#5fd4a1'],['#F4A62A','#f7c060'],['#9B59B6','#c090d8'],['#E45757','#f08080']];
+
+  document.querySelectorAll("#teamRangeFilters .filter-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      document.querySelectorAll("#teamRangeFilters .filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      const range = btn.dataset.range;
+      const res   = await fetch(`/overview-project/api/team-stats?range=${range}`);
+      const data  = await res.json();
+
+      // Update chart
+      teamChart.data.labels            = data.map(t => t.team_name);
+      teamChart.data.datasets[0].data  = data.map(t => Number(t.total_projects));
+      teamChart.data.datasets[1].data  = data.map(t => Number(t.completed));
+      teamChart.data.datasets[2].data  = data.map(t => Number(t.delayed));
+      teamChart.update();
+
+      // Update Team Summary list
+      const maxProj = data.reduce((m, t) => Math.max(m, Number(t.total_projects)), 1);
+      const listEl  = document.querySelector(".country-list");
+      listEl.innerHTML = data.map((t, i) => {
+        const ci  = i % teamColors.length;
+        const pct = Math.round((Number(t.total_projects) / maxProj) * 100);
+        return `
+          <div class="country-item">
+            <div class="country-row">
+              <div class="country-name">
+                <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${teamColors[ci]};flex-shrink:0;"></span>
+                ${t.team_name}
+              </div>
+              <div class="country-value">${t.total_projects} projects</div>
+            </div>
+            <div class="prog-bar">
+              <div class="prog-fill" data-w="${pct}" style="background:linear-gradient(90deg,${teamColorPairs[ci][0]},${teamColorPairs[ci][1]});width:0%"></div>
+            </div>
+          </div>`;
+      }).join('');
+
+      animateProgressBars();
     });
   });
 </script>

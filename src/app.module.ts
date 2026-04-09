@@ -13,6 +13,7 @@ import { UsersTeam } from './database/entities/users_team.entity';
 import { TaskTeam } from './database/entities/task_team.entity';
 import { OverviewProjectModule } from './overview_project/overview_project.module';
 import { DetailProjectModule } from './detail_project/detail_project.module';
+import { DashboardTeamModule } from './dashboard_team/dashboard_team.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { DetailProjectModule } from './detail_project/detail_project.module';
     ManageTeamModule,
     OverviewProjectModule,
     DetailProjectModule,
+    DashboardTeamModule,
   ],
 })
 export class AppModule {}
