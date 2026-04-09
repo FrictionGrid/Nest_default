@@ -1,0 +1,325 @@
+<link rel="stylesheet" href="/css/tools/table.css" />
+<style>
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .badge-progress  { background: rgba(65,121,191,0.12); color: #2a5fa0; }
+  .badge-waiting   { background: rgba(234,179,8,0.13);  color: #8a6400; }
+  .badge-late      { background: rgba(220,53,69,0.12);  color: #b91c1c; }
+  .badge-done      { background: rgba(53,179,126,0.12); color: #1a7a54; }
+
+  .days-left { font-weight: 700; color: var(--primary); }
+  .days-late { font-weight: 700; color: #b91c1c; }
+
+  .btn-complete {
+    background: rgba(53,179,126,0.13);
+    color: #1a7a54;
+    border: 1.5px solid rgba(53,179,126,0.35);
+  }
+  .btn-complete:hover {
+    background: rgba(53,179,126,0.22);
+  }
+
+  .form-group2 input[type="date"] {
+    height: 40px;
+    border: 1px solid #cdd9e8;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+</style>
+
+<section class="content">
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path
+          d="M21 21L16.65 16.65M10.5 18C14.6421 18 18 14.6421 18 10.5C18 6.35786 14.6421 3 10.5 3C6.35786 3 3 6.35786 3 10.5C3 14.6421 6.35786 18 10.5 18Z"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      <input type="text" id="searchInput" placeholder="Search project name, team name..." />
+    </div>
+
+    <select id="filterStatus" class="filter-box">
+      <option value="">All Status</option>
+      <option value="in_progress">In Progress</option>
+      <option value="delayed">Delayed</option>
+      <option value="completed">Completed</option>
+    </select>
+
+    <button class="add-table-box" id="addBtn">
+      <span style="font-size:20px;line-height:1;">+</span>
+      Add New
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="card1">
+    <div class="table-header">
+      <h3>Manage Project List</h3>
+      <div class="table-count" id="projectCount">Showing <%= projects.length %> items</div>
+    </div>
+    <div class="table-body">
+      <table>
+        <colgroup>
+          <col style="width:12%;" />
+          <col style="width:13%;" />
+          <col style="width:110px;" />
+          <col style="width:110px;" />
+          <col style="width:90px;" />
+          <col style="width:120px;" />
+          <col style="width:210px;" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Project Name</th>
+            <th>Team</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Days Left</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <% projects.forEach(function(p) { %>
+            <%
+              const statusMap = {
+                in_progress: { label: 'In Progress', cls: 'badge-progress' },
+                delayed:     { label: 'Delayed',     cls: 'badge-late'     },
+                completed:   { label: 'Completed',   cls: 'badge-done'     },
+              };
+              const s = statusMap[p.status] || { label: p.status, cls: '' };
+
+              const today = new Date(); today.setHours(0,0,0,0);
+              const end = p.end_date ? new Date(p.end_date) : null;
+              if (end) end.setHours(0,0,0,0);
+              let daysHtml = '<span>—</span>';
+              if (end && p.status !== 'completed') {
+                const diff = Math.round((end - today) / (1000 * 60 * 60 * 24));
+                daysHtml = diff >= 0
+                  ? '<span class="days-left">' + diff + ' days</span>'
+                  : '<span class="days-late">' + diff + ' days</span>';
+              }
+
+              function fmtDate(d) {
+                if (!d) return '—';
+                const dt = new Date(d);
+                return dt.toLocaleDateString('en-GB', { day:'2-digit', month:'2-digit', year:'numeric' });
+              }
+
+              function toInputDate(d) {
+                if (!d) return '';
+                const dt = new Date(d);
+                return dt.toISOString().split('T')[0];
+              }
+            %>
+            <tr data-id="<%= p.id %>" data-status="<%= p.status %>">
+              <td><strong><%= p.project_name || '—' %></strong></td>
+              <td><%= p.team_name || '—' %></td>
+              <td><%= fmtDate(p.start_date) %></td>
+              <td><%= fmtDate(p.end_date) %></td>
+              <td><%- daysHtml %></td>
+              <td><span class="badge <%= s.cls %>"><%= s.label %></span></td>
+              <td>
+                <div class="button-spacing">
+                  <% if (p.status !== 'completed') { %>
+                  <button class="btn-table btn-complete"
+                    data-id="<%= p.id %>">Complete</button>
+                  <% } %>
+                  <button class="btn-table btn-edit"
+                    data-id="<%= p.id %>"
+                    data-team-id="<%= p.team_id %>"
+                    data-project-id="<%= p.project_id %>"
+                    data-start="<%= toInputDate(p.start_date) %>"
+                    data-end="<%= toInputDate(p.end_date) %>">Edit</button>
+                  <button class="btn-table btn-destroy" data-id="<%= p.id %>">Delete</button>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Modal Add/Edit -->
+<div class="modal-content" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">Add New</h2>
+    <input type="hidden" id="editId" />
+    <div class="form-bar">
+      <div class="form-group2 form-group1">
+        <label>Project Name</label>
+        <select id="fieldProjectId" style="height:40px; border:1px solid #cdd9e8; border-radius:10px; padding:0 14px; font-size:15px; color:var(--text); outline:none; width:100%;">
+          <option value="">-- Select Project --</option>
+          <% projectList.forEach(function(proj) { %>
+            <option value="<%= proj.id %>"><%= proj.project_name || '(no name)' %></option>
+          <% }); %>
+        </select>
+      </div>
+    </div>
+    <div class="form-bar">
+      <div class="form-group2 form-group1">
+        <label>Team</label>
+        <select id="fieldTeamId" style="height:40px; border:1px solid #cdd9e8; border-radius:10px; padding:0 14px; font-size:15px; color:var(--text); outline:none; width:100%;">
+          <option value="">-- Select Team --</option>
+          <% teamList.forEach(function(t) { %>
+            <option value="<%= t.id %>"><%= t.name %></option>
+          <% }); %>
+        </select>
+      </div>
+    </div>
+    <div class="form-bar">
+      <div class="form-group2">
+        <label>Start Date</label>
+        <input type="date" id="fieldStartDate" />
+      </div>
+      <div class="form-group2">
+        <label>End Date</label>
+        <input type="date" id="fieldEndDate" />
+      </div>
+    </div>
+    <div class="modal-spacing">
+      <button class="btn-cancel" id="cancelBtn">Cancel</button>
+      <button class="btn-save" id="saveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const overlay = document.getElementById('modalOverlay');
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // Search & filter
+  function applyFilters() {
+    const q      = document.getElementById('searchInput').value.trim().toLowerCase();
+    const status = document.getElementById('filterStatus').value;
+    const rows   = document.querySelectorAll('#tableBody tr');
+    let visible  = 0;
+
+    rows.forEach((tr) => {
+      const cells     = tr.querySelectorAll('td');
+      const project   = (cells[0]?.textContent || '').toLowerCase();
+      const team      = (cells[1]?.textContent || '').toLowerCase();
+      const rowStatus = tr.dataset.status || '';
+
+      const matchSearch = !q || project.includes(q) || team.includes(q);
+      const matchStatus = !status || rowStatus === status;
+
+      if (matchSearch && matchStatus) {
+        tr.style.display = '';
+        visible++;
+      } else {
+        tr.style.display = 'none';
+      }
+    });
+
+    document.getElementById('projectCount').textContent = 'Showing ' + visible + ' items';
+  }
+
+  document.getElementById('searchInput').addEventListener('input', applyFilters);
+  document.getElementById('filterStatus').addEventListener('change', applyFilters);
+
+  // Open modal (Add)
+  document.getElementById('addBtn').addEventListener('click', () => {
+    document.getElementById('modalTitle').textContent = 'Add New';
+    document.getElementById('editId').value = '';
+    document.getElementById('fieldProjectId').value = '';
+    document.getElementById('fieldTeamId').value = '';
+    document.getElementById('fieldStartDate').value = '';
+    document.getElementById('fieldEndDate').value = '';
+    overlay.classList.add('open');
+  });
+
+  // Open modal (Edit)
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('btn-edit')) {
+      const btn = e.target;
+      document.getElementById('modalTitle').textContent = 'Edit Item';
+      document.getElementById('editId').value = btn.dataset.id;
+      document.getElementById('fieldProjectId').value = btn.dataset.projectId || '';
+      document.getElementById('fieldTeamId').value = btn.dataset.teamId || '';
+      document.getElementById('fieldStartDate').value = btn.dataset.start || '';
+      document.getElementById('fieldEndDate').value = btn.dataset.end || '';
+      overlay.classList.add('open');
+    }
+  });
+
+  // Complete
+  document.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('btn-complete')) {
+      const id = e.target.dataset.id;
+      if (!confirm('Mark this project as completed?')) return;
+      try {
+        await fetch('/manage-project/api/' + id + '/complete', { method: 'PUT' });
+        showToast('Project marked as completed');
+        setTimeout(() => location.reload(), 1000);
+      } catch (err) {
+        showToast('Error: ' + err.message);
+      }
+    }
+  });
+
+  // Delete
+  document.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('btn-destroy')) {
+      const id = e.target.dataset.id;
+      if (!confirm('Are you sure you want to delete this item?')) return;
+      await fetch('/manage-project/api/' + id, { method: 'DELETE' });
+      showToast('Item deleted successfully');
+      setTimeout(() => location.reload(), 1000);
+    }
+  });
+
+  document.getElementById('cancelBtn').addEventListener('click', () => overlay.classList.remove('open'));
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('open'); });
+
+  // Save (Add / Edit)
+  document.getElementById('saveBtn').addEventListener('click', async () => {
+    const id      = document.getElementById('editId').value;
+    const payload = {
+      project_id: parseInt(document.getElementById('fieldProjectId').value),
+      team_id:    parseInt(document.getElementById('fieldTeamId').value),
+      start_date: document.getElementById('fieldStartDate').value || null,
+      end_date:   document.getElementById('fieldEndDate').value || null,
+    };
+
+    if (!payload.project_id || !payload.team_id) {
+      alert('Please select a project and team');
+      return;
+    }
+
+    const url    = id ? '/manage-project/api/' + id : '/manage-project/api';
+    const method = id ? 'PUT' : 'POST';
+
+    await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    overlay.classList.remove('open');
+    showToast(id ? 'Item updated successfully' : 'Item added successfully');
+    setTimeout(() => location.reload(), 1000);
+  });
+</script>

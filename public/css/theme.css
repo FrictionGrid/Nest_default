@@ -1,0 +1,19 @@
+:root {
+      --primary: #1e3a5f;
+      --primary-dark: #16304e;
+      --accent: #4a90e2;
+      --bg: #f3f6fb;
+      --card: #ffffff;
+      --border: #d9e2ec;
+      --text: #1f3554;
+      --muted: #7d93ad;
+      --success: #dff5e7;
+      --success-text: #1d8f56;
+      --danger: #fde8e8;
+      --danger-text: #d14343;
+      --info: #e8f1fb;
+      --info-text: #3573c9;
+      --shadow: 0 10px 30px rgba(19, 41, 75, 0.08);
+      --radius: 16px;
+      --sidebar-width: 240px;
+    }

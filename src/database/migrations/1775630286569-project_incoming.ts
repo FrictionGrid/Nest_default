@@ -15,6 +15,7 @@ export class ProjectIncoming1775630286569 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TABLE project_incoming (
         id SERIAL PRIMARY KEY,
+        item INTEGER,
         project_name VARCHAR(255) NOT NULL,
         sales_name VARCHAR(255),
         po_value DECIMAL(15,2), 
@@ -29,7 +30,7 @@ export class ProjectIncoming1775630286569 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE project`);
+    await queryRunner.query(`DROP TABLE project_incoming`);
     await queryRunner.query(`DROP TYPE project_status`);
   }
 }

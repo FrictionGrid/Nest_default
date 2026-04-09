@@ -1,0 +1,469 @@
+
+
+<style>
+   
+    /* =============================================
+       HEADER CARD
+    ============================================= */
+    .profile-header {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      animation: fadeUp 0.4s ease both;
+      border-left: 5px solid var(--accent);
+    }
+
+    .profile-left { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+
+    .profile-avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 22px; font-weight: 800;
+      flex-shrink: 0;
+      box-shadow: 0 6px 18px rgba(30,58,95,0.22);
+    }
+
+    .profile-name {
+      font-size: 24px; font-weight: 800;
+      color: var(--primary); line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    .profile-contacts { display: flex; gap: 20px; flex-wrap: wrap; }
+    .contact-item {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 13px; color: var(--muted);
+    }
+    .contact-item svg { color: var(--accent); flex-shrink: 0; }
+    .contact-item span { color: #2e4a6a; }
+
+    .profile-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .btn {
+      display: flex; align-items: center; gap: 7px;
+      padding: 10px 18px; border-radius: var(--radius-sm);
+      font-size: 14px; font-weight: 600;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+    .btn-outline {
+      border: 1.5px solid var(--border);
+      background: var(--card); color: var(--primary);
+    }
+    .btn-outline:hover {
+      border-color: var(--accent); color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .btn-back {
+      background: rgba(30,58,95,0.07);
+      color: var(--primary);
+      border: none;
+    }
+    .btn-back:hover {
+      background: rgba(30,58,95,0.13);
+      transform: translateY(-1px);
+    }
+
+    /* =============================================
+       Main Grid
+    ============================================= */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 20px;
+    }
+
+    .col-left  { display: flex; flex-direction: column; gap: 20px; }
+    .col-right { display: flex; flex-direction: column; gap: 20px; }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      animation: fadeUp 0.45s ease both;
+    }
+
+    .card-header {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px 16px;
+      border-bottom: 1px solid #edf2f7;
+      gap: 10px; flex-wrap: wrap;
+    }
+    .card-title {
+      display: flex; align-items: center; gap: 9px;
+      font-size: 15px; font-weight: 700; color: var(--primary);
+    }
+    .card-title svg { color: var(--accent); }
+    .card-body { padding: 20px 22px; }
+
+    /* =============================================
+       A. AI Insights
+    ============================================= */
+    .ai-card-wrap {
+      padding: 2px;
+      border-radius: calc(var(--radius) + 2px);
+      background: linear-gradient(135deg, #4A90E2 0%, #7C5CBF 50%, #35B37E 100%);
+      box-shadow: 0 6px 24px rgba(124,92,191,0.18);
+      animation: fadeUp 0.45s ease both;
+      animation-delay: 0.08s;
+    }
+    .ai-card-inner {
+      background: var(--card);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .ai-header {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px 14px;
+      border-bottom: 1px solid #edf2f7;
+      background: linear-gradient(135deg, #f8f0ff 0%, #eef4ff 100%);
+    }
+    .ai-title {
+      display: flex; align-items: center; gap: 9px;
+      font-size: 15px; font-weight: 700; color: var(--primary);
+    }
+    .ai-badge {
+      padding: 4px 12px; border-radius: 999px;
+      font-size: 11px; font-weight: 700;
+      background: linear-gradient(135deg, #7C5CBF, #4A90E2);
+      color: #fff; letter-spacing: 0.3px;
+    }
+
+    .ai-body { padding: 20px 22px; }
+    .ai-values {
+      display: grid; grid-template-columns: repeat(2,1fr);
+      gap: 12px; margin-bottom: 18px;
+    }
+    .ai-val-box {
+      padding: 14px; border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #fafcff;
+    }
+    .ai-val-box .label { font-size: 11px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .ai-val-box .value { font-size: 18px; font-weight: 800; color: var(--primary); word-break: break-word; }
+    .ai-val-box .sub   { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    .ai-insight-box {
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #f3edff 0%, #e8f0ff 100%);
+      border-left: 4px solid #7C5CBF;
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .ai-insight-box svg { color: #7C5CBF; flex-shrink: 0; margin-top: 1px; }
+    .ai-insight-text .title { font-size: 13px; font-weight: 700; color: #7C5CBF; margin-bottom: 4px; }
+    .ai-insight-text .body  { font-size: 12px; color: #4a3870; line-height: 1.55; }
+
+    /* =============================================
+       B. Documents
+    ============================================= */
+    .doc-empty {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 36px 20px; text-align: center; gap: 12px;
+    }
+    .doc-empty svg { color: #b8cde0; }
+    .doc-empty p   { font-size: 13px; color: var(--muted); max-width: 200px; line-height: 1.55; }
+    .btn-upload {
+      display: flex; align-items: center; gap: 7px;
+      padding: 10px 18px; border-radius: var(--radius-sm);
+      background: #eef4fb; color: var(--primary);
+      font-size: 13px; font-weight: 600;
+      border: 1.5px dashed #b0cce8;
+      transition: var(--transition);
+    }
+    .btn-upload:hover {
+      background: #ddeaf7; border-color: var(--accent);
+      color: var(--accent); transform: translateY(-1px);
+    }
+
+    /* =============================================
+       C. Info Grid
+    ============================================= */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0;
+    }
+    .info-item {
+      padding: 14px 0;
+      border-bottom: 1px solid #f0f4f9;
+    }
+    .info-item:nth-child(odd)  { padding-right: 20px; border-right: 1px solid #f0f4f9; }
+    .info-item:nth-child(even) { padding-left: 20px; }
+    .info-item:nth-last-child(-n+2) { border-bottom: none; }
+
+    .info-label {
+      font-size: 11px; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 5px;
+    }
+    .info-value { font-size: 14px; color: var(--text); font-weight: 600; }
+    .info-value.success { color: var(--text); }
+
+    /* =============================================
+       D. Related Items Table
+    ============================================= */
+    .related-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .related-table th {
+      text-align: left;
+      padding: 10px 14px;
+      background: #f4f8fc;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      font-weight: 600;
+      border-bottom: 1px solid #edf2f7;
+    }
+    .related-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #f0f4f9;
+      color: var(--text);
+    }
+    .related-table tr:last-child td { border-bottom: none; }
+    .related-table tr.current-row td { background: #f0f7ff; }
+    .related-table tr:hover td { background: #fbfdff; }
+    .related-table a { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .related-table a:hover { color: var(--secondary); }
+
+    .empty-related {
+      text-align: center;
+      padding: 32px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* =============================================
+       Animation
+    ============================================= */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .col-left  .card:nth-child(1) { animation-delay: 0.15s; }
+    .col-right .card:nth-child(1) { animation-delay: 0.20s; }
+    .col-right .card:nth-child(2) { animation-delay: 0.25s; }
+
+  
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .detail-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .main         { padding: 18px; }
+      .topbar       { padding: 14px 18px; height: auto; flex-direction: column; align-items: flex-start; gap: 10px; }
+      .profile-header { padding: 20px; }
+      .info-grid    { grid-template-columns: 1fr; }
+      .info-item:nth-child(odd) { border-right: none; padding-right: 0; }
+      .info-item:nth-child(even){ padding-left: 0; }
+      .info-item:nth-last-child(-n+2) { border-bottom: 1px solid #f0f4f9; }
+      .info-item:last-child { border-bottom: none; }
+      .ai-values { grid-template-columns: 1fr; }
+    }
+</style>
+
+
+<section class="content">
+<!-- ============== HEADER CARD ============== -->
+<div class="profile-header">
+  <div class="profile-left">
+    <div class="profile-avatar"><%= project.avatarText %></div>
+    <div class="profile-info">
+      <div class="profile-name"><%= project.projectName %></div>
+      <div class="profile-contacts">
+
+        <div class="contact-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>วันที่เข้า: <%= project.dateIn %></span>
+        </div>
+        <div class="contact-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Sales: <%= project.salesName %></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-actions">
+    <a href="/incoming-project" class="btn btn-back">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      กลับ
+    </a>
+    <button class="btn btn-outline">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      แก้ไข
+    </button>
+  </div>
+</div>
+
+<!-- ============== MAIN GRID ============== -->
+<div class="detail-grid">
+
+  <!-- ========== LEFT COLUMN ========== -->
+  <div class="col-left">
+
+    <!-- AI Summary Card -->
+    
+    <div class="ai-card-wrap">
+            <div class="ai-card-inner">
+              <div class="ai-header">
+                <div class="ai-title">
+                  <!-- ไอคอน AI sparkle -->
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/>
+                  </svg>
+                  ข้อมูลเชิงวิเคราะห์ด้วย AI
+                </div>
+                <span class="ai-badge">AI Powered</span>
+              </div>
+
+              <div class="ai-body">
+
+                <!-- Gauge metrics -->
+                <div class="ai-metrics">
+
+   
+
+                </div>
+                <!-- Value boxes -->
+                <div class="ai-values">
+                  <div class="ai-val-box">
+                    <div class="label">-----</div>
+                    <div class="value">0</div>
+                    <div class="sub">ประมาณการ AI</div>
+                  </div>
+                  <div class="ai-val-box">
+                    <div class="label">สถานะ</div>
+                    <div class="value" style="font-size:15px; color:#35B37E;">กำลังอยู่ในเฟส</div>
+                    <div class="sub">อัปเดตล่าสุดวันนี้</div>
+                  </div>
+                </div>
+
+                <!-- AI Insight box -->
+                <div class="ai-insight-box">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 16v-4"/><path d="M12 8h.01"/>
+                  </svg>
+                  <div class="ai-insight-text">
+                    <div class="title">AI Insight: ควรติดตามเพิ่มเติม</div>
+                    <div class="body">
+                      เเนะนำให้เพิ่มจำนวนคนเนื่องจากโปรเจคล่าช้า
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+    <!-- Documents Card -->
+    <div class="card" style="animation-delay:0.18s;">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          เอกสารที่เกี่ยวข้อง
+        </div>
+        <button class="btn-upload">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          อัปโหลด
+        </button>
+      </div>
+      <div class="card-body">
+        <div class="doc-empty">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+            <line x1="12" y1="12" x2="12" y2="18"/>
+          </svg>
+          <p>ยังไม่มีเอกสารที่แนบ<br/>อัปโหลดไฟล์เพื่อเก็บประวัติ</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========== RIGHT COLUMN ========== -->
+  <div class="col-right">
+
+    <!-- Info Grid Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          ข้อมูลโปรเจคหลัก
+        </div>
+      </div>
+      <div class="card-body" style="padding-bottom:8px;">
+        <div class="info-grid">
+
+          <div class="info-item">
+            <div class="info-label">Project Name</div>
+            <div class="info-value"><%= project.projectName %></div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Item</div>
+            <div class="info-value"><%= project.item %></div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-label">วันที่เข้า</div>
+            <div class="info-value"><%= project.dateIn %></div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Sales Name</div>
+            <div class="info-value"><%= project.salesName %></div>
+          </div>
+
+          <div class="info-item">
+            <div class="info-label">PO Value</div>
+            <div class="info-value success"><%= project.poValue %></div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">PO No.</div>
+            <div class="info-value"><%= project.poNo %></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Items Card -->
+             <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                โปรเจกต์ที่เกี่ยวข้อง
+              </div>
+              <button class="btn btn-outline" style="padding:7px 14px; font-size:13px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                เพิ่มโปรเจกต์
+              </button>
+            </div>
+            <div class="card-body">
+            
+            </div>
+          </div>
+
+  </div>
+</div>
+</section>

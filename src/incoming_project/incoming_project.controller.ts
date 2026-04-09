@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { IncomingProjectService } from './incoming_project.service';
+import { Controller, Get, Post, Body, Param, Delete, Put, Render } from '@nestjs/common';
+import { IncomingProjectService } from './service/incoming_project.service';
 import { CreateIncomingProjectDto } from './dto/create-incoming_project.dto';
 import { UpdateIncomingProjectDto } from './dto/update-incoming_project.dto';
 
@@ -7,27 +7,28 @@ import { UpdateIncomingProjectDto } from './dto/update-incoming_project.dto';
 export class IncomingProjectController {
   constructor(private readonly incomingProjectService: IncomingProjectService) {}
 
-  @Post()
-  create(@Body() createIncomingProjectDto: CreateIncomingProjectDto) {
-    return this.incomingProjectService.create(createIncomingProjectDto);
+  @Get()
+  @Render('incoming_project')
+  index() {
+    return { pageTitle: 'Incoming Project', pageSubtitle: 'List of incoming projects' };
   }
 
-  @Get()
+  @Get('api/projects')
   findAll() {
     return this.incomingProjectService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.incomingProjectService.findOne(+id);
+  @Post('api/projects')
+  create(@Body() dto: CreateIncomingProjectDto) {
+    return this.incomingProjectService.create(dto);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateIncomingProjectDto: UpdateIncomingProjectDto) {
-    return this.incomingProjectService.update(+id, updateIncomingProjectDto);
+  @Put('api/projects/:id')
+  update(@Param('id') id: string, @Body() dto: UpdateIncomingProjectDto) {
+    return this.incomingProjectService.update(+id, dto);
   }
 
-  @Delete(':id')
+  @Delete('api/projects/:id')
   remove(@Param('id') id: string) {
     return this.incomingProjectService.remove(+id);
   }

@@ -1,0 +1,49 @@
+  /* สำหรับสร้างเนื้อหา*/
+  .content {
+    padding: 30px 32px;
+  }
+ .card1 {
+    background: var(--card);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    border: 1px solid #e6edf5;
+    animation: fadeUp 0.45s ease both;
+
+  }
+  .card2 {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    animation: fadeUp 0.45s ease both;
+    animation-delay: 0.28s;
+  }
+  .card4 {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.45s ease both;
+  }
+
+  .modal-content {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content.open {
+    display: flex;
+}
+  

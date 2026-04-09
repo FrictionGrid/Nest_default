@@ -1,26 +1,52 @@
 import { Injectable } from '@nestjs/common';
-import { CreateIncomingProjectDto } from './dto/create-incoming_project.dto';
-import { UpdateIncomingProjectDto } from './dto/update-incoming_project.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
+import { ProjectIncoming } from '../../database/entities/project_incoming.entity';
+import { ProjectType } from '../../database/entities/project_type.entity';
+import { CreateIncomingProjectDto } from '../dto/create-incoming_project.dto';
+import { UpdateIncomingProjectDto } from '../dto/update-incoming_project.dto';
 
 @Injectable()
 export class IncomingProjectService {
-  create(createIncomingProjectDto: CreateIncomingProjectDto) {
-    return 'This action adds a new incomingProject';
-  }
+  constructor(
+    @InjectRepository(ProjectIncoming)
+    private readonly repo: Repository<ProjectIncoming>,
+    @InjectRepository(ProjectType)
+    private readonly typeRepo: Repository<ProjectType>,
+  ) {}
 
   findAll() {
-    return `This action returns all incomingProject`;
+    return this.repo.find({ order: { item: 'ASC', id: 'ASC' }, relations: ['types'] });
+  }
+
+  async create(dto: CreateIncomingProjectDto) {
+    const { type_ids, ...data } = dto;
+    const project = this.repo.create(data);
+    if (type_ids && type_ids.length > 0) {
+      project.types = await this.typeRepo.findBy({ id: In(type_ids) });
+    }
+    return this.repo.save(project);
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} incomingProject`;
+    return this.repo.findOneBy({ id });
   }
 
-  update(id: number, updateIncomingProjectDto: UpdateIncomingProjectDto) {
-    return `This action updates a #${id} incomingProject`;
+  async update(id: number, dto: UpdateIncomingProjectDto) {
+    const { type_ids, ...data } = dto;
+    const project = await this.repo.findOne({ where: { id }, relations: ['types'] });
+    if (!project) return null;
+
+    Object.assign(project, data);
+    if (type_ids !== undefined) {
+      project.types = type_ids.length > 0
+        ? await this.typeRepo.findBy({ id: In(type_ids) })
+        : [];
+    }
+    return this.repo.save(project);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} incomingProject`;
+  async remove(id: number) {
+    await this.repo.delete(id);
   }
 }

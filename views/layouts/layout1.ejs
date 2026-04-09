@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle || 'Dashboard' %></title>
+    <link rel="stylesheet" href="/css/theme.css" />
+  <link rel="stylesheet" href="/css/layout1.css" />
+  <link rel="stylesheet" href="/css/tools/main.css" />
+</head>
+
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <img src="/images/icon.png" alt="logo" style="width:54px;height:54px;" />
+        </div>
+        <div class="brand-text">
+          <h1>Rojpaiboon</h1>
+          <p>Corporate Dashboard</p>
+        </div>
+      </div>
+      <nav class="menu">
+           <a href="/overview-project" class="<%= locals.pageTitle === 'Overview Project' ? 'active' : '' %>">Overview Project</a>
+        <a href="/incoming-project" class="<%= pageTitle === 'Incoming Project' ? 'active' : '' %>">Incoming Project</a>
+        <a href="/manage-project" class="<%= pageTitle === 'Manage Project' ? 'active' : '' %>">Manage Project</a>
+        <a href="/manage-team" class="<%= pageTitle === 'Manage Team' ? 'active' : '' %>">Manage Team</a>
+        <a href="/dashboard-team" class="<%= pageTitle === 'Dashboard Team' ? 'active' : '' %>">Dashboard Team</a>
+     
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar">
+        <div class="page-title">
+          <h2><%= pageTitle || '' %></h2>
+          <p><%= pageSubtitle || '' %></p>
+        </div>
+        <div class="top-actions">
+          <div class="user-badge">Test User1</div>
+          <button class="logout-btn">Logout</button>
+        </div>
+      </header>
+
+      <%- body %>
+    </main>
+  </div>
+</body>
+
+</html>

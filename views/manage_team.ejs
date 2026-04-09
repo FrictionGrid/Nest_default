@@ -1,0 +1,274 @@
+<link rel="stylesheet" href="/css/tools/table.css" />
+<style>
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .badge-overdue      { background: rgba(220,53,69,0.12);  color: #b91c1c; }
+  .badge-near         { background: rgba(234,179,8,0.13);  color: #8a6400; }
+  .badge-hastime      { background: rgba(53,179,126,0.12); color: #1a7a54; }
+  .badge-juststarted  { background: rgba(65,121,191,0.12); color: #2a5fa0; }
+
+  .form-group2 input[type="date"],
+  .form-group2 textarea {
+    height: 40px;
+    border: 1px solid #cdd9e8;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .form-group2 textarea {
+    height: 80px;
+    padding: 10px 14px;
+    resize: vertical;
+  }
+</style>
+
+<section class="content">
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M21 21L16.65 16.65M10.5 18C14.6421 18 18 14.6421 18 10.5C18 6.35786 14.6421 3 10.5 3C6.35786 3 3 6.35786 3 10.5C3 14.6421 6.35786 18 10.5 18Z"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      <input type="text" id="searchTask" placeholder="Search task, user, project..." />
+    </div>
+    <select id="filterTaskStatus" class="filter-box">
+      <option value="">All Status</option>
+      <option value="just_started">งานพึ่งเริ่ม</option>
+      <option value="has_time">งานยังมีเวลา</option>
+      <option value="near_deadline">งานใกล้เวลา</option>
+      <option value="overdue">งานเกินเวลา</option>
+    </select>
+    <button class="add-table-box" id="addTaskBtn">
+      <span style="font-size:20px;line-height:1;">+</span> Add Task
+    </button>
+  </div>
+
+  <div class="card1">
+    <div class="table-header">
+      <h3>Task Detail</h3>
+      <div class="table-count" id="taskCount">Showing <%= tasks.length %> items</div>
+    </div>
+    <div class="table-body">
+      <table>
+        <colgroup>
+          <col style="width:16%;" /><col style="width:16%;" />
+          <col style="width:13%;" /><col style="width:16%;" />
+          <col style="width:11%;" /><col style="width:13%;" />
+          <col style="width:15%;" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Task Name</th><th>Task Detail</th>
+            <th>User</th><th>Project</th>
+            <th>End Date</th><th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="taskBody">
+          <% tasks.forEach(function(t) { %>
+            <%
+              const statusMap = {
+                overdue:       { label: 'งานเกินเวลา',  cls: 'badge-overdue'     },
+                near_deadline: { label: 'งานใกล้เวลา',  cls: 'badge-near'        },
+                has_time:      { label: 'งานยังมีเวลา', cls: 'badge-hastime'     },
+                just_started:  { label: 'งานพึ่งเริ่ม', cls: 'badge-juststarted' },
+              };
+              const s = statusMap[t.status] || { label: t.status, cls: '' };
+              function fmtD(d) {
+                if (!d) return '—';
+                return new Date(d).toLocaleDateString('en-GB', { day:'2-digit', month:'2-digit', year:'numeric' });
+              }
+              function toInput(d) {
+                if (!d) return '';
+                return new Date(d).toISOString().split('T')[0];
+              }
+            %>
+            <tr data-id="<%= t.id %>" data-status="<%= t.status %>">
+              <td><strong><%= t.task_name %></strong></td>
+              <td><%= t.task_description || '—' %></td>
+              <td><%= t.display_name || t.username || '—' %></td>
+              <td><%= t.project_name || '—' %></td>
+              <td><%= fmtD(t.end_date) %></td>
+              <td><span class="badge <%= s.cls %>"><%= s.label %></span></td>
+              <td>
+                <div class="button-spacing">
+                  <button class="btn-table btn-edit"
+                    data-id="<%= t.id %>"
+                    data-user-id="<%= t.user_id %>"
+                    data-project-id="<%= t.project_id %>"
+                    data-task-name="<%= t.task_name %>"
+                    data-task-desc="<%= t.task_description || '' %>"
+                    data-end="<%= toInput(t.end_date) %>"
+                    data-status="<%= t.status %>">Edit</button>
+                  <button class="btn-table btn-destroy" data-id="<%= t.id %>">Delete</button>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
+
+<!-- Modal Task -->
+<div class="modal-content" id="taskModal">
+  <div class="modal">
+    <h2 id="taskModalTitle">Add Task</h2>
+    <input type="hidden" id="taskEditId" />
+    <div class="form-bar">
+      <div class="form-group2 form-group1">
+        <label>Task Name</label>
+        <input type="text" id="fieldTaskName" style="height:40px;border:1px solid #cdd9e8;border-radius:10px;padding:0 14px;font-size:15px;color:var(--text);outline:none;width:100%;box-sizing:border-box;" />
+      </div>
+    </div>
+    <div class="form-bar">
+      <div class="form-group2 form-group1">
+        <label>Task Description</label>
+        <textarea id="fieldTaskDesc"></textarea>
+      </div>
+    </div>
+    <div class="form-bar">
+      <div class="form-group2 form-group1">
+        <label>User</label>
+        <select id="fieldTaskUserId" style="height:40px;border:1px solid #cdd9e8;border-radius:10px;padding:0 14px;font-size:15px;color:var(--text);outline:none;width:100%;">
+          <option value="">-- Select User --</option>
+          <% userList.forEach(function(u) { %>
+            <option value="<%= u.id %>"><%= u.display_name || u.username %></option>
+          <% }); %>
+        </select>
+      </div>
+    </div>
+    <div class="form-bar">
+      <div class="form-group2 form-group1">
+        <label>Project</label>
+        <select id="fieldTaskProjectId" style="height:40px;border:1px solid #cdd9e8;border-radius:10px;padding:0 14px;font-size:15px;color:var(--text);outline:none;width:100%;">
+          <option value="">-- Select Project --</option>
+          <% projectList.forEach(function(p) { %>
+            <option value="<%= p.id %>" data-end="<%= p.end_date ? new Date(p.end_date).toISOString().split('T')[0] : '' %>">
+              <%= p.project_name %>
+            </option>
+          <% }); %>
+        </select>
+      </div>
+    </div>
+    <div class="form-bar">
+      <div class="form-group2 form-group1">
+        <label>End Date</label>
+        <input type="date" id="fieldTaskEndDate" />
+      </div>
+    </div>
+    <div class="modal-spacing">
+      <button class="btn-cancel" id="cancelTaskBtn">Cancel</button>
+      <button class="btn-save" id="saveTaskBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  function applyTaskFilters() {
+    const q      = document.getElementById('searchTask').value.trim().toLowerCase();
+    const status = document.getElementById('filterTaskStatus').value;
+    const rows   = document.querySelectorAll('#taskBody tr');
+    let visible  = 0;
+    rows.forEach((tr) => {
+      const cells = tr.querySelectorAll('td');
+      const task  = (cells[0]?.textContent || '').toLowerCase();
+      const user  = (cells[1]?.textContent || '').toLowerCase();
+      const proj  = (cells[2]?.textContent || '').toLowerCase();
+      const rowSt = tr.dataset.status || '';
+      const ok = (!q || task.includes(q) || user.includes(q) || proj.includes(q)) && (!status || rowSt === status);
+      tr.style.display = ok ? '' : 'none';
+      if (ok) visible++;
+    });
+    document.getElementById('taskCount').textContent = 'Showing ' + visible + ' items';
+  }
+  document.getElementById('searchTask').addEventListener('input', applyTaskFilters);
+  document.getElementById('filterTaskStatus').addEventListener('change', applyTaskFilters);
+
+  const taskModal = document.getElementById('taskModal');
+
+  document.getElementById('fieldTaskProjectId').addEventListener('change', function() {
+    const opt = this.options[this.selectedIndex];
+    const endDate = opt.dataset.end || '';
+    if (endDate) document.getElementById('fieldTaskEndDate').value = endDate;
+  });
+
+  document.getElementById('addTaskBtn').addEventListener('click', () => {
+    document.getElementById('taskModalTitle').textContent  = 'Add Task';
+    document.getElementById('taskEditId').value            = '';
+    document.getElementById('fieldTaskName').value         = '';
+    document.getElementById('fieldTaskDesc').value         = '';
+    document.getElementById('fieldTaskUserId').value       = '';
+    document.getElementById('fieldTaskProjectId').value    = '';
+    document.getElementById('fieldTaskEndDate').value      = '';
+    taskModal.classList.add('open');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('btn-edit')) {
+      const btn = e.target;
+      document.getElementById('taskModalTitle').textContent  = 'Edit Task';
+      document.getElementById('taskEditId').value            = btn.dataset.id;
+      document.getElementById('fieldTaskName').value         = btn.dataset.taskName  || '';
+      document.getElementById('fieldTaskDesc').value         = btn.dataset.taskDesc  || '';
+      document.getElementById('fieldTaskUserId').value       = btn.dataset.userId    || '';
+      document.getElementById('fieldTaskProjectId').value    = btn.dataset.projectId || '';
+      document.getElementById('fieldTaskEndDate').value      = btn.dataset.end       || '';
+      taskModal.classList.add('open');
+    }
+  });
+
+  document.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('btn-destroy')) {
+      const id = e.target.dataset.id;
+      if (!confirm('Delete this task?')) return;
+      await fetch('/manage-team/api/tasks/' + id, { method: 'DELETE' });
+      showToast('Task deleted');
+      setTimeout(() => location.reload(), 1000);
+    }
+  });
+
+  document.getElementById('cancelTaskBtn').addEventListener('click', () => taskModal.classList.remove('open'));
+  taskModal.addEventListener('click', (e) => { if (e.target === taskModal) taskModal.classList.remove('open'); });
+
+  document.getElementById('saveTaskBtn').addEventListener('click', async () => {
+    const id = document.getElementById('taskEditId').value;
+    const payload = {
+      task_name:        document.getElementById('fieldTaskName').value,
+      task_description: document.getElementById('fieldTaskDesc').value || null,
+      user_id:          parseInt(document.getElementById('fieldTaskUserId').value),
+      project_id:       parseInt(document.getElementById('fieldTaskProjectId').value),
+      end_date:         document.getElementById('fieldTaskEndDate').value || null,
+    };
+    if (!payload.task_name) { alert('Please enter a task name'); return; }
+    if (!payload.user_id || !payload.project_id) { alert('Please select a user and project'); return; }
+    const url    = id ? '/manage-team/api/tasks/' + id : '/manage-team/api/tasks';
+    const method = id ? 'PUT' : 'POST';
+    await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    taskModal.classList.remove('open');
+    showToast(id ? 'Task updated' : 'Task added');
+    setTimeout(() => location.reload(), 1000);
+  });
+</script>
