@@ -1,8 +1,11 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, Render } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, Render, UseGuards } from '@nestjs/common';
 import { IncomingProjectService } from './service/incoming_project.service';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
 import { CreateIncomingProjectDto } from './dto/create-incoming_project.dto';
 import { UpdateIncomingProjectDto } from './dto/update-incoming_project.dto';
 
+@UseGuards(AuthGuard, RolesGuard)
 @Controller('incoming-project')
 export class IncomingProjectController {
   constructor(private readonly incomingProjectService: IncomingProjectService) {}

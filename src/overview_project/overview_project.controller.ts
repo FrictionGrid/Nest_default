@@ -1,6 +1,9 @@
-import { Controller, Get, Query, Render } from '@nestjs/common';
+import { Controller, Get, Query, Render, UseGuards } from '@nestjs/common';
 import { OverviewProjectService } from './service/overview_project.service';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
 
+@UseGuards(AuthGuard, RolesGuard)
 @Controller('overview-project')
 export class OverviewProjectController {
   constructor(private readonly overviewProjectService: OverviewProjectService) {}

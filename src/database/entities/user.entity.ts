@@ -17,6 +17,9 @@ export class User {
   @Column({ length: 150, nullable: true })
   display_name: string;
 
+  @Column({ length: 50, default: 'user' })
+  role: string;
+
   @Column({ length: 50, default: 'active' })
   status: string;
 

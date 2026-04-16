@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>เข้าสู่ระบบ — Rojpaiboon</title>
+  <style>
+    /* =============================================
+       Theme variables
+    ============================================= */
+    :root {
+      --primary:    #1E3A5F;
+      --secondary:  #2F5B8C;
+      --accent:     #4A90E2;
+      --background: #F5F7FA;
+      --card:       #FFFFFF;
+      --text:       #1a2d45;
+      --muted:      #56718f;
+      --border:     #D9E2EC;
+      --success:    #35B37E;
+      --danger:     #E45757;
+      --radius:     14px;
+      --transition: all 0.22s ease;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Inter", "Segoe UI", Tahoma, sans-serif;
+      background: var(--background);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    a { text-decoration: none; color: inherit; }
+    button { font: inherit; cursor: pointer; border: none; outline: none; }
+
+    /* =============================================
+       Layout — ซ้าย (brand panel) + ขวา (form)
+    ============================================= */
+    .login-wrap {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* =============================================
+       LEFT — Brand Panel
+    ============================================= */
+    .brand-panel {
+      flex: 1;
+      background: linear-gradient(160deg, #1E3A5F 0%, #16304e 55%, #0f2340 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* วงกลมตกแต่ง bg */
+    .brand-panel::before {
+      content: "";
+      position: absolute;
+      width: 480px; height: 480px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.06);
+      top: -120px; left: -120px;
+    }
+    .brand-panel::after {
+      content: "";
+      position: absolute;
+      width: 360px; height: 360px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.05);
+      bottom: -100px; right: -80px;
+    }
+
+    /* วงกลมสว่างด้านบน */
+    .glow-top {
+      position: absolute;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(74,144,226,0.18) 0%, transparent 70%);
+      top: -60px; right: 40px;
+      pointer-events: none;
+    }
+    .glow-bottom {
+      position: absolute;
+      width: 240px; height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(53,179,126,0.12) 0%, transparent 70%);
+      bottom: 0; left: 20px;
+      pointer-events: none;
+    }
+
+    /* โลโก้ */
+    .brand-logo-wrap {
+      position: relative; z-index: 1;
+      margin-bottom: 28px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .brand-logo-wrap img {
+      width: 110px;
+      height: 110px;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.3));
+    }
+
+    .brand-name {
+      position: relative; z-index: 1;
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+      text-align: center;
+      animation: fadeUp 0.5s ease 0.08s both;
+    }
+
+    .brand-tagline {
+      position: relative; z-index: 1;
+      font-size: 14px;
+      color: rgba(255,255,255,0.55);
+      text-align: center;
+      margin-bottom: 48px;
+      animation: fadeUp 0.5s ease 0.12s both;
+    }
+
+    /* Feature list */
+    .feature-list {
+      position: relative; z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      max-width: 300px;
+      animation: fadeUp 0.5s ease 0.18s both;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(4px);
+      transition: var(--transition);
+    }
+    .feature-item:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.14);
+    }
+
+    .feature-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .fi-blue   { background: rgba(74,144,226,0.25); color: #7eb8f7; }
+    .fi-green  { background: rgba(53,179,126,0.22); color: #5fd4a1; }
+    .fi-orange { background: rgba(244,166,42,0.22);  color: #f7c060; }
+
+    .feature-text .title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); }
+    .feature-text .sub   { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+
+    /* bottom copyright */
+    .brand-footer {
+      position: absolute; z-index: 1;
+      bottom: 24px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.28);
+    }
+
+    /* =============================================
+       RIGHT — Login Form
+    ============================================= */
+    .form-panel {
+      width: 480px;
+      flex-shrink: 0;
+      background: var(--card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 40px;
+      position: relative;
+    }
+
+    .form-inner {
+      width: 100%;
+      max-width: 360px;
+      animation: fadeUp 0.5s ease 0.1s both;
+    }
+
+    /* Form header */
+    .form-header { margin-bottom: 32px; }
+    .form-header h2 {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+    .form-header p { font-size: 14px; color: var(--muted); }
+
+    /* Input group */
+    .input-group { margin-bottom: 20px; }
+
+    .input-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 7px;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-wrap svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #8faac4;
+      pointer-events: none;
+      transition: var(--transition);
+    }
+
+    .input-wrap input {
+      width: 100%;
+      padding: 12px 14px 12px 42px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font: inherit;
+      font-size: 14px;
+      color: var(--text);
+      background: #fafcff;
+      transition: var(--transition);
+    }
+
+    .input-wrap input::placeholder { color: #a8bdd0; }
+
+    .input-wrap input:focus {
+      border-color: var(--accent);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(74,144,226,0.1);
+      outline: none;
+    }
+
+    .input-wrap input:focus + svg,
+    .input-wrap:has(input:focus) svg {
+      color: var(--accent);
+    }
+
+    /* Password toggle */
+    .toggle-pw {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #8faac4;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      transition: var(--transition);
+    }
+    .toggle-pw:hover { color: var(--accent); }
+
+    /* Forgot password */
+    .input-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+    .input-meta label { margin-bottom: 0; }
+    .forgot-link {
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 500;
+      transition: var(--transition);
+    }
+    .forgot-link:hover { color: var(--secondary); text-decoration: underline; }
+
+    /* Remember me */
+    .remember-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .remember-row input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* Error message */
+    .error-msg {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 14px;
+      border-radius: 10px;
+      background: rgba(228,87,87,0.08);
+      border: 1px solid rgba(228,87,87,0.2);
+      color: var(--danger);
+      font-size: 13px;
+      margin-bottom: 18px;
+      animation: shake 0.4s ease;
+    }
+    .error-msg.show { display: flex; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-6px); }
+      40%       { transform: translateX(6px); }
+      60%       { transform: translateX(-4px); }
+      80%       { transform: translateX(4px); }
+    }
+
+    /* Submit button */
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--secondary), var(--accent));
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      box-shadow: 0 8px 22px rgba(47,91,140,0.3);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-login::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background 0.2s ease;
+    }
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(47,91,140,0.38);
+    }
+    .btn-login:hover::after { background: rgba(255,255,255,0.06); }
+    .btn-login:active { transform: translateY(0); }
+
+    /* Loading state */
+    .btn-login .btn-text   { transition: opacity 0.2s; }
+    .btn-login .btn-loader {
+      display: none;
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto;
+    }
+    .btn-login.loading .btn-text   { display: none; }
+    .btn-login.loading .btn-loader { display: block; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 22px 0;
+      font-size: 12px;
+      color: #b0c4d8;
+    }
+    .divider::before,
+    .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Footer info */
+    .form-footer {
+      margin-top: 28px;
+      text-align: center;
+      font-size: 12px;
+      color: #9ab0c6;
+    }
+    .form-footer a { color: var(--accent); }
+
+    /* =============================================
+       Animations
+    ============================================= */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* =============================================
+       Responsive
+    ============================================= */
+    @media (max-width: 860px) {
+      .brand-panel { display: none; }
+      .form-panel  { width: 100%; }
+    }
+
+    @media (max-width: 480px) {
+      .form-panel  { padding: 36px 24px; }
+    }
+  </style>
+</head>
+<body>
+<div class="login-wrap">
+
+  <!-- ========== LEFT — Brand Panel ========== -->
+  <div class=
+  "brand-panel">
+    <div class="glow-top"></div>
+    <div class="glow-bottom"></div>
+
+    <!-- โลโก้บริษัท -->
+    <div class="brand-logo-wrap">
+      <img src="/images/icon.png" alt="Rojpaiboon Logo" />
+    </div>
+
+    <div class="brand-name">Rojpaiboon</div>
+    <div class="brand-tagline">Corporate Dashboard System</div>
+
+  
+    <div class="brand-footer">© 2026 Rojpaiboon Co., Ltd. All rights reserved.</div>
+  </div>
+
+  <!-- ========== RIGHT — Form Panel ========== -->
+  <div class="form-panel">
+    <div class="form-inner">
+
+      <div class="form-header">
+        <h2>ยินดีต้อนรับ</h2>
+        <p>เข้าสู่ระบบเพื่อเริ่มใช้งาน Corporate Dashboard</p>
+      </div>
+
+      <!-- Error message (ซ่อนไว้ก่อน) -->
+      <div class="error-msg" id="errorMsg">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง
+      </div>
+
+      <form id="loginForm" novalidate>
+
+        <!-- Username -->
+        <div class="input-group">
+          <label for="username">ชื่อผู้ใช้งาน</label>
+          <div class="input-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+            <input
+              type="text"
+              id="username"
+              placeholder="กรอกชื่อผู้ใช้งาน"
+              autocomplete="username"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="input-group">
+          <div class="input-meta">
+            <label for="password">รหัสผ่าน</label>
+            <a href="#" class="forgot-link">ลืมรหัสผ่าน?</a>
+          </div>
+          <div class="input-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <input
+              type="password"
+              id="password"
+              placeholder="กรอกรหัสผ่าน"
+              autocomplete="current-password"
+              required
+            />
+            <!-- ปุ่มดู/ซ่อน password -->
+            <button type="button" class="toggle-pw" id="togglePw" aria-label="แสดงรหัสผ่าน">
+            </button>
+          </div>
+        </div>
+
+        <!-- Remember me -->
+        <div class="remember-row">
+          <input type="checkbox" id="remember" />
+          <label for="remember">จดจำการเข้าสู่ระบบ</label>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-login" id="btnLogin">
+          <span class="btn-text">เข้าสู่ระบบ</span>
+          <div class="btn-loader"></div>
+        </button>
+
+      </form>
+
+      <div class="form-footer">
+        มีปัญหาการเข้าสู่ระบบ? <a href="#">ติดต่อ Admin</a>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  /* =============================================
+     Toggle password visibility
+  ============================================= */
+  const togglePw  = document.getElementById('togglePw');
+  const pwInput   = document.getElementById('password');
+  const eyeIcon   = document.getElementById('eyeIcon');
+
+  const eyeOpen = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+  const eyeOff  = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+
+  togglePw.addEventListener('click', () => {
+    const isHidden = pwInput.type === 'password';
+    pwInput.type   = isHidden ? 'text' : 'password';
+    eyeIcon.innerHTML = isHidden ? eyeOff : eyeOpen;
+    togglePw.style.color = isHidden ? 'var(--accent)' : '';
+  });
+
+  /* =============================================
+     Form submit — mock login
+  ============================================= */
+  const form     = document.getElementById('loginForm');
+  const btnLogin = document.getElementById('btnLogin');
+  const errorMsg = document.getElementById('errorMsg');
+
+  // Mock credentials
+  const MOCK_USER = 'demo';
+  const MOCK_PASS = 'demo';
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+
+    errorMsg.classList.remove('show');
+    btnLogin.classList.add('loading');
+    btnLogin.disabled = true;
+
+    try {
+      const res = await fetch('/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        document.querySelector('.form-inner').style.animation = 'fadeOut 0.3s ease forwards';
+        setTimeout(() => { window.location.href = data.redirect || '/overview-project'; }, 300);
+      } else {
+        errorMsg.querySelector('span') && (errorMsg.querySelector('span').textContent = data.message);
+        errorMsg.classList.add('show');
+        document.getElementById('password').value = '';
+        document.getElementById('password').focus();
+        btnLogin.classList.remove('loading');
+        btnLogin.disabled = false;
+      }
+    } catch {
+      errorMsg.classList.add('show');
+      btnLogin.classList.remove('loading');
+      btnLogin.disabled = false;
+    }
+  });
+
+  /* =============================================
+     Enter key บน username ข้ามไป password
+  ============================================= */
+  document.getElementById('username').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.getElementById('password').focus();
+    }
+  });
+</script>
+
+<style>
+  @keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(-14px); }
+  }
+</style>
+</body>
+</html>

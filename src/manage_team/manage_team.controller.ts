@@ -1,8 +1,11 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, Render } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, Render, UseGuards } from '@nestjs/common';
 import { ManageTeamService } from './service/manage_team.service';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
 import { CreateManageTeamDto } from './dto/create-manage_team.dto';
 import { UpdateManageTeamDto } from './dto/update-manage_team.dto';
 
+@UseGuards(AuthGuard, RolesGuard)
 @Controller('manage-team')
 export class ManageTeamController {
   constructor(private readonly manageTeamService: ManageTeamService) {}

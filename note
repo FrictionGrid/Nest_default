@@ -19,3 +19,4 @@
 19 npm install ejs express-ejs-layouts = สำหรับทำ layouts
 20  docker compose up -d   ใช้เปิด docker
 21 npm install class-validator class-transformer = สำหรับ eto
+22 npm install express-session @types/express-session 2>&1 = ใช้ทำ session

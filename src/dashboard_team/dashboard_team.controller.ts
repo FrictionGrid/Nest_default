@@ -1,6 +1,9 @@
-import { Controller, Get, Put, Param, Render } from '@nestjs/common';
+import { Controller, Get, Put, Param, Render, UseGuards } from '@nestjs/common';
 import { DashboardTeamService } from './service/dashboard_team.service';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
 
+@UseGuards(AuthGuard, RolesGuard)
 @Controller('dashboard-team')
 export class DashboardTeamController {
   constructor(private readonly dashboardTeamService: DashboardTeamService) {}

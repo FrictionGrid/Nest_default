@@ -24,12 +24,21 @@
         </div>
       </div>
       <nav class="menu">
-           <a href="/overview-project" class="<%= locals.pageTitle === 'Overview Project' ? 'active' : '' %>">Overview Project</a>
-        <a href="/incoming-project" class="<%= pageTitle === 'Incoming Project' ? 'active' : '' %>">Incoming Project</a>
-        <a href="/manage-project" class="<%= pageTitle === 'Manage Project' ? 'active' : '' %>">Manage Project</a>
-        <a href="/manage-team" class="<%= pageTitle === 'Manage Team' ? 'active' : '' %>">Manage Team</a>
-        <a href="/dashboard-team" class="<%= pageTitle === 'Dashboard Team' ? 'active' : '' %>">Dashboard Team</a>
-     
+        <% if (locals.visibleMenus?.['overview-project']) { %>
+          <a href="/overview-project" class="<%= pageTitle === 'Overview Project' ? 'active' : '' %>">Overview Project</a>
+        <% } %>
+        <% if (locals.visibleMenus?.['incoming-project']) { %>
+          <a href="/incoming-project" class="<%= pageTitle === 'Incoming Project' ? 'active' : '' %>">Incoming Project</a>
+        <% } %>
+        <% if (locals.visibleMenus?.['manage-project']) { %>
+          <a href="/manage-project" class="<%= pageTitle === 'Manage Project' ? 'active' : '' %>">Manage Project</a>
+        <% } %>
+        <% if (locals.visibleMenus?.['manage-team']) { %>
+          <a href="/manage-team" class="<%= pageTitle === 'Manage Team' ? 'active' : '' %>">Manage Team</a>
+        <% } %>
+        <% if (locals.visibleMenus?.['dashboard-team']) { %>
+          <a href="/dashboard-team" class="<%= pageTitle === 'Dashboard Team' ? 'active' : '' %>">Dashboard Team</a>
+        <% } %>
       </nav>
     </aside>
 
@@ -41,8 +50,8 @@
           <p><%= pageSubtitle || '' %></p>
         </div>
         <div class="top-actions">
-          <div class="user-badge">Test User1</div>
-          <button class="logout-btn">Logout</button>
+          <div class="user-badge"><%= locals.sessionUser?.display_name || locals.sessionUser?.username || 'Guest' %></div>
+          <button class="logout-btn" onclick="fetch('/auth/logout',{method:'POST'}).then(()=>location.href='/auth/login')">Logout</button>
         </div>
       </header>
 

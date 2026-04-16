@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IncomingProjectModule } from './incoming_project/incoming_project.module';
@@ -14,6 +14,8 @@ import { TaskTeam } from './database/entities/task_team.entity';
 import { OverviewProjectModule } from './overview_project/overview_project.module';
 import { DetailProjectModule } from './detail_project/detail_project.module';
 import { DashboardTeamModule } from './dashboard_team/dashboard_team.module';
+import { AuthModule } from './auth/auth.module';
+import { UserContextMiddleware } from './common/middleware/user-context.middleware';
 
 @Module({
   imports: [
@@ -32,6 +34,7 @@ import { DashboardTeamModule } from './dashboard_team/dashboard_team.module';
       }),
       inject: [ConfigService],
     }),
+    AuthModule,
     IncomingProjectModule,
     ManageProjectModule,
     ManageTeamModule,
@@ -40,4 +43,8 @@ import { DashboardTeamModule } from './dashboard_team/dashboard_team.module';
     DashboardTeamModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(UserContextMiddleware).forRoutes('*');
+  }
+}
