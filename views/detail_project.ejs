@@ -169,13 +169,94 @@
     /* =============================================
        B. Documents
     ============================================= */
-    .doc-empty {
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 36px 20px; text-align: center; gap: 12px;
+    .doc-progress-wrap {
+      display: flex; align-items: center; gap: 10px;
     }
-    .doc-empty svg { color: #b8cde0; }
-    .doc-empty p   { font-size: 13px; color: var(--muted); max-width: 200px; line-height: 1.55; }
+    .doc-progress-bar {
+      flex: 1; height: 6px; border-radius: 999px;
+      background: #e8f0f9; overflow: hidden;
+    }
+    .doc-progress-fill {
+      height: 100%; border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), #35B37E);
+      transition: width 0.4s ease;
+    }
+    .doc-progress-text {
+      font-size: 12px; font-weight: 700;
+      color: var(--primary); white-space: nowrap;
+    }
+
+    .doc-list { display: flex; flex-direction: column; }
+    .doc-row {
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f4f9;
+    }
+    .doc-row:last-child { border-bottom: none; }
+    .doc-row-top {
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 8px;
+    }
+    .doc-name {
+      font-size: 13px; font-weight: 600;
+      color: var(--primary); flex: 1;
+    }
+    .doc-required {
+      font-size: 10px; color: #c0392b;
+      font-weight: 600; margin-left: 4px;
+    }
+    .doc-actions { display: flex; align-items: center; gap: 6px; }
+
+    .btn-upload-sm {
+      display: flex; align-items: center; gap: 5px;
+      padding: 5px 12px; border-radius: 8px;
+      background: #eef4fb; color: var(--primary);
+      font-size: 12px; font-weight: 600;
+      border: 1.5px dashed #b0cce8;
+      cursor: pointer; transition: var(--transition);
+    }
+    .btn-upload-sm:hover {
+      background: #ddeaf7; border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .doc-files { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+    .doc-file-item {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px; border-radius: 8px;
+      background: #f4f8fc; font-size: 12px;
+    }
+    .doc-file-name {
+      display: flex; align-items: center; gap: 6px;
+      color: var(--text); font-weight: 500; flex: 1;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .doc-file-name svg { color: var(--accent); flex-shrink: 0; }
+    .doc-file-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .btn-file-action {
+      padding: 3px 8px; border-radius: 6px;
+      font-size: 11px; font-weight: 600;
+      border: none; cursor: pointer; transition: var(--transition);
+    }
+    .btn-download { background: #e8f3ff; color: #1d5fa8; }
+    .btn-download:hover { background: #cce3ff; }
+    .btn-delete { background: #ffeaea; color: #c0392b; }
+    .btn-delete:hover { background: #ffd0d0; }
+
+    .doc-rejected-reason {
+      margin-top: 6px; padding: 6px 10px;
+      background: rgba(228,87,87,0.07);
+      border-left: 3px solid #e45757;
+      border-radius: 0 6px 6px 0;
+      font-size: 11px; color: #c0392b;
+    }
+
+    /* status badge variants for docs */
+    .ds-missing  { background: rgba(244,166,42,0.14); color: #9a6000; }
+    .ds-uploaded { background: rgba(74,144,226,0.14); color: #1d5fa8; }
+    .ds-approved { background: rgba(53,179,126,0.13); color: #1a7a54; }
+    .ds-rejected { background: rgba(228,87,87,0.12);  color: #c0392b; }
+
     .btn-upload {
       display: flex; align-items: center; gap: 7px;
       padding: 10px 18px; border-radius: var(--radius-sm);
@@ -402,21 +483,66 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           Documents
         </div>
-        <button class="btn-upload">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-          Upload
-        </button>
-      </div>
-      <div class="card-body">
-        <div class="doc-empty">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-            <line x1="9" y1="15" x2="15" y2="15"/>
-            <line x1="12" y1="12" x2="12" y2="18"/>
-          </svg>
-          <p>No documents attached.<br/>Upload files to keep records.</p>
+        <div class="doc-progress-wrap" style="min-width:140px;">
+          <div class="doc-progress-bar">
+            <div class="doc-progress-fill" style="width:<%= progress.total > 0 ? Math.round(progress.uploaded / progress.total * 100) : 0 %>%"></div>
+          </div>
+          <span class="doc-progress-text"><%= progress.uploaded %>/<%= progress.total %></span>
         </div>
+      </div>
+
+      <div class="card-body" style="padding:0 22px 8px;">
+        <% if (checklist.length === 0) { %>
+          <p style="text-align:center;color:var(--muted);padding:28px 0;font-size:13px;">ยังไม่มีประเภทเอกสารในระบบ</p>
+        <% } else { %>
+        <div class="doc-list">
+          <% checklist.forEach(function(doc) {
+            const statusLabel = { missing:'รอเอกสาร', uploaded:'อัปโหลดแล้ว', approved:'อนุมัติแล้ว', rejected:'ไม่ผ่าน' }[doc.status] || doc.status;
+            const statusCls   = { missing:'ds-missing', uploaded:'ds-uploaded', approved:'ds-approved', rejected:'ds-rejected' }[doc.status] || '';
+          %>
+          <div class="doc-row">
+            <div class="doc-row-top">
+              <div class="doc-name">
+                <%= doc.typeName %>
+                <% if (doc.isRequired) { %><span class="doc-required">*</span><% } %>
+              </div>
+              <div class="doc-actions">
+                <span class="badge <%= statusCls %>"><%= statusLabel %></span>
+                <label class="btn-upload-sm" style="margin:0;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                  Upload
+                  <input type="file" hidden multiple
+                    data-project-id="<%= project.id %>"
+                    data-type-id="<%= doc.typeId %>"
+                    onchange="uploadDoc(this)">
+                </label>
+              </div>
+            </div>
+
+            <% if (doc.status === 'rejected' && doc.rejectedReason) { %>
+              <div class="doc-rejected-reason">เหตุผล: <%= doc.rejectedReason %></div>
+            <% } %>
+
+            <% if (doc.files.length > 0) { %>
+            <div class="doc-files">
+              <% doc.files.forEach(function(f) { %>
+              <div class="doc-file-item">
+                <div class="doc-file-name">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  <%= f.filename %>
+                </div>
+                <div class="doc-file-actions">
+                  <a href="/detail-project/documents/file/<%= f.id %>/download" class="btn-file-action btn-download">ดาวน์โหลด</a>
+                  <button class="btn-file-action btn-delete" onclick="deleteDoc(<%= f.id %>, this)">ลบ</button>
+                </div>
+              </div>
+              <% }); %>
+            </div>
+            <% } %>
+          </div>
+          <% }); %>
+        </div>
+        <% } %>
       </div>
     </div>
 
@@ -519,3 +645,30 @@
   </div>
 </div>
 </section>
+
+<script>
+async function uploadDoc(input) {
+  const projectId = input.dataset.projectId;
+  const typeId    = input.dataset.typeId;
+  const files     = input.files;
+  if (!files.length) return;
+
+  for (const file of files) {
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch(`/detail-project/${projectId}/documents/${typeId}/upload`, {
+      method: 'POST', body: fd,
+    });
+    if (!res.ok) { alert('อัปโหลดไม่สำเร็จ: ' + file.name); return; }
+  }
+  location.reload();
+}
+
+async function deleteDoc(fileId, btn) {
+  if (!confirm('ต้องการลบไฟล์นี้?')) return;
+  btn.disabled = true;
+  const res = await fetch(`/detail-project/documents/file/${fileId}`, { method: 'DELETE' });
+  if (res.ok) location.reload();
+  else { alert('ลบไม่สำเร็จ'); btn.disabled = false; }
+}
+</script>

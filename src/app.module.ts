@@ -16,6 +16,9 @@ import { DetailProjectModule } from './detail_project/detail_project.module';
 import { DashboardTeamModule } from './dashboard_team/dashboard_team.module';
 import { AuthModule } from './auth/auth.module';
 import { UserContextMiddleware } from './common/middleware/user-context.middleware';
+import { DocumentType } from './database/entities/document_type.entity';
+import { ProjectDocument } from './database/entities/project_document.entity';
+import { ProjectDocumentFile } from './database/entities/project_document_file.entity';
 
 @Module({
   imports: [
@@ -29,7 +32,7 @@ import { UserContextMiddleware } from './common/middleware/user-context.middlewa
         username: config.get('DB_USERNAME'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [ProjectIncoming, ProjectType, Team, ProjectTeam, User, UsersTeam, TaskTeam],
+        entities: [ProjectIncoming, ProjectType, Team, ProjectTeam, User, UsersTeam, TaskTeam, DocumentType, ProjectDocument, ProjectDocumentFile],
         synchronize: false,
       }),
       inject: [ConfigService],
