@@ -452,8 +452,8 @@
     <div class="form-inner">
 
       <div class="form-header">
-        <h2>ยินดีต้อนรับ</h2>
-        <p>เข้าสู่ระบบเพื่อเริ่มใช้งาน Corporate Dashboard</p>
+        <h2>Welcome Back</h2>
+        <p>Sign in to access your Corporate Dashboard</p>
       </div>
 
       <!-- Error message (ซ่อนไว้ก่อน) -->
@@ -461,14 +461,14 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
-        ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง
+        Invalid username or password
       </div>
 
       <form id="loginForm" novalidate>
 
         <!-- Username -->
         <div class="input-group">
-          <label for="username">ชื่อผู้ใช้งาน</label>
+          <label for="username">Username</label>
           <div class="input-wrap">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -477,7 +477,7 @@
             <input
               type="text"
               id="username"
-              placeholder="กรอกชื่อผู้ใช้งาน"
+              placeholder="Enter your username"
               autocomplete="username"
               required
             />
@@ -487,8 +487,8 @@
         <!-- Password -->
         <div class="input-group">
           <div class="input-meta">
-            <label for="password">รหัสผ่าน</label>
-            <a href="#" class="forgot-link">ลืมรหัสผ่าน?</a>
+            <label for="password">Password</label>
+            <a href="#" class="forgot-link">Forgot password?</a>
           </div>
           <div class="input-wrap">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -498,12 +498,12 @@
             <input
               type="password"
               id="password"
-              placeholder="กรอกรหัสผ่าน"
+              placeholder="Enter your password"
               autocomplete="current-password"
               required
             />
             <!-- ปุ่มดู/ซ่อน password -->
-            <button type="button" class="toggle-pw" id="togglePw" aria-label="แสดงรหัสผ่าน">
+            <button type="button" class="toggle-pw" id="togglePw" aria-label="Show password">
             </button>
           </div>
         </div>
@@ -511,19 +511,19 @@
         <!-- Remember me -->
         <div class="remember-row">
           <input type="checkbox" id="remember" />
-          <label for="remember">จดจำการเข้าสู่ระบบ</label>
+          <label for="remember">Remember me</label>
         </div>
 
         <!-- Submit -->
         <button type="submit" class="btn-login" id="btnLogin">
-          <span class="btn-text">เข้าสู่ระบบ</span>
+          <span class="btn-text">Sign In</span>
           <div class="btn-loader"></div>
         </button>
 
       </form>
 
       <div class="form-footer">
-        มีปัญหาการเข้าสู่ระบบ? <a href="#">ติดต่อ Admin</a>
+        Having trouble signing in? <a href="#">Contact Admin</a>
       </div>
 
     </div>

@@ -26,7 +26,7 @@
   .badge-problem     { background: rgba(234,179,8,0.13);  color: #8a6400; }
   .badge-completed   { background: rgba(29,143,86,0.12);  color: #1a7a54; }
 
-  /* ── Timeline badges ────────────────────────── */
+  /* ── Priority badges ────────────────────────── */
   .tl-badge {
     display: inline-block;
     padding: 3px 10px;
@@ -34,10 +34,10 @@
     font-size: 11px;
     font-weight: 700;
   }
-  .tl-just_started  { background: rgba(65,121,191,0.1);  color: #2a5fa0; }
-  .tl-has_time      { background: rgba(29,143,86,0.1);   color: #1a7a54; }
-  .tl-near_deadline { background: rgba(234,179,8,0.13);  color: #8a6400; }
-  .tl-overdue       { background: rgba(220,53,69,0.1);   color: #b91c1c; }
+  .tl-general { background: rgba(65,121,191,0.1);  color: #2a5fa0; }
+  .tl-near    { background: rgba(29,143,86,0.1);   color: #1a7a54; }
+  .tl-urgent  { background: rgba(234,179,8,0.15);  color: #8a6400; }
+  .tl-overdue { background: rgba(220,53,69,0.1);   color: #b91c1c; }
 
   .form-group2 input[type="date"],
   .form-group2 textarea,
@@ -71,9 +71,22 @@
     </div>
     <select id="filterTaskStatus" class="filter-box">
       <option value="">All Status</option>
-      <option value="in_progress">กำลังดำเนินการ</option>
-      <option value="problem">เกิดปัญหา</option>
-      <option value="completed">เสร็จสิ้น</option>
+      <option value="in_progress">In Progress</option>
+      <option value="problem">Problem</option>
+      <option value="completed">Completed</option>
+    </select>
+    <select id="filterTeam" class="filter-box">
+      <option value="">All Teams</option>
+      <% teamList.forEach(function(tm) { %>
+        <option value="<%= tm.id %>"><%= tm.name %></option>
+      <% }); %>
+    </select>
+    <select id="filterPriority" class="filter-box">
+      <option value="">All Priority</option>
+      <option value="overdue">เกินเวลา</option>
+      <option value="urgent">ใกล้เวลา (≤3 วัน)</option>
+      <option value="near">ทั่วไป (≤7 วัน)</option>
+      <option value="general">ยังไม่เสร็จ</option>
     </select>
     <button class="add-table-box" id="addTaskBtn">
       <span style="font-size:20px;line-height:1;">+</span> Add Task
@@ -88,35 +101,37 @@
     <div class="table-body">
       <table>
         <colgroup>
-          <col style="width:14%;" /><col style="width:14%;" />
-          <col style="width:10%;" /><col style="width:14%;" />
+          <col style="width:12%;" /><col style="width:12%;" />
           <col style="width:9%;"  /><col style="width:12%;" />
-          <col style="width:12%;" /><col style="width:15%;" />
+          <col style="width:10%;" /><col style="width:8%;"  />
+          <col style="width:10%;" /><col style="width:10%;" />
+          <col style="width:17%;" />
         </colgroup>
         <thead>
           <tr>
             <th>Task Name</th><th>Task Detail</th>
             <th>User</th><th>Project</th>
-            <th>End Date</th><th>Timeline</th>
-            <th>Status</th><th>Actions</th>
+            <th>Team</th><th>End Date</th>
+            <th>Priority</th><th>Status</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody id="taskBody">
           <% tasks.forEach(function(t) { %>
             <%
               const statusMap = {
-                in_progress: { label: 'กำลังดำเนินการ', cls: 'badge-in_progress' },
-                problem:     { label: 'เกิดปัญหา',       cls: 'badge-problem'     },
-                completed:   { label: 'เสร็จสิ้น',       cls: 'badge-completed'   },
+                in_progress: { label: 'In Progress', cls: 'badge-in_progress' },
+                problem:     { label: 'Problem',       cls: 'badge-problem'     },
+                completed:   { label: 'Completed',       cls: 'badge-completed'   },
               };
-              const tlMap = {
-                just_started:  { label: 'Just Started',  cls: 'tl-just_started'  },
-                normal:        { label: 'Normal',         cls: 'tl-has_time'      },
-                near_deadline: { label: 'Near Deadline',  cls: 'tl-near_deadline' },
-                overdue:       { label: 'Overdue',        cls: 'tl-overdue'       },
+              const prMap = {
+                general: { label: 'ยังไม่เสร็จ', cls: 'tl-general' },
+                near:    { label: 'ทั่วไป',       cls: 'tl-near'    },
+                urgent:  { label: 'ใกล้เวลา',     cls: 'tl-urgent'  },
+                overdue: { label: 'เกินเวลา',     cls: 'tl-overdue' },
               };
-              const s  = statusMap[t.status]   || { label: t.status,   cls: '' };
-              const tl = tlMap[t.timeline]     || { label: t.timeline, cls: '' };
+              const s  = statusMap[t.status]   || { label: t.status,    cls: '' };
+              const tl = prMap[t.priority]     || { label: t.priority,  cls: '' };
               function fmtD(d) {
                 if (!d) return '—';
                 return new Date(d).toLocaleDateString('en-GB', { day:'2-digit', month:'2-digit', year:'numeric' });
@@ -126,13 +141,14 @@
                 return new Date(d).toISOString().split('T')[0];
               }
             %>
-            <tr data-id="<%= t.id %>" data-status="<%= t.status %>">
+            <tr data-id="<%= t.id %>" data-status="<%= t.status %>" data-team="<%= t.team_id || '' %>" data-priority="<%= t.status !== 'completed' ? (t.priority || 'general') : '' %>">
               <td><strong><%= t.task_name %></strong></td>
               <td><%= t.task_description || '—' %></td>
               <td><%= t.display_name || t.username || '—' %></td>
               <td><a href="/detail-project/<%= t.project_id %>" style="color:var(--primary);font-weight:600;text-decoration:none;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--primary)'"><%= t.project_name || '—' %></a></td>
+              <td><%= t.team_name || '—' %></td>
               <td><%= fmtD(t.end_date) %></td>
-              <td><span class="tl-badge <%= tl.cls %>"><%= tl.label %></span></td>
+              <td><% if (t.status !== 'completed') { %><span class="tl-badge <%= tl.cls %>"><%= tl.label %></span><% } else { %>—<% } %></td>
               <td><span class="badge <%= s.cls %>"><%= s.label %></span></td>
               <td>
                 <div class="button-spacing">
@@ -207,9 +223,9 @@
       <div class="form-group2 form-group1">
         <label>Status</label>
         <select id="fieldTaskStatus">
-          <option value="in_progress">กำลังดำเนินการ</option>
-          <option value="problem">เกิดปัญหา</option>
-          <option value="completed">เสร็จสิ้น</option>
+          <option value="in_progress">In Progress</option>
+          <option value="problem">Problem</option>
+          <option value="completed">Completed</option>
         </select>
       </div>
     </div>
@@ -232,17 +248,24 @@
   }
 
   function applyTaskFilters() {
-    const q      = document.getElementById('searchTask').value.trim().toLowerCase();
-    const status = document.getElementById('filterTaskStatus').value;
-    const rows   = document.querySelectorAll('#taskBody tr');
-    let visible  = 0;
+    const q        = document.getElementById('searchTask').value.trim().toLowerCase();
+    const status   = document.getElementById('filterTaskStatus').value;
+    const team     = document.getElementById('filterTeam').value;
+    const priority = document.getElementById('filterPriority').value;
+    const rows     = document.querySelectorAll('#taskBody tr');
+    let visible    = 0;
     rows.forEach((tr) => {
-      const cells = tr.querySelectorAll('td');
-      const task  = (cells[0]?.textContent || '').toLowerCase();
-      const user  = (cells[2]?.textContent || '').toLowerCase();
-      const proj  = (cells[3]?.textContent || '').toLowerCase();
-      const rowSt = tr.dataset.status || '';
-      const ok = (!q || task.includes(q) || user.includes(q) || proj.includes(q)) && (!status || rowSt === status);
+      const cells  = tr.querySelectorAll('td');
+      const task   = (cells[0]?.textContent || '').toLowerCase();
+      const user   = (cells[2]?.textContent || '').toLowerCase();
+      const proj   = (cells[3]?.textContent || '').toLowerCase();
+      const rowSt  = tr.dataset.status   || '';
+      const rowTm  = tr.dataset.team     || '';
+      const rowPr  = tr.dataset.priority || '';
+      const ok = (!q        || task.includes(q) || user.includes(q) || proj.includes(q))
+              && (!status   || rowSt === status)
+              && (!team     || rowTm === team)
+              && (!priority || rowPr === priority);
       tr.style.display = ok ? '' : 'none';
       if (ok) visible++;
     });
@@ -250,6 +273,8 @@
   }
   document.getElementById('searchTask').addEventListener('input', applyTaskFilters);
   document.getElementById('filterTaskStatus').addEventListener('change', applyTaskFilters);
+  document.getElementById('filterTeam').addEventListener('change', applyTaskFilters);
+  document.getElementById('filterPriority').addEventListener('change', applyTaskFilters);
 
   const taskModal = document.getElementById('taskModal');
 
@@ -290,7 +315,7 @@
     if (e.target.classList.contains('btn-destroy')) {
       const id = e.target.dataset.id;
       if (!confirm('Delete this task?')) return;
-      await fetch('/manage-team/api/tasks/' + id, { method: 'DELETE' });
+      await fetch('/manage-task/api/tasks/' + id, { method: 'DELETE' });
       showToast('Task deleted');
       setTimeout(() => location.reload(), 1000);
     }
@@ -311,7 +336,7 @@
     };
     if (!payload.task_name) { alert('Please enter a task name'); return; }
     if (!payload.user_id || !payload.project_id) { alert('Please select a user and project'); return; }
-    const url    = id ? '/manage-team/api/tasks/' + id : '/manage-team/api/tasks';
+    const url    = id ? '/manage-task/api/tasks/' + id : '/manage-task/api/tasks';
     const method = id ? 'PUT' : 'POST';
     await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     taskModal.classList.remove('open');

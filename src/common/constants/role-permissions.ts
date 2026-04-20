@@ -31,7 +31,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'GET:/overview-project/api/team-stats',
     'GET:/incoming-project',
     'GET:/manage-project',
-    'GET:/manage-team',
+    'GET:/manage-task',
     'GET:/dashboard-team',
     'GET:/detail-project/:id',
     // Manage Project
@@ -43,20 +43,22 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'PUT:/manage-project/api/:id',
     'PUT:/manage-project/api/:id/complete',
     // Manage Team API
-    'GET:/manage-team/api',
-    'POST:/manage-team/api',
-    'PUT:/manage-team/api/:id',
-    'GET:/manage-team/api/tasks',
-    'POST:/manage-team/api/tasks',
-    'PUT:/manage-team/api/tasks/:id',
+    'GET:/manage-task/api',
+    'POST:/manage-task/api',
+    'PUT:/manage-task/api/:id',
+    'GET:/manage-task/api/tasks',
+    'POST:/manage-task/api/tasks',
+    'PUT:/manage-task/api/tasks/:id',
     // Dashboard Team API
     'PUT:/dashboard-team/api/tasks/:id/complete',
+    'PUT:/dashboard-team/api/tasks/:id/problem',
   ],
 
   // ── dashboard-team page only (all actions) + detail ─────────────────────
   engineer: [
     'GET:/dashboard-team',
     'PUT:/dashboard-team/api/tasks/:id/complete',
+    'PUT:/dashboard-team/api/tasks/:id/problem',
     'GET:/detail-project/:id',
   ],
 

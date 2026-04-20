@@ -1,5 +1,4 @@
 
-
 <style>
    
     /* =============================================
@@ -493,11 +492,11 @@
 
       <div class="card-body" style="padding:0 22px 8px;">
         <% if (checklist.length === 0) { %>
-          <p style="text-align:center;color:var(--muted);padding:28px 0;font-size:13px;">ยังไม่มีประเภทเอกสารในระบบ</p>
+          <p style="text-align:center;color:var(--muted);padding:28px 0;font-size:13px;">No document types found</p>
         <% } else { %>
         <div class="doc-list">
           <% checklist.forEach(function(doc) {
-            const statusLabel = { missing:'รอเอกสาร', uploaded:'อัปโหลดแล้ว', approved:'อนุมัติแล้ว', rejected:'ไม่ผ่าน' }[doc.status] || doc.status;
+            const statusLabel = { missing:'Pending', uploaded:'Uploaded', approved:'Approved', rejected:'Rejected' }[doc.status] || doc.status;
             const statusCls   = { missing:'ds-missing', uploaded:'ds-uploaded', approved:'ds-approved', rejected:'ds-rejected' }[doc.status] || '';
           %>
           <div class="doc-row">
@@ -520,7 +519,7 @@
             </div>
 
             <% if (doc.status === 'rejected' && doc.rejectedReason) { %>
-              <div class="doc-rejected-reason">เหตุผล: <%= doc.rejectedReason %></div>
+              <div class="doc-rejected-reason">Reason: <%= doc.rejectedReason %></div>
             <% } %>
 
             <% if (doc.files.length > 0) { %>
@@ -532,8 +531,8 @@
                   <%= f.filename %>
                 </div>
                 <div class="doc-file-actions">
-                  <a href="/detail-project/documents/file/<%= f.id %>/download" class="btn-file-action btn-download">ดาวน์โหลด</a>
-                  <button class="btn-file-action btn-delete" onclick="deleteDoc(<%= f.id %>, this)">ลบ</button>
+                  <a href="/detail-project/documents/file/<%= f.id %>/download" class="btn-file-action btn-download">Download</a>
+                  <button class="btn-file-action btn-delete" onclick="deleteDoc(<%= f.id %>, this)">Delete</button>
                 </div>
               </div>
               <% }); %>
@@ -659,16 +658,16 @@ async function uploadDoc(input) {
     const res = await fetch(`/detail-project/${projectId}/documents/${typeId}/upload`, {
       method: 'POST', body: fd,
     });
-    if (!res.ok) { alert('อัปโหลดไม่สำเร็จ: ' + file.name); return; }
+    if (!res.ok) { alert('Upload failed: ' + file.name); return; }
   }
   location.reload();
 }
 
 async function deleteDoc(fileId, btn) {
-  if (!confirm('ต้องการลบไฟล์นี้?')) return;
+  if (!confirm('Are you sure you want to delete this file?')) return;
   btn.disabled = true;
   const res = await fetch(`/detail-project/documents/file/${fileId}`, { method: 'DELETE' });
   if (res.ok) location.reload();
-  else { alert('ลบไม่สำเร็จ'); btn.disabled = false; }
+  else { alert('Delete failed'); btn.disabled = false; }
 }
 </script>

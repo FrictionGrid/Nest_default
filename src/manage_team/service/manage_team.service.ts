@@ -24,21 +24,15 @@ export class ManageTeamService {
     private readonly projectRepo: Repository<ProjectIncoming>,
   ) {}
 
-  // ── Timeline calculation ─────────────────────────────────────────────────
-
-  private calcTimeline(startDate: Date | null, endDate: Date | null): string {
-    if (!startDate || !endDate) return 'just_started';
-    const start = new Date(startDate).getTime();
-    const end = new Date(endDate).getTime();
-    const now = Date.now();
-    const total = end - start;
-    if (total <= 0) return 'overdue';
-    const pct = ((now - start) / total) * 100;
-    if (pct < 0) return 'just_started';
-    if (pct < 20) return 'just_started';
-    if (pct < 70) return 'normal';
-    if (pct <= 100) return 'near_deadline';
-    return 'overdue';
+  private calcPriority(endDate: Date | null): string {
+    if (!endDate) return 'general';
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const end   = new Date(endDate); end.setHours(0, 0, 0, 0);
+    const diff  = Math.round((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    if (diff < 0)  return 'overdue';
+    if (diff <= 3) return 'urgent';
+    if (diff <= 7) return 'near';
+    return 'general';
   }
 
   // ── User-Team members ────────────────────────────────────────────────────
@@ -85,10 +79,27 @@ export class ManageTeamService {
   // ── Tasks ────────────────────────────────────────────────────────────────
 
   async findAllTasks() {
-    const rows = await this.taskRepo.find({
-      relations: ['user', 'project'],
-      order: { id: 'ASC' },
-    });
+    const rows = await this.taskRepo
+      .createQueryBuilder('t')
+      .leftJoin('t.user', 'u')
+      .leftJoin('t.project', 'p')
+      .leftJoin('project_team', 'pt', 'pt.project_id = t.project_id')
+      .leftJoin('team', 'tm', 'tm.id = pt.team_id')
+      .select('t.id', 'id')
+      .addSelect('t.user_id', 'user_id')
+      .addSelect('t.project_id', 'project_id')
+      .addSelect('t.task_name', 'task_name')
+      .addSelect('t.task_description', 'task_description')
+      .addSelect('t.end_date', 'end_date')
+      .addSelect('t.status', 'status')
+      .addSelect('u.username', 'username')
+      .addSelect('u.display_name', 'display_name')
+      .addSelect('p.project_name', 'project_name')
+      .addSelect('tm.id', 'team_id')
+      .addSelect('tm.name', 'team_name')
+      .orderBy('t.id', 'ASC')
+      .getRawMany();
+
     return rows.map((r) => ({
       id: r.id,
       user_id: r.user_id,
@@ -97,10 +108,12 @@ export class ManageTeamService {
       task_description: r.task_description,
       end_date: r.end_date,
       status: r.status,
-      timeline: this.calcTimeline(r.project?.start_date ?? null, r.end_date ?? null),
-      username: r.user?.username,
-      display_name: r.user?.display_name,
-      project_name: r.project?.project_name,
+      priority: this.calcPriority(r.end_date ?? null),
+      username: r.username,
+      display_name: r.display_name,
+      project_name: r.project_name,
+      team_id: r.team_id,
+      team_name: r.team_name,
     }));
   }
 

@@ -55,6 +55,12 @@
       <option value="delayed">Delayed</option>
       <option value="completed">Completed</option>
     </select>
+    <select id="filterTeam" class="filter-box">
+      <option value="">All Teams</option>
+      <% teamList.forEach(function(t) { %>
+        <option value="<%= t.id %>"><%= t.name %></option>
+      <% }); %>
+    </select>
 
     <button class="add-table-box" id="addBtn">
       <span style="font-size:20px;line-height:1;">+</span>
@@ -123,7 +129,7 @@
                 return dt.toISOString().split('T')[0];
               }
             %>
-            <tr data-id="<%= p.id %>" data-status="<%= p.status %>">
+            <tr data-id="<%= p.id %>" data-status="<%= p.status %>" data-team="<%= p.team_id || '' %>">
               <td><a href="/detail-project/<%= p.project_id %>" style="color:var(--primary);font-weight:700;text-decoration:none;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--primary)'"><%= p.project_name || '—' %></a></td>
               <td><%= p.team_name || '—' %></td>
               <td><%= fmtDate(p.start_date) %></td>
@@ -214,19 +220,22 @@
   function applyFilters() {
     const q      = document.getElementById('searchInput').value.trim().toLowerCase();
     const status = document.getElementById('filterStatus').value;
+    const team   = document.getElementById('filterTeam').value;
     const rows   = document.querySelectorAll('#tableBody tr');
     let visible  = 0;
 
     rows.forEach((tr) => {
       const cells     = tr.querySelectorAll('td');
       const project   = (cells[0]?.textContent || '').toLowerCase();
-      const team      = (cells[1]?.textContent || '').toLowerCase();
+      const teamText  = (cells[1]?.textContent || '').toLowerCase();
       const rowStatus = tr.dataset.status || '';
+      const rowTeam   = tr.dataset.team   || '';
 
-      const matchSearch = !q || project.includes(q) || team.includes(q);
+      const matchSearch = !q || project.includes(q) || teamText.includes(q);
       const matchStatus = !status || rowStatus === status;
+      const matchTeam   = !team   || rowTeam === team;
 
-      if (matchSearch && matchStatus) {
+      if (matchSearch && matchStatus && matchTeam) {
         tr.style.display = '';
         visible++;
       } else {
@@ -239,6 +248,7 @@
 
   document.getElementById('searchInput').addEventListener('input', applyFilters);
   document.getElementById('filterStatus').addEventListener('change', applyFilters);
+  document.getElementById('filterTeam').addEventListener('change', applyFilters);
 
   // Open modal (Add)
   document.getElementById('addBtn').addEventListener('click', () => {

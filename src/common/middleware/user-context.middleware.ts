@@ -6,7 +6,7 @@ const PAGE_ROUTES: Record<string, string> = {
   'overview-project': 'GET:/overview-project',
   'incoming-project': 'GET:/incoming-project',
   'manage-project':   'GET:/manage-project',
-  'manage-team':      'GET:/manage-team',
+  'manage-task':      'GET:/manage-task',
   'dashboard-team':   'GET:/dashboard-team',
 };
 

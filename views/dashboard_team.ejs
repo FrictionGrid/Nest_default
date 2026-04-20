@@ -2,8 +2,8 @@
   /* ── Summary Cards ─────────────────────────────── */
   .db-stat-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
     margin-bottom: 26px;
   }
   .db-stat {
@@ -17,11 +17,11 @@
   .db-stat h4 { font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 600; }
   .db-stat .val { font-size: 36px; font-weight: 800; color: var(--text); line-height: 1; }
   .db-stat p { font-size: 12px; color: var(--muted); margin-top: 6px; }
-  .db-stat.s-just_started  { border-color: #4a90e2; }
-  .db-stat.s-normal        { border-color: #1d8f56; }
-  .db-stat.s-near_deadline { border-color: #e2a93b; }
-  .db-stat.s-overdue       { border-color: #dc3545; }
-  .db-stat.s-total         { border-color: #1e3a5f; }
+  .db-stat.s-total      { border-color: #1e3a5f; }
+  .db-stat.s-incomplete { border-color: #4a90e2; }
+  .db-stat.s-general    { border-color: #1d8f56; }
+  .db-stat.s-near       { border-color: #e2a93b; }
+  .db-stat.s-overdue    { border-color: #dc3545; }
 
   /* ── Two-col grid ──────────────────────────────── */
   .db-grid {
@@ -69,9 +69,10 @@
     flex-shrink: 0;
     margin-top: 5px;
   }
-  .dot-in_progress { background: #4a90e2; }
-  .dot-problem     { background: #e2a93b; }
-  .dot-completed   { background: #1d8f56; }
+  .dot-general { background: #4a90e2; }
+  .dot-near    { background: #1d8f56; }
+  .dot-urgent  { background: #e2a93b; }
+  .dot-overdue { background: #dc3545; }
   .task-info { flex: 1; min-width: 0; }
   .task-name { font-size: 14px; font-weight: 700; color: var(--text); }
   .task-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
@@ -81,32 +82,46 @@
     font-size: 11px; font-weight: 700;
     padding: 3px 10px; border-radius: 999px; white-space: nowrap;
   }
-  /* Task status badges */
   .tb-in_progress { background: #e8f1fb; color: #2a5fa0; }
   .tb-problem     { background: rgba(226,169,59,0.13); color: #8a6400; }
   .tb-completed   { background: #dff5e7; color: #1a7a54; }
-  /* Timeline badges */
-  .tl-badge {
-    font-size: 10px; font-weight: 700;
-    padding: 2px 8px; border-radius: 999px; white-space: nowrap;
-    margin-right: 4px;
-  }
-  .tl-just_started  { background: rgba(65,121,191,0.1); color: #2a5fa0; }
-  .tl-has_time      { background: rgba(29,143,86,0.1);  color: #1a7a54; }
-  .tl-near_deadline { background: rgba(226,169,59,0.13); color: #8a6400; }
-  .tl-overdue       { background: rgba(220,53,69,0.1);  color: #b91c1c; }
 
-  /* ── Complete button ───────────────────────────── */
-  .btn-complete {
+  /* ── Priority badges ───────────────────────────── */
+  .pr-badge {
     font-size: 11px; font-weight: 700;
-    padding: 4px 12px; border-radius: 999px;
+    padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .pr-general { background: rgba(65,121,191,0.1);  color: #2a5fa0; }
+  .pr-near    { background: rgba(29,143,86,0.1);   color: #1a7a54; }
+  .pr-urgent  { background: rgba(234,179,8,0.15);  color: #8a6400; }
+  .pr-overdue { background: #dc3545; color: #fff; }
+
+  /* ── Action buttons ────────────────────────────── */
+  .btn-complete {
+    font-size: 12px; font-weight: 700;
+    padding: 6px 16px; border-radius: 8px;
     border: none; cursor: pointer;
     background: #1d8f56; color: #fff;
-    transition: background 0.2s;
+    box-shadow: 0 2px 6px rgba(29,143,86,0.25);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
     white-space: nowrap;
   }
-  .btn-complete:hover { background: #166040; }
-  .btn-complete:disabled { background: #aaa; cursor: default; }
+  .btn-complete:hover { background: #166040; box-shadow: 0 3px 10px rgba(29,143,86,0.35); transform: translateY(-1px); }
+  .btn-complete:active { transform: translateY(0); }
+  .btn-complete:disabled { background: #9ec9b0; box-shadow: none; cursor: default; transform: none; }
+
+  .btn-problem {
+    font-size: 12px; font-weight: 700;
+    padding: 6px 16px; border-radius: 8px;
+    border: none; cursor: pointer;
+    background: #fff7e6; color: #8a6400;
+    box-shadow: 0 2px 6px rgba(226,169,59,0.2);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    white-space: nowrap;
+  }
+  .btn-problem:hover { background: #ffecc2; box-shadow: 0 3px 10px rgba(226,169,59,0.3); transform: translateY(-1px); }
+  .btn-problem:active { transform: translateY(0); }
+  .btn-problem:disabled { background: #f5f0e8; color: #c9b47a; box-shadow: none; cursor: default; transform: none; }
 
   /* ── Weekly Goal ───────────────────────────────── */
   .goal-wrap { padding: 4px 0; }
@@ -175,107 +190,67 @@
 
   <!-- ── Summary Cards ─────────────────────────── -->
   <div class="db-stat-grid">
-    <div class="db-stat s-just_started">
-      <h4>Just Started</h4>
-      <div class="val"><%= summary.just_started %></div>
-      <p>0 – 20%</p>
+    <div class="db-stat s-total">
+      <h4>งานทั้งหมด</h4>
+      <div class="val"><%= summary.total %></div>
+      <p>ยกเว้นงานที่สำเร็จแล้ว</p>
     </div>
-    <div class="db-stat s-normal">
-      <h4>Normal</h4>
-      <div class="val"><%= summary.normal %></div>
-      <p>20 – 70%</p>
+    <div class="db-stat s-incomplete">
+      <h4>งานที่ยังไม่เสร็จ</h4>
+      <div class="val"><%= summary.not_due %></div>
+      <p>เหลือมากกว่า 7 วัน</p>
     </div>
-    <div class="db-stat s-near_deadline">
-      <h4>Near Deadline</h4>
-      <div class="val"><%= summary.near_deadline %></div>
-      <p>70 – 100%</p>
+    <div class="db-stat s-general">
+      <h4>งานทั่วไป</h4>
+      <div class="val"><%= summary.general %></div>
+      <p>เหลือ 4 – 7 วัน</p>
+    </div>
+    <div class="db-stat s-near">
+      <h4>งานใกล้เวลา</h4>
+      <div class="val"><%= summary.near %></div>
+      <p>เหลือ 0 – 3 วัน</p>
     </div>
     <div class="db-stat s-overdue">
-      <h4>Overdue</h4>
+      <h4>งานเกินเวลา</h4>
       <div class="val"><%= summary.overdue %></div>
-      <p>> 100%</p>
+      <p>เลยกำหนดแล้ว</p>
     </div>
   </div>
 
-  <!-- ── Middle: Tasks + Goal ──────────────────── -->
-  <div class="db-grid">
-
-    <!-- Tasks (dynamic) -->
-    <div class="db-card">
-      <div class="db-card-hd">
-        <h3>Task List</h3>
-        <span style="font-size:12px;color:var(--muted);"><%= tasks.length %> items</span>
-      </div>
-      <div class="db-card-body">
-        <% if (!tasks || tasks.length === 0) { %>
-          <div style="text-align:center;color:var(--muted);padding:30px 0;font-size:14px;">No tasks found</div>
-        <% } else { %>
-        <div class="task-list">
-          <% tasks.forEach(function(t) {
-            const dotMap = { in_progress:'dot-in_progress', problem:'dot-problem', completed:'dot-completed' };
-            const badgeMap = {
-              in_progress: { cls:'tb-in_progress', label:'In Progress' },
-              problem:     { cls:'tb-problem',     label:'Problem'     },
-              completed:   { cls:'tb-completed',   label:'Completed'   },
-            };
-            const tlMap = {
-              just_started:  { cls:'tl-just_started',  label:'Just Started'  },
-              normal:        { cls:'tl-has_time',       label:'Normal'        },
-              near_deadline: { cls:'tl-near_deadline',  label:'Near Deadline' },
-              overdue:       { cls:'tl-overdue',        label:'Overdue'       },
-            };
-            const dot = dotMap[t.status] || 'dot-in_progress';
-            const b   = badgeMap[t.status] || { cls:'', label: t.status };
-            const tl  = tlMap[t.timeline]  || { cls:'', label: t.timeline };
-          %>
-          <div class="task-item">
-            <div class="task-dot <%= dot %>"></div>
-            <div class="task-info">
-              <div class="task-name"><%= t.task_name %></div>
-              <div class="task-meta"><%= t.member_name %> · <%= t.project_name %></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-              <span class="tl-badge <%= tl.cls %>"><%= tl.label %></span>
-              <span class="task-badge <%= b.cls %>"><%= b.label %></span>
-              <% if (t.status !== 'completed') { %>
-              <button class="btn-complete" data-id="<%= t.id %>">Done</button>
-              <% } %>
-            </div>
-          </div>
-          <% }); %>
-        </div>
-        <% } %>
-      </div>
+  <!-- ── Task List (full width) ───────────────── -->
+  <div class="db-card" style="margin-bottom:24px;">
+    <div class="db-card-hd">
+      <h3>Task List</h3>
+      <span style="font-size:12px;color:var(--muted);"><%= tasks.length %> items</span>
     </div>
-
-    <!-- Weekly Goal (dynamic) -->
-    <%
-      const totalTasks     = summary.total;
-      const completedTasks = summary.completed;
-      const goalPct = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-    %>
-    <div class="db-card">
-      <div class="db-card-hd">
-        <h3>Weekly Goal</h3>
-        <strong style="color:var(--primary);font-size:15px;"><%= goalPct %>%</strong>
-      </div>
-      <div class="db-card-body">
-        <div class="goal-wrap">
-          <div class="goal-meta">
-            <span>Overall Progress</span>
-            <span><%= completedTasks %> / <%= totalTasks %> tasks</span>
+    <div class="db-card-body">
+      <% if (!tasks || tasks.length === 0) { %>
+        <div style="text-align:center;color:var(--muted);padding:30px 0;font-size:14px;">No tasks found</div>
+      <% } else { %>
+      <div class="task-list">
+        <% tasks.filter(t => t.status !== 'completed').forEach(function(t) {
+          const prMap = {
+            general: { dotCls:'dot-general', badgeCls:'pr-general', label:'ทั่วไป'   },
+            near:    { dotCls:'dot-near',    badgeCls:'pr-near',    label:'ใกล้ด่วน' },
+            urgent:  { dotCls:'dot-urgent',  badgeCls:'pr-urgent',  label:'ด่วนมาก'  },
+            overdue: { dotCls:'dot-overdue', badgeCls:'pr-overdue', label:'เกินเวลา' },
+          };
+          const pr = prMap[t.priority] || prMap.general;
+        %>
+        <div class="task-item">
+          <div class="task-dot <%= pr.dotCls %>"></div>
+          <div class="task-info">
+            <div class="task-name"><%= t.task_name %></div>
+            <div class="task-meta"><%= t.member_name %> · <%= t.project_name %></div>
           </div>
-          <div class="goal-bar">
-            <div class="goal-fill" style="width:<%= goalPct %>%"></div>
-          </div>
-          <div class="mini-grid">
-            <div class="mini-card"><span>In Progress</span><strong><%= summary.pending %></strong></div>
-            <div class="mini-card"><span>Problem</span><strong><%= summary.in_progress %></strong></div>
-            <div class="mini-card"><span>Completed</span><strong><%= summary.completed %></strong></div>
-            <div class="mini-card"><span>Total</span><strong><%= summary.total %></strong></div>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+            <button class="btn-problem" data-id="<%= t.id %>" <%= t.status === 'problem' ? 'disabled' : '' %>>⚠ พบปัญหา</button>
+            <button class="btn-complete" data-id="<%= t.id %>">✓ เสร็จสิ้น</button>
           </div>
         </div>
+        <% }); %>
       </div>
+      <% } %>
     </div>
   </div>
 
@@ -332,10 +307,57 @@
 
 </section>
 
+<!-- ── Modal กรอกรายละเอียด ──────────────────── -->
+<div id="taskDetailModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:28px 28px 24px;width:100%;max-width:460px;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+    <h3 id="modalTitle" style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;"></h3>
+    <p id="modalSubtitle" style="font-size:13px;color:var(--muted);margin-bottom:16px;"></p>
+    <textarea id="modalDesc" rows="4" placeholder="กรอกรายละเอียด..." style="width:100%;box-sizing:border-box;border:1px solid #cdd9e8;border-radius:10px;padding:10px 14px;font-size:14px;color:var(--text);outline:none;resize:vertical;font-family:inherit;"></textarea>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
+      <button id="modalCancel" style="padding:8px 20px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);">ยกเลิก</button>
+      <button id="modalConfirm" style="padding:8px 20px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;color:#fff;background:#1d8f56;">บันทึก</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="toast" style="position:fixed;bottom:24px;right:24px;background:#1e3a5f;color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:9999;"></div>
 
 <script>
+  const modal      = document.getElementById('taskDetailModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalSub   = document.getElementById('modalSubtitle');
+  const modalDesc  = document.getElementById('modalDesc');
+  const modalOk    = document.getElementById('modalConfirm');
+  const modalCancel = document.getElementById('modalCancel');
+
+  let _pendingAction = null;
+
+  function openModal(title, subtitle, confirmBg, action) {
+    modalTitle.textContent    = title;
+    modalSub.textContent      = subtitle;
+    modalDesc.value           = '';
+    modalOk.style.background  = confirmBg;
+    modal.style.display       = 'flex';
+    _pendingAction            = action;
+    setTimeout(() => modalDesc.focus(), 100);
+  }
+
+  function closeModal() {
+    modal.style.display = 'none';
+    _pendingAction = null;
+  }
+
+  modalCancel.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+  modalOk.addEventListener('click', async () => {
+    if (!_pendingAction) return;
+    const desc = modalDesc.value.trim();
+    await _pendingAction(desc);
+    closeModal();
+  });
+
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -343,15 +365,37 @@
     setTimeout(() => { t.style.opacity = '0'; }, 2500);
   }
 
-  document.addEventListener('click', async (e) => {
+  document.addEventListener('click', (e) => {
     if (e.target.classList.contains('btn-complete')) {
-      const id  = e.target.dataset.id;
       const btn = e.target;
-      btn.disabled = true;
-      btn.textContent = '...';
-      await fetch('/dashboard-team/api/tasks/' + id + '/complete', { method: 'PUT' });
-      showToast('Task marked as completed');
-      setTimeout(() => location.reload(), 1000);
+      const taskName = btn.closest('.task-item')?.querySelector('.task-name')?.textContent || 'งานนี้';
+      openModal('✓ บันทึกการเสร็จสิ้น', `"${taskName}" — กรอกสิ่งที่ทำเสร็จ`, '#1d8f56', async (desc) => {
+        btn.disabled = true;
+        btn.textContent = '...';
+        await fetch('/dashboard-team/api/tasks/' + btn.dataset.id + '/complete', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description: desc }),
+        });
+        showToast('งานเสร็จสิ้นแล้ว ✓');
+        setTimeout(() => location.reload(), 1000);
+      });
+    }
+
+    if (e.target.classList.contains('btn-problem') && !e.target.disabled) {
+      const btn = e.target;
+      const taskName = btn.closest('.task-item')?.querySelector('.task-name')?.textContent || 'งานนี้';
+      openModal('⚠ แจ้งปัญหา', `"${taskName}" — อธิบายปัญหาที่พบ`, '#e2a93b', async (desc) => {
+        btn.disabled = true;
+        btn.textContent = '...';
+        await fetch('/dashboard-team/api/tasks/' + btn.dataset.id + '/problem', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description: desc }),
+        });
+        showToast('รายงานปัญหาแล้ว ⚠');
+        setTimeout(() => location.reload(), 1000);
+      });
     }
   });
 </script>

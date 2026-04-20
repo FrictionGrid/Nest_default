@@ -2,7 +2,6 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  CreateDateColumn,
   UpdateDateColumn,
   ManyToMany,
   JoinTable,
@@ -51,7 +50,7 @@ export class ProjectIncoming {
   })
   types: ProjectType[];
 
-  @CreateDateColumn()
+  @Column({ type: 'timestamptz', default: () => 'now()' })
   created_at: Date;
 
   @UpdateDateColumn()

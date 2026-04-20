@@ -61,9 +61,18 @@
 
     <select id="filterStatus" class="filter-box">
       <option value="">All Months</option>
-      <option>January</option>
-      <option>February</option>
-      <option>March</option>
+      <option value="1">January</option>
+      <option value="2">February</option>
+      <option value="3">March</option>
+      <option value="4">April</option>
+      <option value="5">May</option>
+      <option value="6">June</option>
+      <option value="7">July</option>
+      <option value="8">August</option>
+      <option value="9">September</option>
+      <option value="10">October</option>
+      <option value="11">November</option>
+      <option value="12">December</option>
     </select>
 
     <button class="add-table-box" id="addBtn">
@@ -87,6 +96,7 @@
           <col style="width: 13%;" />
           <col style="width: 110px;" />
           <col style="width: 130px;" />
+          <col style="width: 110px;" />
           <col style="width: 190px;" />
         </colgroup>
         <thead>
@@ -97,12 +107,13 @@
             <th>Sales Name</th>
             <th>PO Value</th>
             <th>PO Nos.</th>
+            <th>Created</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody id="tableBody">
           <tr>
-            <td colspan="7" class="loading-state">Loading data...</td>
+            <td colspan="8" class="loading-state">Loading data...</td>
           </tr>
         </tbody>
       </table>
@@ -156,6 +167,12 @@
         <input type="text" id="fieldPoNos" placeholder="Enter PO number" />
       </div>
     </div>
+    <div class="form-bar" id="createdDateGroup" style="display:none;">
+      <div class="form-group2">
+        <label>Created Date</label>
+        <input type="date" id="fieldCreatedAt" />
+      </div>
+    </div>
     <div class="modal-spacing">
       <button class="btn-cancel" id="cancelBtn">Cancel</button>
       <button class="btn-save" id="saveBtn">Save</button>
@@ -206,7 +223,7 @@
     count.textContent = rows.length + ' record(s)';
 
     if (rows.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No data found</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No data found</td></tr>';
       return;
     }
 
@@ -218,6 +235,7 @@
         <td>${esc(row.sales_name)}</td>
         <td>${esc(String(row.po_value ?? ''))}</td>
         <td>${esc(row.po_no)}</td>
+        <td>${row.created_at ? new Date(row.created_at).toLocaleDateString('th-TH') : ''}</td>
         <td>
           <div class="button-spacing">
             <a href="/detail-project/${row.id}" class="btn-table btn-detail">Detail</a>
@@ -243,12 +261,18 @@
 
   function applyFilters() {
     const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const month = document.getElementById('filterStatus').value;
 
     const filtered = allRows.filter((r) => {
-      return !q ||
+      const matchSearch = !q ||
         String(r.item || '').toLowerCase().includes(q) ||
         (r.project_name || '').toLowerCase().includes(q) ||
         (r.sales_name || '').toLowerCase().includes(q);
+
+      const matchMonth = !month ||
+        (r.created_at && new Date(r.created_at).getMonth() + 1 === Number(month));
+
+      return matchSearch && matchMonth;
     });
 
     renderTable(filtered);
@@ -259,6 +283,7 @@
   function openAdd() {
     document.getElementById('modalTitle').textContent = 'Add New Item';
     document.getElementById('editId').value = '';
+    document.getElementById('createdDateGroup').style.display = 'none';
     clearFields();
     overlay.classList.add('open');
   }
@@ -274,6 +299,10 @@
     document.getElementById('fieldPoValue').value = row.po_value || '';
     document.getElementById('fieldPoNos').value = row.po_no || '';
 
+    const createdVal = row.created_at ? row.created_at.slice(0, 10) : '';
+    document.getElementById('fieldCreatedAt').value = createdVal;
+    document.getElementById('createdDateGroup').style.display = 'flex';
+
     const checkedIds = (row.types || []).map((t) => String(t.id));
     document.querySelectorAll('input[name="projectType"]').forEach((cb) => {
       cb.checked = checkedIds.includes(cb.value);
@@ -283,7 +312,7 @@
   }
 
   function clearFields() {
-    ['fieldItem', 'fieldProjectName', 'fieldSalesName', 'fieldPoValue', 'fieldPoNos']
+    ['fieldItem', 'fieldProjectName', 'fieldSalesName', 'fieldPoValue', 'fieldPoNos', 'fieldCreatedAt']
       .forEach((id) => { document.getElementById(id).value = ''; });
     document.querySelectorAll('input[name="projectType"]').forEach((cb) => { cb.checked = false; });
   }
@@ -304,6 +333,9 @@
       po_no: document.getElementById('fieldPoNos').value.trim(),
       type_ids: typeIds,
     };
+    if (id && document.getElementById('fieldCreatedAt').value) {
+      dto.created_at = document.getElementById('fieldCreatedAt').value;
+    }
 
     try {
       let res;

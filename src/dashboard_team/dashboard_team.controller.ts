@@ -1,4 +1,5 @@
-import { Controller, Get, Put, Param, Render, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Param, Body, Render, UseGuards, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { DashboardTeamService } from './service/dashboard_team.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -10,17 +11,23 @@ export class DashboardTeamController {
 
   @Get()
   @Render('dashboard_team')
-  async index() {
+  async index(@Req() req: Request) {
+    const userId = (req.session as any).user?.id;
     const [summary, tasks, teamProjects] = await Promise.all([
-      this.dashboardTeamService.getSummary(),
-      this.dashboardTeamService.getTasksThisMonth(),
-      this.dashboardTeamService.getTeamProjects(),
+      this.dashboardTeamService.getSummary(userId),
+      this.dashboardTeamService.getTasksThisMonth(userId),
+      this.dashboardTeamService.getTeamProjects(userId),
     ]);
     return { pageTitle: 'Dashboard Team', summary, tasks, teamProjects };
   }
 
   @Put('api/tasks/:id/complete')
-  async completeTask(@Param('id') id: string) {
-    return this.dashboardTeamService.completeTask(+id);
+  async completeTask(@Param('id') id: string, @Body('description') description?: string) {
+    return this.dashboardTeamService.completeTask(+id, description);
+  }
+
+  @Put('api/tasks/:id/problem')
+  async problemTask(@Param('id') id: string, @Body('description') description?: string) {
+    return this.dashboardTeamService.problemTask(+id, description);
   }
 }

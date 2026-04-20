@@ -29,7 +29,7 @@ export class AuthController {
       const redirect = ROLE_DEFAULT_PAGE[user.role] ?? '/overview-project';
       return res.json({ success: true, redirect });
     } catch {
-      return res.status(401).json({ success: false, message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' });
+      return res.status(401).json({ success: false, message: 'Invalid username or password' });
     }
   }
 

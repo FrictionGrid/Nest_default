@@ -6,7 +6,7 @@ import { CreateManageTeamDto } from './dto/create-manage_team.dto';
 import { UpdateManageTeamDto } from './dto/update-manage_team.dto';
 
 @UseGuards(AuthGuard, RolesGuard)
-@Controller('manage-team')
+@Controller('manage-task')
 export class ManageTeamController {
   constructor(private readonly manageTeamService: ManageTeamService) {}
 
@@ -20,7 +20,7 @@ export class ManageTeamController {
       this.manageTeamService.findAllTasks(),
       this.manageTeamService.findAllProjects(),
     ]);
-    return { pageTitle: 'Manage Team', members, userList, teamList, tasks, projectList };
+    return { pageTitle: 'Manage Task', members, userList, teamList, tasks, projectList };
   }
 
   // ── User-Team endpoints ──────────────────────────────────────────────────

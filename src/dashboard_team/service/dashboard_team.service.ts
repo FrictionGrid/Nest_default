@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TaskTeam } from '../../database/entities/task_team.entity';
 import { ProjectTeam } from '../../database/entities/project_team.entity';
+import { UsersTeam } from '../../database/entities/users_team.entity';
 
 @Injectable()
 export class DashboardTeamService {
@@ -11,61 +12,75 @@ export class DashboardTeamService {
     private readonly taskRepo: Repository<TaskTeam>,
     @InjectRepository(ProjectTeam)
     private readonly projectTeamRepo: Repository<ProjectTeam>,
+    @InjectRepository(UsersTeam)
+    private readonly usersTeamRepo: Repository<UsersTeam>,
   ) {}
 
-  // ── Timeline calculation ─────────────────────────────────────────────────
-
-  private calcTimeline(startDate: Date | null, endDate: Date | null): string {
-    if (!startDate || !endDate) return 'just_started';
-    const start = new Date(startDate).getTime();
-    const end = new Date(endDate).getTime();
-    const now = Date.now();
-    const total = end - start;
-    if (total <= 0) return 'overdue';
-    const pct = ((now - start) / total) * 100;
-    if (pct < 0) return 'just_started';
-    if (pct < 20) return 'just_started';
-    if (pct < 70) return 'normal';
-    if (pct <= 100) return 'near_deadline';
-    return 'overdue';
+  private deadlineGroup(endDate: Date | null): 'general' | 'near' | 'urgent' | 'overdue' {
+    if (!endDate) return 'general';
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const end   = new Date(endDate); end.setHours(0, 0, 0, 0);
+    const diff  = Math.round((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    if (diff < 0)  return 'overdue';
+    if (diff <= 3) return 'urgent';
+    if (diff <= 7) return 'near';
+    return 'general';
   }
 
-  async getSummary() {
-    const all = await this.taskRepo.find({ relations: ['project'] });
-    const timelines = all.map((t) =>
-      this.calcTimeline(t.project?.start_date ?? null, t.end_date ?? null),
-    );
+  async getSummary(userId: number) {
+    const all        = await this.taskRepo.find({ where: { user_id: userId } });
+    const incomplete = all.filter((t) => t.status !== 'completed');
     return {
-      total:         all.length,
-      just_started:  timelines.filter((s) => s === 'just_started').length,
-      normal:        timelines.filter((s) => s === 'normal').length,
-      near_deadline: timelines.filter((s) => s === 'near_deadline').length,
-      overdue:       timelines.filter((s) => s === 'overdue').length,
-      completed:     all.filter((t) => t.status === 'completed').length,
+      total:        incomplete.length,
+      not_due:      incomplete.filter((t) => this.deadlineGroup(t.end_date) === 'general').length,
+      general:      incomplete.filter((t) => this.deadlineGroup(t.end_date) === 'near').length,
+      near:         incomplete.filter((t) => this.deadlineGroup(t.end_date) === 'urgent').length,
+      overdue:      incomplete.filter((t) => this.deadlineGroup(t.end_date) === 'overdue').length,
     };
   }
 
-  async getTasksThisMonth() {
+  async getTasksThisMonth(userId: number) {
     const rows = await this.taskRepo.find({
+      where: { user_id: userId },
       relations: ['user', 'project'],
       order: { end_date: 'ASC' },
     });
 
-    return rows.map((t) => ({
+    const priorityOrder = { overdue: 0, urgent: 1, near: 2, general: 3 };
+    const active = rows
+      .filter((t) => t.status !== 'completed')
+      .sort((a, b) => {
+        const pa = priorityOrder[this.deadlineGroup(a.end_date ?? null)] ?? 4;
+        const pb = priorityOrder[this.deadlineGroup(b.end_date ?? null)] ?? 4;
+        return pa - pb;
+      });
+    const completed = rows.filter((t) => t.status === 'completed');
+    const sorted    = [...active, ...completed];
+
+    return sorted.map((t) => ({
       id:           t.id,
       task_name:    t.task_name,
+      task_description: t.task_description,
       member_name:  t.user?.display_name || t.user?.username || '—',
       project_name: (t.project as any)?.project_name || '—',
       status:       t.status,
-      timeline:     this.calcTimeline(t.project?.start_date ?? null, t.end_date ?? null),
+      end_date:     t.end_date ?? null,
+      priority:     this.deadlineGroup(t.end_date ?? null),
     }));
   }
 
-  async getTeamProjects() {
+  async getTeamProjects(userId: number) {
+    const userTeams = await this.usersTeamRepo.find({ where: { user_id: userId } });
+    const teamIds = userTeams.map((ut) => ut.team_id);
+
+    if (teamIds.length === 0) return [];
+
     const rows = await this.projectTeamRepo.find({
+      where: teamIds.map((team_id) => ({ team_id })),
       relations: ['team', 'project'],
       order: { id: 'ASC' },
     });
+
     return rows.map((pt) => ({
       team_name:    pt.team?.name             || '—',
       project_name: pt.project?.project_name || '—',
@@ -77,8 +92,19 @@ export class DashboardTeamService {
     }));
   }
 
-  async completeTask(id: number) {
-    await this.taskRepo.update(id, { status: 'completed' as any });
+  async completeTask(id: number, description?: string) {
+    await this.taskRepo.update(id, {
+      status: 'completed' as any,
+      ...(description ? { task_description: description } : {}),
+    });
+    return { ok: true };
+  }
+
+  async problemTask(id: number, description?: string) {
+    await this.taskRepo.update(id, {
+      status: 'problem' as any,
+      ...(description ? { task_description: description } : {}),
+    });
     return { ok: true };
   }
 }
