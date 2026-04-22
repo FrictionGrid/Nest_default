@@ -32,6 +32,19 @@
   }
   @media (max-width: 1100px) { .db-grid { grid-template-columns: 1fr; } }
 
+  @media (max-width: 768px) {
+    .db-stat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .db-stat { padding: 14px 16px; }
+    .db-stat .val { font-size: 26px; }
+    .mini-grid { grid-template-columns: 1fr; }
+    .task-item { flex-wrap: wrap; }
+    .db-card-body { padding: 12px 14px 16px; }
+  }
+
+  @media (max-width: 480px) {
+    .db-stat-grid { grid-template-columns: 1fr; }
+  }
+
   /* ── Card base ─────────────────────────────────── */
   .db-card {
     background: var(--card);
@@ -191,29 +204,29 @@
   <!-- ── Summary Cards ─────────────────────────── -->
   <div class="db-stat-grid">
     <div class="db-stat s-total">
-      <h4>งานทั้งหมด</h4>
+      <h4>All Tasks</h4>
       <div class="val"><%= summary.total %></div>
-      <p>ยกเว้นงานที่สำเร็จแล้ว</p>
+      <p>Excluding completed</p>
     </div>
     <div class="db-stat s-incomplete">
-      <h4>งานที่ยังไม่เสร็จ</h4>
+      <h4>In Progress</h4>
       <div class="val"><%= summary.not_due %></div>
-      <p>เหลือมากกว่า 7 วัน</p>
+      <p>More than 7 days left</p>
     </div>
     <div class="db-stat s-general">
-      <h4>งานทั่วไป</h4>
+      <h4>Near</h4>
       <div class="val"><%= summary.general %></div>
-      <p>เหลือ 4 – 7 วัน</p>
+      <p>4 – 7 days left</p>
     </div>
     <div class="db-stat s-near">
-      <h4>งานใกล้เวลา</h4>
+      <h4>Urgent</h4>
       <div class="val"><%= summary.near %></div>
-      <p>เหลือ 0 – 3 วัน</p>
+      <p>0 – 3 days left</p>
     </div>
     <div class="db-stat s-overdue">
-      <h4>งานเกินเวลา</h4>
+      <h4>Overdue</h4>
       <div class="val"><%= summary.overdue %></div>
-      <p>เลยกำหนดแล้ว</p>
+      <p>Past due date</p>
     </div>
   </div>
 
@@ -230,10 +243,10 @@
       <div class="task-list">
         <% tasks.filter(t => t.status !== 'completed').forEach(function(t) {
           const prMap = {
-            general: { dotCls:'dot-general', badgeCls:'pr-general', label:'ทั่วไป'   },
-            near:    { dotCls:'dot-near',    badgeCls:'pr-near',    label:'ใกล้ด่วน' },
-            urgent:  { dotCls:'dot-urgent',  badgeCls:'pr-urgent',  label:'ด่วนมาก'  },
-            overdue: { dotCls:'dot-overdue', badgeCls:'pr-overdue', label:'เกินเวลา' },
+            general: { dotCls:'dot-general', badgeCls:'pr-general', label:'In Progress' },
+            near:    { dotCls:'dot-near',    badgeCls:'pr-near',    label:'Near'        },
+            urgent:  { dotCls:'dot-urgent',  badgeCls:'pr-urgent',  label:'Urgent'      },
+            overdue: { dotCls:'dot-overdue', badgeCls:'pr-overdue', label:'Overdue'     },
           };
           const pr = prMap[t.priority] || prMap.general;
         %>
@@ -244,8 +257,8 @@
             <div class="task-meta"><%= t.member_name %> · <%= t.project_name %></div>
           </div>
           <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-            <button class="btn-problem" data-id="<%= t.id %>" <%= t.status === 'problem' ? 'disabled' : '' %>>⚠ พบปัญหา</button>
-            <button class="btn-complete" data-id="<%= t.id %>">✓ เสร็จสิ้น</button>
+            <button class="btn-problem" data-id="<%= t.id %>" <%= t.status === 'problem' ? 'disabled' : '' %>>⚠ Problem</button>
+            <button class="btn-complete" data-id="<%= t.id %>">✓ Complete</button>
           </div>
         </div>
         <% }); %>
@@ -312,10 +325,10 @@
   <div style="background:#fff;border-radius:16px;padding:28px 28px 24px;width:100%;max-width:460px;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
     <h3 id="modalTitle" style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;"></h3>
     <p id="modalSubtitle" style="font-size:13px;color:var(--muted);margin-bottom:16px;"></p>
-    <textarea id="modalDesc" rows="4" placeholder="กรอกรายละเอียด..." style="width:100%;box-sizing:border-box;border:1px solid #cdd9e8;border-radius:10px;padding:10px 14px;font-size:14px;color:var(--text);outline:none;resize:vertical;font-family:inherit;"></textarea>
+    <textarea id="modalDesc" rows="4" placeholder="Enter details..." style="width:100%;box-sizing:border-box;border:1px solid #cdd9e8;border-radius:10px;padding:10px 14px;font-size:14px;color:var(--text);outline:none;resize:vertical;font-family:inherit;"></textarea>
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
-      <button id="modalCancel" style="padding:8px 20px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);">ยกเลิก</button>
-      <button id="modalConfirm" style="padding:8px 20px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;color:#fff;background:#1d8f56;">บันทึก</button>
+      <button id="modalCancel" style="padding:8px 20px;border-radius:8px;border:1px solid #ddd;background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);">Cancel</button>
+      <button id="modalConfirm" style="padding:8px 20px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;color:#fff;background:#1d8f56;">Save</button>
     </div>
   </div>
 </div>
@@ -368,8 +381,8 @@
   document.addEventListener('click', (e) => {
     if (e.target.classList.contains('btn-complete')) {
       const btn = e.target;
-      const taskName = btn.closest('.task-item')?.querySelector('.task-name')?.textContent || 'งานนี้';
-      openModal('✓ บันทึกการเสร็จสิ้น', `"${taskName}" — กรอกสิ่งที่ทำเสร็จ`, '#1d8f56', async (desc) => {
+      const taskName = btn.closest('.task-item')?.querySelector('.task-name')?.textContent || 'this task';
+      openModal('✓ Mark Complete', `"${taskName}" — describe what was done`, '#1d8f56', async (desc) => {
         btn.disabled = true;
         btn.textContent = '...';
         await fetch('/dashboard-team/api/tasks/' + btn.dataset.id + '/complete', {
@@ -377,15 +390,15 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ description: desc }),
         });
-        showToast('งานเสร็จสิ้นแล้ว ✓');
+        showToast('Task completed ✓');
         setTimeout(() => location.reload(), 1000);
       });
     }
 
     if (e.target.classList.contains('btn-problem') && !e.target.disabled) {
       const btn = e.target;
-      const taskName = btn.closest('.task-item')?.querySelector('.task-name')?.textContent || 'งานนี้';
-      openModal('⚠ แจ้งปัญหา', `"${taskName}" — อธิบายปัญหาที่พบ`, '#e2a93b', async (desc) => {
+      const taskName = btn.closest('.task-item')?.querySelector('.task-name')?.textContent || 'this task';
+      openModal('⚠ Report Problem', `"${taskName}" — describe the issue`, '#e2a93b', async (desc) => {
         btn.disabled = true;
         btn.textContent = '...';
         await fetch('/dashboard-team/api/tasks/' + btn.dataset.id + '/problem', {
@@ -393,7 +406,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ description: desc }),
         });
-        showToast('รายงานปัญหาแล้ว ⚠');
+        showToast('Problem reported ⚠');
         setTimeout(() => location.reload(), 1000);
       });
     }

@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, Render, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, Render, UseGuards, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { ManageTeamService } from './service/manage_team.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -12,15 +13,28 @@ export class ManageTeamController {
 
   @Get()
   @Render('manage_team')
-  async index() {
+  async index(@Req() req: Request) {
+    const sessionUser = (req.session as any).user;
+    const isScoped    = sessionUser?.role === 'head_engineer';
+    const userId      = sessionUser?.id;
+
     const [members, userList, teamList, tasks, projectList] = await Promise.all([
       this.manageTeamService.findAll(),
-      this.manageTeamService.findAllUsers(),
-      this.manageTeamService.findAllTeams(),
-      this.manageTeamService.findAllTasks(),
-      this.manageTeamService.findAllProjects(),
+      isScoped
+        ? this.manageTeamService.findUsersScoped(userId)
+        : this.manageTeamService.findAllUsers(),
+      isScoped
+        ? this.manageTeamService.findTeamsByUser(userId)
+        : this.manageTeamService.findAllTeams(),
+      isScoped
+        ? this.manageTeamService.findTasksScoped(userId)
+        : this.manageTeamService.findAllTasks(),
+      isScoped
+        ? this.manageTeamService.findProjectsScoped(userId)
+        : this.manageTeamService.findAllProjects(),
     ]);
-    return { pageTitle: 'Manage Task', members, userList, teamList, tasks, projectList };
+
+    return { pageTitle: 'Manage Task', pageSubtitle: 'Track and update team tasks', members, userList, teamList, tasks, projectList };
   }
 
   // ── User-Team endpoints ──────────────────────────────────────────────────
@@ -53,17 +67,29 @@ export class ManageTeamController {
   }
 
   @Post('api/tasks')
-  createTask(@Body() dto: any) {
+  async createTask(@Req() req: Request, @Body() dto: any) {
+    const sessionUser = (req.session as any).user;
+    if (sessionUser?.role === 'head_engineer') {
+      await this.manageTeamService.assertProjectInUserTeam(+dto.project_id, sessionUser.id);
+    }
     return this.manageTeamService.createTask(dto);
   }
 
   @Put('api/tasks/:id')
-  updateTask(@Param('id') id: string, @Body() dto: any) {
+  async updateTask(@Req() req: Request, @Param('id') id: string, @Body() dto: any) {
+    const sessionUser = (req.session as any).user;
+    if (sessionUser?.role === 'head_engineer') {
+      await this.manageTeamService.assertTaskInUserTeam(+id, sessionUser.id);
+    }
     return this.manageTeamService.updateTask(+id, dto);
   }
 
   @Delete('api/tasks/:id')
-  removeTask(@Param('id') id: string) {
+  async removeTask(@Req() req: Request, @Param('id') id: string) {
+    const sessionUser = (req.session as any).user;
+    if (sessionUser?.role === 'head_engineer') {
+      await this.manageTeamService.assertTaskInUserTeam(+id, sessionUser.id);
+    }
     return this.manageTeamService.removeTask(+id);
   }
 }

@@ -46,4 +46,18 @@
 .modal-content.open {
     display: flex;
 }
+
+@media (max-width: 768px) {
+  .content {
+    padding: 16px 14px;
+  }
+
+  .form-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .form-group1 {
+    grid-column: auto;
+  }
+}
   

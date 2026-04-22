@@ -28,6 +28,9 @@ export class ProjectIncoming {
   @Column({ length: 255, nullable: true })
   po_no: string;
 
+  @Column({ length: 50, nullable: true })
+  region: string;
+
   @Column({
     type: 'enum',
     enum: ['in_progress', 'delayed', 'completed'],

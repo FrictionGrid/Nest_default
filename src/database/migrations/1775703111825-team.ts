@@ -17,7 +17,7 @@ export class Team1775703111825 implements MigrationInterface {
                 ('Team 3'),
                 ('Team 4'),
                 ('Team Application'),
-                ('Team Draf');
+                ('Team Draft');
         `);
     }
 

@@ -18,7 +18,7 @@ export class ManageProjectController {
       this.manageProjectService.findAllProjects(),
       this.manageProjectService.findAllTeams(),
     ]);
-    return { pageTitle: 'Manage Project', projects, projectList, teamList };
+    return { pageTitle: 'Manage Project', pageSubtitle: 'Assign and manage project teams', projects, projectList, teamList };
   }
 
   @Post('api')

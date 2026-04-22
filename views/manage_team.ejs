@@ -83,10 +83,10 @@
     </select>
     <select id="filterPriority" class="filter-box">
       <option value="">All Priority</option>
-      <option value="overdue">เกินเวลา</option>
-      <option value="urgent">ใกล้เวลา (≤3 วัน)</option>
-      <option value="near">ทั่วไป (≤7 วัน)</option>
-      <option value="general">ยังไม่เสร็จ</option>
+      <option value="overdue">Overdue</option>
+      <option value="urgent">Urgent (≤3 days)</option>
+      <option value="near">Near (≤7 days)</option>
+      <option value="general">In Progress</option>
     </select>
     <button class="add-table-box" id="addTaskBtn">
       <span style="font-size:20px;line-height:1;">+</span> Add Task
@@ -125,10 +125,10 @@
                 completed:   { label: 'Completed',       cls: 'badge-completed'   },
               };
               const prMap = {
-                general: { label: 'ยังไม่เสร็จ', cls: 'tl-general' },
-                near:    { label: 'ทั่วไป',       cls: 'tl-near'    },
-                urgent:  { label: 'ใกล้เวลา',     cls: 'tl-urgent'  },
-                overdue: { label: 'เกินเวลา',     cls: 'tl-overdue' },
+                general: { label: 'In Progress', cls: 'tl-general' },
+                near:    { label: 'Near',        cls: 'tl-near'    },
+                urgent:  { label: 'Urgent',      cls: 'tl-urgent'  },
+                overdue: { label: 'Overdue',     cls: 'tl-overdue' },
               };
               const s  = statusMap[t.status]   || { label: t.status,    cls: '' };
               const tl = prMap[t.priority]     || { label: t.priority,  cls: '' };

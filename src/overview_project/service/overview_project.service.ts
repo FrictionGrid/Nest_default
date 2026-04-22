@@ -40,6 +40,7 @@ export class OverviewProjectService {
       .leftJoin('pt.project', 'project')
       .select('team.name', 'team_name')
       .addSelect('COUNT(pt.id)', 'total_projects')
+      .addSelect("COUNT(pt.id) FILTER (WHERE project.status = 'in_progress')", 'in_progress')
       .addSelect("COUNT(pt.id) FILTER (WHERE project.status = 'completed')", 'completed')
       .addSelect("COUNT(pt.id) FILTER (WHERE project.status = 'delayed')", 'delayed')
       .groupBy('team.id')
@@ -60,27 +61,49 @@ export class OverviewProjectService {
     return rows.map((r) => ({
       team_name: r.team_name,
       total_projects: Number(r.total_projects),
+      in_progress: Number(r.in_progress),
       completed: Number(r.completed),
       delayed: Number(r.delayed),
     }));
   }
 
   async getRecentProjects() {
-    const rows = await this.projectTeamRepo
-      .createQueryBuilder('pt')
-      .leftJoin('pt.project', 'project')
-      .leftJoin('pt.team', 'team')
-      .select('project.id', 'id')
-      .addSelect('project.project_name', 'project_name')
-      .addSelect('project.sales_name', 'sales_name')
-      .addSelect('project.status', 'status')
-      .addSelect('project.created_at', 'date_in')
-      .addSelect('team.name', 'team_name')
-      .orderBy('project.created_at', 'DESC')
+    const rows = await this.projectRepo
+      .createQueryBuilder('p')
+      .select('p.id', 'id')
+      .addSelect('p.project_name', 'project_name')
+      .addSelect('p.sales_name', 'sales_name')
+      .addSelect('p.status', 'status')
+      .addSelect('p.created_at', 'date_in')
+      .orderBy('p.created_at', 'DESC')
       .limit(7)
       .getRawMany();
 
     return rows;
+  }
+
+  async getRegionStats() {
+    const regionLabels = [
+      { key: 'bangkok',        label: 'Bangkok'        },
+      { key: 'greater_bangkok', label: 'Greater Bangkok' },
+      { key: 'central',        label: 'Central'        },
+      { key: 'other',          label: 'Other'          },
+    ];
+
+    const rows = await this.projectRepo
+      .createQueryBuilder('p')
+      .select('p.region', 'region')
+      .addSelect('COUNT(*)', 'total')
+      .where('p.region IS NOT NULL')
+      .groupBy('p.region')
+      .getRawMany();
+
+    const dataMap = new Map(rows.map((r) => [r.region, Number(r.total)]));
+    return regionLabels.map((r) => ({
+      region: r.key,
+      label: r.label,
+      total: dataMap.get(r.key) ?? 0,
+    }));
   }
 
   async getMonthlySummary() {
@@ -95,7 +118,9 @@ export class OverviewProjectService {
       .createQueryBuilder('p')
       .select('EXTRACT(MONTH FROM p.created_at)', 'month_num')
       .addSelect('COUNT(*)', 'total_projects')
+      .addSelect("COUNT(*) FILTER (WHERE p.status = 'in_progress')", 'in_progress')
       .addSelect("COUNT(*) FILTER (WHERE p.status = 'completed')", 'completed')
+      .addSelect("COUNT(*) FILTER (WHERE p.status = 'delayed')", 'delayed')
       .where('EXTRACT(YEAR FROM p.created_at) = :year', { year })
       .groupBy('month_num')
       .orderBy('month_num', 'ASC')
@@ -108,7 +133,9 @@ export class OverviewProjectService {
       return {
         month_name: name,
         total_projects: m ? Number(m.total_projects) : null,
+        in_progress: m ? Number(m.in_progress) : null,
         completed: m ? Number(m.completed) : null,
+        delayed: m ? Number(m.delayed) : null,
       };
     });
   }

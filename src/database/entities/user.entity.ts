@@ -1,5 +1,14 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
+export enum UserRole {
+  ADMIN = 'admin',
+  ADMINSYSTEM = 'adminsystem',
+  MANAGER = 'manager',
+  HEAD_ENGINEER = 'head_engineer',
+  ENGINEER = 'engineer',
+  SALE = 'sale',
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -17,8 +26,8 @@ export class User {
   @Column({ length: 150, nullable: true })
   display_name: string;
 
-  @Column({ length: 50, default: 'user' })
-  role: string;
+  @Column({ type: 'enum', enum: UserRole, enumName: 'user_role', default: UserRole.ENGINEER })
+  role: UserRole;
 
   @Column({ length: 50, default: 'active' })
   status: string;

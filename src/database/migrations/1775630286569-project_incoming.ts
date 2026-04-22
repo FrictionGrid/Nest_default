@@ -21,6 +21,7 @@ export class ProjectIncoming1775630286569 implements MigrationInterface {
         po_value DECIMAL(15,2), 
         po_no VARCHAR(255),
         status project_status NOT NULL DEFAULT 'in_progress',
+        region VARCHAR(50),
         start_date DATE,
         end_date DATE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

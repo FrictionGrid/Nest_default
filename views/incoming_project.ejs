@@ -39,6 +39,20 @@
     color: var(--text);
     cursor: pointer;
   }
+  #fieldRegion {
+    height: 40px;
+    border: 1px solid #cdd9e8;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    transition: border 0.2s;
+    background: #fff;
+    width: 100%;
+  }
+  #fieldRegion:focus { border-color: #4179bf; }
+
   .type-checkbox-item input[type="checkbox"] {
     width: 15px;
     height: 15px;
@@ -165,6 +179,16 @@
       <div class="form-group2">
         <label>PO Nos.</label>
         <input type="text" id="fieldPoNos" placeholder="Enter PO number" />
+      </div>
+      <div class="form-group2">
+        <label>Region</label>
+        <select id="fieldRegion">
+          <option value="">-- Select Region --</option>
+          <option value="bangkok">Bangkok</option>
+          <option value="greater_bangkok">Greater Bangkok</option>
+          <option value="central">Central</option>
+          <option value="other">Other</option>
+        </select>
       </div>
     </div>
     <div class="form-bar" id="createdDateGroup" style="display:none;">
@@ -298,6 +322,7 @@
     document.getElementById('fieldSalesName').value = row.sales_name || '';
     document.getElementById('fieldPoValue').value = row.po_value || '';
     document.getElementById('fieldPoNos').value = row.po_no || '';
+    document.getElementById('fieldRegion').value = row.region || '';
 
     const createdVal = row.created_at ? row.created_at.slice(0, 10) : '';
     document.getElementById('fieldCreatedAt').value = createdVal;
@@ -315,6 +340,7 @@
     ['fieldItem', 'fieldProjectName', 'fieldSalesName', 'fieldPoValue', 'fieldPoNos', 'fieldCreatedAt']
       .forEach((id) => { document.getElementById(id).value = ''; });
     document.querySelectorAll('input[name="projectType"]').forEach((cb) => { cb.checked = false; });
+    document.getElementById('fieldRegion').value = '';
   }
 
   document.getElementById('cancelBtn').addEventListener('click', () => overlay.classList.remove('open'));
@@ -331,6 +357,7 @@
       sales_name: document.getElementById('fieldSalesName').value.trim(),
       po_value: document.getElementById('fieldPoValue').value.trim() || null,
       po_no: document.getElementById('fieldPoNos').value.trim(),
+      region: document.getElementById('fieldRegion').value,
       type_ids: typeIds,
     };
     if (id && document.getElementById('fieldCreatedAt').value) {

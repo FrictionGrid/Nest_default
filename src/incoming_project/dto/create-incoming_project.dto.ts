@@ -5,6 +5,7 @@ export class CreateIncomingProjectDto {
   sales_name?: string;
   po_value?: number;
   po_no?: string;
+  region?: string;
   status?: 'in_progress' | 'delayed' | 'completed';
   start_date?: string;
   end_date?: string;

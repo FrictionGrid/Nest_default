@@ -10,7 +10,7 @@ export class AuthService {
     private readonly userRepo: Repository<User>,
   ) {}
 
-  async validateUser(username: string, password: string): Promise<{ id: number; username: string; role: string }> {
+  async validateUser(username: string, password: string): Promise<{ id: number; username: string; display_name: string; role: string }> {
     const user = await this.userRepo.findOne({ where: { username } });
 
     if (!user) {
@@ -22,6 +22,6 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    return { id: user.id, username: user.username, role: user.role };
+    return { id: user.id, username: user.username, display_name: user.display_name, role: user.role };
   }
 }

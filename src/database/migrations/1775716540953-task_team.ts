@@ -19,6 +19,7 @@ export class TaskTeam1775716540953 implements MigrationInterface {
                 project_id       INT NOT NULL REFERENCES project_incoming(id) ON DELETE CASCADE,
                 task_name        VARCHAR(255) NOT NULL,
                 task_description TEXT,
+                  start_date         DATE,
                 end_date         DATE,
                 status           task_status NOT NULL DEFAULT 'in_progress',
                 created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

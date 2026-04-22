@@ -313,3 +313,61 @@ tbody tr:hover {
     opacity: 1;
     transform: translateY(0);
 }
+
+@media (max-width: 768px) {
+  .toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .search-box {
+    width: 100%;
+    flex: unset;
+  }
+
+  .filter-box,
+  .add-table-box {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .table-body {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 14px 16px;
+  }
+
+  thead th,
+  tbody td {
+    font-size: 12px;
+    padding: 10px 12px;
+    white-space: nowrap;
+  }
+
+  .modal {
+    padding: 24px 18px;
+    width: 92vw;
+  }
+
+  .form-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .form-group1 {
+    grid-column: auto;
+  }
+
+  .toast {
+    bottom: 12px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    text-align: center;
+  }
+}

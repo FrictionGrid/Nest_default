@@ -18,7 +18,7 @@ export class DashboardTeamController {
       this.dashboardTeamService.getTasksThisMonth(userId),
       this.dashboardTeamService.getTeamProjects(userId),
     ]);
-    return { pageTitle: 'Dashboard Team', summary, tasks, teamProjects };
+    return { pageTitle: 'Dashboard Team', pageSubtitle: 'Team task overview and progress', summary, tasks, teamProjects };
   }
 
   @Put('api/tasks/:id/complete')

@@ -50,6 +50,9 @@
           <p><%= pageSubtitle || '' %></p>
         </div>
         <div class="top-actions">
+          <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+          </button>
           <div class="user-badge"><%= locals.sessionUser?.display_name || locals.sessionUser?.username || 'Guest' %></div>
           <button class="logout-btn" onclick="fetch('/auth/logout',{method:'POST'}).then(()=>location.href='/auth/login')">Logout</button>
         </div>
@@ -58,6 +61,23 @@
       <%- body %>
     </main>
   </div>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <script>
+    (function() {
+      const _sidebar  = document.querySelector('.sidebar');
+      const _sidebarOverlay = document.getElementById('sidebarOverlay');
+      const _hamburger = document.getElementById('hamburgerBtn');
+
+      function openSidebar()  { _sidebar.classList.add('open');  _sidebarOverlay.classList.add('open'); }
+      function closeSidebar() { _sidebar.classList.remove('open'); _sidebarOverlay.classList.remove('open'); }
+
+      _hamburger.addEventListener('click', () => _sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
+      _sidebarOverlay.addEventListener('click', closeSidebar);
+      document.querySelectorAll('.sidebar .menu a').forEach(a => a.addEventListener('click', closeSidebar));
+    })();
+  </script>
 </body>
 
 </html>

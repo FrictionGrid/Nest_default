@@ -11,13 +11,14 @@ export class OverviewProjectController {
   @Get()
   @Render('overview_project')
   async index() {
-    const [summary, teams, recentProjects, monthlySummary] = await Promise.all([
+    const [summary, teams, recentProjects, monthlySummary, regionStats] = await Promise.all([
       this.overviewProjectService.getSummary(),
       this.overviewProjectService.getTeamStats('all'),
       this.overviewProjectService.getRecentProjects(),
       this.overviewProjectService.getMonthlySummary(),
+      this.overviewProjectService.getRegionStats(),
     ]);
-    return { pageTitle: 'Overview Project', summary, teams, recentProjects, monthlySummary };
+    return { pageTitle: 'Overview Project', pageSubtitle: 'Summary of all projects', summary, teams, recentProjects, monthlySummary, regionStats };
   }
 
   @Get('api/team-stats')
