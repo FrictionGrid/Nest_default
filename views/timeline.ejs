@@ -1,0 +1,622 @@
+<link rel="stylesheet" href="/css/tools/table.css" />
+<style>
+/* ═══ Timeline ═══════════════════════════════════════════════════════ */
+
+.tl-range-group {
+  display: flex; gap: 3px;
+  background: #eef3f9; border-radius: 12px; padding: 4px;
+}
+.tl-range-btn {
+  padding: 7px 18px; border-radius: 9px; font-size: 12px; font-weight: 600;
+  border: none; background: transparent; color: var(--muted); cursor: pointer;
+  transition: all 0.2s; letter-spacing: 0.2px;
+}
+.tl-range-btn.active {
+  background: #fff; color: var(--primary);
+  box-shadow: 0 2px 8px rgba(30,58,95,0.12);
+}
+.tl-range-btn:not(.active):hover { color: var(--primary); background: rgba(255,255,255,0.5); }
+
+.tl-nav-group { display: flex; align-items: center; gap: 6px; }
+.tl-nav-btn {
+  width: 36px; height: 36px; border-radius: 10px;
+  border: 1px solid var(--border); background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; color: var(--primary);
+}
+.tl-nav-btn svg { width: 15px; height: 15px; }
+.tl-nav-btn:hover { background: var(--primary); border-color: var(--primary); color: #fff; }
+.tl-today-btn {
+  padding: 7px 20px; border-radius: 10px;
+  border: 1.5px solid var(--accent); background: #fff; color: var(--accent);
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.tl-today-btn:hover { background: var(--accent); color: #fff; }
+
+/* Card */
+.tl-card {
+  background: var(--card); border-radius: var(--radius);
+  box-shadow: var(--shadow); overflow: hidden;
+  border: 1px solid rgba(217,226,236,0.5);
+}
+
+/* Card header — title + legend + controls in one bar */
+.tl-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 22px; border-bottom: 1px solid var(--border);
+  flex-wrap: wrap; gap: 12px; background: #fff;
+}
+.tl-header-left { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tl-title { font-size: 15px; font-weight: 700; color: var(--primary); }
+.tl-sub   { font-size: 12px; color: var(--muted); }
+
+.tl-header-center {
+  display: flex; align-items: center; gap: 4px;
+  background: #f3f6fb; border-radius: 10px; padding: 6px 12px;
+}
+.tl-legend-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--muted); font-weight: 600;
+  padding: 3px 8px; border-radius: 6px; white-space: nowrap;
+}
+.tl-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.tl-dot-ip { background: linear-gradient(135deg,#4A90E2,#6AB0F5); }
+.tl-dot-wn { background: linear-gradient(135deg,#EAB308,#FDE047); }
+.tl-dot-cr { background: linear-gradient(135deg,#F97316,#FDBA74); }
+.tl-dot-od { background: linear-gradient(135deg,#E45757,#F08080); }
+.tl-dot-cp { background: linear-gradient(135deg,#35B37E,#5fd4a1); }
+.tl-legend-sep { width: 1px; height: 16px; background: var(--border); margin: 0 4px; }
+
+.tl-header-right { display: flex; align-items: center; gap: 8px; }
+
+.tl-outer { display: flex; }
+
+/* User column */
+.tl-user-col {
+  width: 250px; flex-shrink: 0;
+  border-right: 1px solid var(--border); background: #fff; z-index: 2;
+}
+.tl-user-header {
+  height: 58px; display: flex; align-items: center; padding: 0 20px;
+  border-bottom: 2px solid var(--border);
+  background: linear-gradient(135deg,#f7fafd,#eef4fb);
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.8px;
+}
+.tl-user-cell {
+  display: flex; align-items: center; gap: 13px; padding: 0 20px;
+  border-bottom: 1px solid #edf2f7; background: #fff;
+  transition: background 0.15s;
+}
+.tl-user-cell:hover { background: #fafcff; }
+.tl-avatar {
+  width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: #fff;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+}
+.tl-user-name { font-size: 13px; font-weight: 700; color: var(--primary); }
+.tl-user-role {
+  font-size: 11px; color: var(--muted); margin-top: 2px;
+  font-weight: 500; letter-spacing: 0.2px;
+}
+
+/* Scroll area */
+.tl-right { flex: 1; overflow: hidden; min-width: 0; }
+.tl-inner { position: relative; width: 100%; }
+
+/* Date header */
+.tl-dates-row {
+  position: relative; height: 58px;
+  border-bottom: 2px solid var(--border);
+  background: linear-gradient(135deg,#f7fafd,#eef4fb);
+}
+.tl-date-cell {
+  position: absolute; top: 0; bottom: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #4a6483;
+  border-right: 1px solid #dde8f2;
+  white-space: nowrap; overflow: hidden; padding: 0 8px;
+  letter-spacing: 0.2px;
+}
+
+/* Task rows */
+.tl-rows { position: relative; }
+.tl-row  {
+  position: relative; border-bottom: 1px solid #edf2f7;
+  transition: background 0.15s;
+}
+.tl-row:hover { background: rgba(74,144,226,0.025); }
+.tl-row:nth-child(even) { background: rgba(247,250,253,0.6); }
+.tl-row:nth-child(even):hover { background: rgba(74,144,226,0.04); }
+.tl-vline {
+  position: absolute; top: 0; bottom: 0; width: 1px;
+  background: rgba(217,226,236,0.5); pointer-events: none;
+}
+
+/* Task bars */
+.tl-bar {
+  position: absolute; height: 40px; border-radius: 10px;
+  cursor: pointer; overflow: hidden;
+  box-shadow: 0 3px 10px rgba(30,58,95,0.15);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  min-width: 8px;
+}
+.tl-bar:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(30,58,95,0.25);
+  z-index: 10;
+}
+.tl-bar-inner {
+  position: absolute; inset: 0; z-index: 1;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 12px; gap: 6px;
+}
+.tl-bar-name {
+  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.96);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+}
+.tl-bar-pct {
+  font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.82);
+  flex-shrink: 0; white-space: nowrap; letter-spacing: 0.1px;
+}
+.tl-bar-prog {
+  position: absolute; bottom: 0; left: 0; height: 4px;
+  background: rgba(255,255,255,0.28); border-radius: 0 0 0 7px;
+}
+
+/* Today line */
+.tl-today-line {
+  position: absolute; top: 0; bottom: 0; width: 2px;
+  background: linear-gradient(180deg,#E45757,rgba(228,87,87,0.3));
+  pointer-events: none; z-index: 6;
+}
+.tl-today-line::after {
+  content: 'Today';
+  position: absolute; top: 8px; left: 6px;
+  font-size: 10px; font-weight: 700; color: #E45757;
+  background: #fff; padding: 2px 7px; border-radius: 5px;
+  box-shadow: 0 2px 8px rgba(228,87,87,0.25);
+  white-space: nowrap; letter-spacing: 0.3px;
+}
+
+/* Tooltip */
+.tl-tooltip {
+  position: fixed; z-index: 9999;
+  background: linear-gradient(135deg,#1E3A5F,#2a4f7c);
+  color: #fff; border-radius: 14px; padding: 14px 18px;
+  min-width: 220px; pointer-events: none; display: none;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.tl-tip-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+.tl-tip-row {
+  display: flex; justify-content: space-between; gap: 16px;
+  padding: 4px 0; font-size: 11px; color: rgba(255,255,255,0.65);
+}
+.tl-tip-row span:last-child { color: #fff; font-weight: 600; }
+
+/* Modal */
+.tl-modal-overlay {
+  position: fixed; inset: 0; background: rgba(10,28,55,0.5);
+  z-index: 10000; display: none; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.tl-modal-overlay.open { display: flex; }
+.tl-modal {
+  background: #fff; border-radius: 20px;
+  width: 100%; max-width: 500px; margin: 20px;
+  box-shadow: 0 28px 72px rgba(0,0,0,0.22);
+  animation: modalIn 0.22s ease;
+}
+@keyframes modalIn { from { opacity:0; transform:scale(0.95) translateY(12px); } to { opacity:1; transform:scale(1) translateY(0); } }
+.tl-modal-hd {
+  padding: 24px 28px 20px; border-bottom: 1px solid #edf2f7;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+}
+.tl-modal-hd h3 { font-size: 17px; font-weight: 700; color: var(--primary); }
+.tl-modal-hd p  { font-size: 12px; color: var(--muted); margin-top: 5px; }
+.tl-modal-close {
+  width: 34px; height: 34px; border-radius: 9px;
+  border: none; background: #f0f4f9; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); transition: all 0.2s; flex-shrink: 0;
+}
+.tl-modal-close:hover { background: #e0e7ef; color: var(--primary); }
+.tl-modal-close svg { width: 15px; height: 15px; }
+.tl-modal-bd { padding: 22px 28px 28px; }
+.tl-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 20px; }
+.tl-modal-field label {
+  display: block; font-size: 10px; font-weight: 700;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 5px;
+}
+.tl-modal-field span { font-size: 14px; font-weight: 600; color: var(--primary); }
+.tl-prog-track { height: 9px; background: #edf2f7; border-radius: 999px; overflow: hidden; margin-top: 6px; }
+.tl-prog-fill  { height: 100%; border-radius: 999px; background: linear-gradient(90deg,#4A90E2,#6AB0F5); transition: width 0.7s ease; }
+.tl-modal-desc { font-size: 13px; color: #56718f; line-height: 1.7; margin-top: 18px; padding-top: 18px; border-top: 1px solid #edf2f7; }
+
+/* Status badges */
+.tl-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 600;
+}
+.tl-badge::before { content:''; width:6px; height:6px; border-radius:50%; background:currentColor; }
+.b-ip { background:rgba(74,144,226,0.12);  color:#1d5fa8; }
+.b-wn { background:rgba(234,179,8,0.15);   color:#7a5c00; }
+.b-cr { background:rgba(249,115,22,0.15);  color:#b84600; }
+.b-od { background:rgba(228,87,87,0.12);   color:#c0392b; }
+.b-cp { background:rgba(53,179,126,0.12);  color:#1a7a54; }
+</style>
+
+<section class="content">
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M21 21L16.65 16.65M10.5 18C14.6421 18 18 14.6421 18 10.5C18 6.35786 14.6421 3 10.5 3C6.35786 3 3 6.35786 3 10.5C3 14.6421 6.35786 18 10.5 18Z"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      <input type="text" id="tlSearch" placeholder="Search member..." />
+    </div>
+    <select id="tlFilterTeam" class="filter-box">
+      <option value="">All Teams</option>
+      <% teams.forEach(function(tm) { %>
+        <option value="<%= tm.id %>"><%= tm.name %></option>
+      <% }); %>
+    </select>
+  </div>
+
+  <!-- Timeline Card -->
+  <div class="tl-card">
+
+    <!-- Header -->
+    <div class="tl-card-header">
+      <div class="tl-header-left">
+        <div class="tl-title">Task Timeline</div>
+        <div class="tl-sub" id="rangeLabel">—</div>
+      </div>
+      <div class="tl-header-center">
+        <div class="tl-legend-item"><span class="tl-dot tl-dot-ip"></span>In Progress</div>
+        <div class="tl-legend-sep"></div>
+        <div class="tl-legend-item"><span class="tl-dot tl-dot-wn"></span>Warning</div>
+        <div class="tl-legend-sep"></div>
+        <div class="tl-legend-item"><span class="tl-dot tl-dot-cr"></span>Critical</div>
+        <div class="tl-legend-sep"></div>
+        <div class="tl-legend-item"><span class="tl-dot tl-dot-od"></span>Overdue</div>
+        <div class="tl-legend-sep"></div>
+        <div class="tl-legend-item"><span class="tl-dot tl-dot-cp"></span>Completed</div>
+      </div>
+      <div class="tl-header-right">
+        <div class="tl-range-group" id="rangeGroup">
+          <button class="tl-range-btn" data-range="1w">1W</button>
+          <button class="tl-range-btn active" data-range="1m">1M</button>
+          <button class="tl-range-btn" data-range="3m">3M</button>
+          <button class="tl-range-btn" data-range="6m">6M</button>
+        </div>
+        <div class="tl-nav-group">
+          <button class="tl-nav-btn" id="prevBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button class="tl-today-btn" id="todayBtn">Today</button>
+          <button class="tl-nav-btn" id="nextBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-outer">
+      <div class="tl-user-col">
+        <div class="tl-user-header">Team Members</div>
+        <div id="tlUserRows"></div>
+      </div>
+      <div class="tl-right" id="tlRight">
+        <div class="tl-inner" id="tlInner">
+          <div class="tl-dates-row" id="tlDates"></div>
+          <div class="tl-rows" id="tlRows"></div>
+          <div class="tl-today-line" id="tlToday" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- Tooltip -->
+<div class="tl-tooltip" id="tlTip">
+  <div class="tl-tip-title" id="ttName"></div>
+  <div class="tl-tip-row"><span>Start</span><span id="ttStart"></span></div>
+  <div class="tl-tip-row"><span>End</span><span id="ttEnd"></span></div>
+  <div class="tl-tip-row"><span>Status</span><span id="ttStatus"></span></div>
+  <div class="tl-tip-row"><span>Progress</span><span id="ttProg"></span></div>
+</div>
+
+<!-- Modal -->
+<div class="tl-modal-overlay" id="tlModal">
+  <div class="tl-modal">
+    <div class="tl-modal-hd">
+      <div>
+        <h3 id="mTitle"></h3>
+        <p id="mUser"></p>
+      </div>
+      <button class="tl-modal-close" id="tlModalClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="tl-modal-bd">
+      <div class="tl-modal-grid">
+        <div class="tl-modal-field"><label>Start Date</label><span id="mStart"></span></div>
+        <div class="tl-modal-field"><label>End Date</label><span id="mEnd"></span></div>
+        <div class="tl-modal-field"><label>Status</label><span id="mStatus"></span></div>
+        <div class="tl-modal-field">
+          <label>Progress</label>
+          <span id="mProg"></span>
+          <div class="tl-prog-track"><div class="tl-prog-fill" id="mProgFill"></div></div>
+        </div>
+      </div>
+      <div class="tl-modal-desc" id="mDesc"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Server Data ─────────────────────────────────────
+const USERS = <%- JSON.stringify(users) %>;
+const TASKS = <%- JSON.stringify(tasks) %>;
+
+// ─── Filter State ────────────────────────────────────
+let filteredUsers = USERS.slice();
+
+function applyFilters() {
+  const q    = document.getElementById('tlSearch').value.trim().toLowerCase();
+  const team = document.getElementById('tlFilterTeam').value;
+  filteredUsers = USERS.filter(u => {
+    const matchName = !q    || u.name.toLowerCase().includes(q);
+    const matchTeam = !team || String(u.teamId) === team;
+    return matchName && matchTeam;
+  });
+  render();
+}
+
+// ─── Constants ───────────────────────────────────────
+const HEADER_H  = 58;
+const ROW_PAD   = 14;
+const LANE_H    = 62;
+const BAR_H     = 40;
+const MS_DAY    = 86400000;
+
+const RDAYS     = { '1w':7, '1m':30, '3m':91, '6m':182 };
+
+function pct(days, total) { return (days / total * 100).toFixed(4) + '%'; }
+
+const COLORS = {
+  in_progress: { bg:'linear-gradient(135deg,#4A90E2,#6AB0F5)', border:'#2d78d3', label:'In Progress', badge:'b-ip' },
+  warning:     { bg:'linear-gradient(135deg,#EAB308,#FDE047)', border:'#a07c00', label:'Warning',      badge:'b-wn' },
+  critical:    { bg:'linear-gradient(135deg,#F97316,#FDBA74)', border:'#c45c0a', label:'Critical',     badge:'b-cr' },
+  overdue:     { bg:'linear-gradient(135deg,#E45757,#F08080)', border:'#cc3a3a', label:'Overdue',      badge:'b-od' },
+  completed:   { bg:'linear-gradient(135deg,#35B37E,#5fd4a1)', border:'#1a7a54', label:'Completed',    badge:'b-cp' },
+};
+
+// ─── State ───────────────────────────────────────────
+let range  = '1m';
+let offset = 0;
+
+// ─── Helpers ─────────────────────────────────────────
+function getViewStart() {
+  const t = new Date(); t.setHours(0,0,0,0);
+  const b = new Date(t.getTime() + offset * RDAYS[range] * MS_DAY);
+  if      (range === '1w') { const d = b.getDay(); b.setDate(b.getDate()-(d===0?6:d-1)); }
+  else if (range === '1m') { b.setDate(1); }
+  else if (range === '3m') { b.setMonth(Math.floor(b.getMonth()/3)*3, 1); }
+  else                     { b.setMonth(b.getMonth()<6?0:6, 1); }
+  b.setHours(0,0,0,0);
+  return b;
+}
+
+function getViewEnd(vs) {
+  const d = new Date(vs); d.setDate(d.getDate() + RDAYS[range]); return d;
+}
+
+function fmt(d)  { return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); }
+function fmts(d) { return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}); }
+
+// ─── Lane assignment ─────────────────────────────────
+function effectiveEnd(task) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  return task.status === 'overdue' ? today : new Date(task.end);
+}
+
+function assignLanes(tasks, vs, ve) {
+  const vis = tasks
+    .filter(t => new Date(t.start)<ve && effectiveEnd(t)>vs)
+    .sort((a,b) => new Date(a.start)-new Date(b.start));
+  const ends=[], result=[];
+  for (const t of vis) {
+    const ts = new Date(t.start);
+    let lane = ends.findIndex(e => ts>=e);
+    if (lane===-1) { lane=ends.length; ends.push(null); }
+    ends[lane] = new Date(t.end);
+    result.push({task:t, lane});
+  }
+  return { items:result, laneCount:Math.max(ends.length,1) };
+}
+
+// ─── Headers & grid lines ────────────────────────────
+function buildHeaders(vs, ve) {
+  const total=RDAYS[range], out=[];
+  if (range==='1w') {
+    for (let d=new Date(vs); d<ve; d.setDate(d.getDate()+1)) {
+      const off=Math.round((d-vs)/MS_DAY);
+      out.push({ label:d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}), leftPct:pct(off,total), widthPct:pct(1,total) });
+    }
+  } else if (range==='1m') {
+    const starts=[0,7,14,21];
+    starts.forEach((startOff,i) => {
+      const d=new Date(vs); d.setDate(d.getDate()+startOff);
+      const endOff=i<starts.length-1 ? starts[i+1] : total;
+      const we=new Date(vs); we.setDate(we.getDate()+endOff-1);
+      out.push({ label:`${fmts(d)} – ${fmts(we)}`, leftPct:pct(startOff,total), widthPct:pct(endOff-startOff,total) });
+    });
+  } else {
+    for (let d=new Date(vs.getFullYear(),vs.getMonth(),1); d<ve; d.setMonth(d.getMonth()+1)) {
+      const cs=d<vs?vs:d, ce=new Date(d.getFullYear(),d.getMonth()+1,1), cl=ce>ve?ve:ce;
+      const off=Math.max(0,Math.round((cs-vs)/MS_DAY));
+      const dur=Math.max(0,Math.round((cl-cs)/MS_DAY));
+      const monthFmt = range==='6m'
+        ? d.toLocaleDateString('en-GB',{month:'short',year:'2-digit'})
+        : d.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+      if (dur>0) out.push({ label:monthFmt, leftPct:pct(off,total), widthPct:pct(dur,total) });
+    }
+  }
+  return out;
+}
+
+function buildGridLines(vs, ve) {
+  const total=RDAYS[range], lines=[];
+  if (range==='1w') {
+    for (let d=new Date(vs); d<=ve; d.setDate(d.getDate()+1))
+      lines.push(pct(Math.round((d-vs)/MS_DAY), total));
+  } else if (range==='1m') {
+    for (let d=new Date(vs); d<=ve; d.setDate(d.getDate()+7))
+      lines.push(pct(Math.round((d-vs)/MS_DAY), total));
+  } else {
+    for (let d=new Date(vs.getFullYear(),vs.getMonth(),1); d<=ve; d.setMonth(d.getMonth()+1)) {
+      const x=Math.round((d-vs)/MS_DAY); if (x>=0) lines.push(pct(x,total));
+    }
+  }
+  return lines;
+}
+
+// ─── Render ──────────────────────────────────────────
+function render() {
+  const vs=getViewStart(), ve=getViewEnd(vs);
+  const total=RDAYS[range];
+
+  document.getElementById('rangeLabel').textContent = `${fmt(vs)} — ${fmt(ve)}`;
+  document.getElementById('tlInner').style.width = '100%';
+
+  // Date headers
+  const tlDates = document.getElementById('tlDates');
+  tlDates.innerHTML = '';
+  buildHeaders(vs,ve).forEach(h => {
+    const el=document.createElement('div');
+    el.className='tl-date-cell';
+    el.style.cssText=`left:${h.leftPct};width:${h.widthPct};`;
+    el.textContent=h.label;
+    tlDates.appendChild(el);
+  });
+
+  const grid=buildGridLines(vs,ve);
+  const tlUserRows=document.getElementById('tlUserRows');
+  const tlRows=document.getElementById('tlRows');
+  tlUserRows.innerHTML=''; tlRows.innerHTML='';
+
+  filteredUsers.forEach(user => {
+    const ut=TASKS.filter(t=>t.userId===user.id);
+    const {items,laneCount}=assignLanes(ut,vs,ve);
+    const rowH=laneCount*LANE_H+ROW_PAD*2;
+
+    // User cell
+    const uc=document.createElement('div');
+    uc.className='tl-user-cell'; uc.style.height=rowH+'px';
+    uc.innerHTML=`<div class="tl-avatar" style="background:${user.color}">${user.initials}</div>
+      <div><div class="tl-user-name">${user.name}</div><div class="tl-user-role">${user.role}</div></div>`;
+    tlUserRows.appendChild(uc);
+
+    // Task row
+    const row=document.createElement('div');
+    row.className='tl-row'; row.style.height=rowH+'px';
+
+    grid.forEach(x => {
+      const l=document.createElement('div'); l.className='tl-vline'; l.style.left=x; row.appendChild(l);
+    });
+
+    items.forEach(({task,lane}) => {
+      const ts=new Date(task.start)<vs?vs:new Date(task.start);
+      const te=effectiveEnd(task)>ve?ve:effectiveEnd(task);
+      const offStart=Math.round((ts-vs)/MS_DAY);
+      const dur=Math.max(0.5, Math.round((te-ts)/MS_DAY));
+      const top=ROW_PAD+lane*LANE_H+Math.round((LANE_H-BAR_H)/2);
+      const col=COLORS[task.status]||COLORS.in_progress;
+
+      const bar=document.createElement('div');
+      bar.className='tl-bar';
+      bar.style.cssText=`left:${pct(offStart,total)};width:${pct(dur,total)};top:${top}px;background:${col.bg};border-left:3px solid ${col.border};`;
+      bar.innerHTML=`
+        <div class="tl-bar-inner">
+          <span class="tl-bar-name">${task.name}</span>
+          <span class="tl-bar-pct">→ ${fmts(new Date(task.end))}</span>
+        </div>
+        <div class="tl-bar-prog" style="width:${task.progress}%"></div>`;
+
+      bar.addEventListener('mouseenter', e=>showTip(e,task));
+      bar.addEventListener('mousemove',  moveTip);
+      bar.addEventListener('mouseleave', hideTip);
+      bar.addEventListener('click',      ()=>openModal(task,user));
+      row.appendChild(bar);
+    });
+
+    tlRows.appendChild(row);
+  });
+
+  // Today line
+  const today=new Date(); today.setHours(0,0,0,0);
+  const offToday=Math.round((today-vs)/MS_DAY);
+  const tl=document.getElementById('tlToday');
+  tl.style.cssText = offToday>=0&&offToday<=total ? `left:${pct(offToday,total)};display:block;` : 'display:none;';
+}
+
+// ─── Tooltip ─────────────────────────────────────────
+const tip=document.getElementById('tlTip');
+function showTip(e,task) {
+  const col=COLORS[task.status]||COLORS.in_progress;
+  document.getElementById('ttName').textContent  = task.name;
+  document.getElementById('ttStart').textContent = fmt(new Date(task.start));
+  document.getElementById('ttEnd').textContent   = fmt(new Date(task.end));
+  document.getElementById('ttStatus').textContent= col.label;
+  document.getElementById('ttProg').textContent  = task.progress+'%';
+  tip.style.display='block'; moveTip(e);
+}
+function moveTip(e) {
+  tip.style.left = Math.min(e.clientX+14, window.innerWidth-230)+'px';
+  tip.style.top  = Math.min(e.clientY+14, window.innerHeight-170)+'px';
+}
+function hideTip() { tip.style.display='none'; }
+
+// ─── Modal ───────────────────────────────────────────
+const modal=document.getElementById('tlModal');
+document.getElementById('tlModalClose').addEventListener('click',()=>modal.classList.remove('open'));
+modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove('open'); });
+
+function openModal(task,user) {
+  const col=COLORS[task.status]||COLORS.in_progress;
+  document.getElementById('mTitle').textContent  = task.name;
+  document.getElementById('mUser').textContent   = `${user.name} · ${user.role}`;
+  document.getElementById('mStart').textContent  = fmt(new Date(task.start));
+  document.getElementById('mEnd').textContent    = fmt(new Date(task.end));
+  document.getElementById('mProg').textContent   = task.progress+'%';
+  document.getElementById('mDesc').textContent   = task.desc;
+  document.getElementById('mProgFill').style.width = task.progress+'%';
+  const badge=document.getElementById('mStatus');
+  badge.textContent=col.label; badge.className=`tl-badge ${col.badge}`;
+  modal.classList.add('open');
+}
+
+// ─── Controls ────────────────────────────────────────
+document.querySelectorAll('.tl-range-btn').forEach(btn => {
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tl-range-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    range=btn.dataset.range; offset=0; render();
+  });
+});
+document.getElementById('prevBtn').addEventListener('click',()=>{ offset--; render(); });
+document.getElementById('nextBtn').addEventListener('click',()=>{ offset++; render(); });
+document.getElementById('todayBtn').addEventListener('click',()=>{ offset=0; render(); });
+
+document.getElementById('tlSearch').addEventListener('input', applyFilters);
+document.getElementById('tlFilterTeam').addEventListener('change', applyFilters);
+
+render();
+</script>

@@ -1,0 +1,571 @@
+<link rel="stylesheet" href="/css/tools/table.css" />
+<style>
+  .tab-group {
+    display: flex; gap: 4px;
+    background: #eef3f9; border-radius: 12px; padding: 4px;
+    margin-bottom: 20px; width: fit-content;
+  }
+  .tab-btn {
+    padding: 8px 22px; border-radius: 9px; font-size: 13px; font-weight: 600;
+    border: none; background: transparent; color: var(--muted); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-btn.active { background: #fff; color: var(--primary); box-shadow: 0 2px 8px rgba(30,58,95,0.12); }
+  .tab-btn:not(.active):hover { color: var(--primary); background: rgba(255,255,255,0.5); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .role-badge {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 999px;
+  }
+  .r-adminsystem { background: rgba(123,104,238,0.12); color: #5b3cc4; }
+  .r-admin       { background: rgba(30,58,95,0.1);     color: #1e3a5f; }
+  .r-manager     { background: rgba(74,144,226,0.12);  color: #1d5fa8; }
+  .r-head_engineer { background: rgba(244,166,42,0.12); color: #9a6000; }
+  .r-engineer    { background: rgba(53,179,126,0.12);  color: #1a7a54; }
+  .r-sale        { background: rgba(228,87,87,0.12);   color: #c0392b; }
+
+  .status-badge {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 999px;
+  }
+  .s-active   { background: rgba(53,179,126,0.12); color: #1a7a54; }
+  .s-inactive { background: rgba(142,159,178,0.15); color: #56718f; }
+
+  .team-chip {
+    display: inline-block; background: #e8f1fb; color: #2a5fa0;
+    font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+    margin: 1px 2px;
+  }
+
+  .team-check-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 600; color: #4a6483; cursor: pointer;
+    padding: 4px 10px; border-radius: 8px; border: 1px solid #cdd9e8;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .team-check-label:has(input:checked) {
+    background: #e8f1fb; border-color: #4179bf; color: #1d5fa8;
+  }
+  .team-check-label input { width: 15px; height: 15px; accent-color: #4179bf; cursor: pointer; }
+
+  .form-group2 select {
+    height: 40px;
+    border: 1px solid #cdd9e8;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    background: #fff;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b8ab0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+    transition: border 0.2s;
+    cursor: pointer;
+  }
+  .form-group2 select:focus { border-color: #4179bf; }
+</style>
+
+<section class="content">
+
+  <!-- Tabs -->
+  <div class="tab-group">
+    <button class="tab-btn active" data-tab="users">Users</button>
+    <button class="tab-btn" data-tab="teams">Teams</button>
+    <button class="tab-btn" data-tab="assignments">Team Assignment</button>
+  </div>
+
+  <!-- ══════════════════ TAB: USERS ══════════════════ -->
+  <div class="tab-panel active" id="tab-users">
+    <div class="toolbar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M21 21L16.65 16.65M10.5 18C14.6421 18 18 14.6421 18 10.5C18 6.35786 14.6421 3 10.5 3C6.35786 3 3 6.35786 3 10.5C3 14.6421 6.35786 18 10.5 18Z"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        <input type="text" id="searchUser" placeholder="Search username or name..." />
+      </div>
+      <select id="filterRole" class="filter-box">
+        <option value="">All Roles</option>
+        <option value="adminsystem">Adminsystem</option>
+        <option value="admin">Admin</option>
+        <option value="manager">Manager</option>
+        <option value="head_engineer">Head Engineer</option>
+        <option value="engineer">Engineer</option>
+        <option value="sale">Sale</option>
+      </select>
+      <select id="filterStatus" class="filter-box">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+      <button class="add-table-box" id="addUserBtn">
+        <span style="font-size:20px;line-height:1;">+</span> Add User
+      </button>
+    </div>
+
+    <div class="card1">
+      <div class="table-header">
+        <h3>User List</h3>
+        <div class="table-count" id="userCount">Showing <%= users.length %> users</div>
+      </div>
+      <div class="table-body">
+        <table id="userTable">
+          <colgroup>
+            <col style="width:5%;"  /><col style="width:13%;" />
+            <col style="width:14%;" /><col style="width:16%;" />
+            <col style="width:12%;" /><col style="width:18%;" />
+            <col style="width:8%;"  /><col style="width:14%;" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>#</th><th>Username</th><th>Display Name</th>
+              <th>Email</th><th>Role</th><th>Teams</th>
+              <th>Status</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="userBody">
+            <% users.forEach(function(u) { %>
+            <tr data-role="<%= u.role %>" data-status="<%= u.status %>">
+              <td><%= u.id %></td>
+              <td><strong><%= u.username %></strong></td>
+              <td><%= u.display_name || '—' %></td>
+              <td style="font-size:12px;color:var(--muted);"><%= u.email %></td>
+              <td><span class="role-badge r-<%= u.role %>"><%= u.role.replace('_',' ') %></span></td>
+              <td>
+                <% if (u.teams && u.teams.length) { %>
+                  <% u.teams.forEach(function(t) { %><span class="team-chip"><%= t.name %></span><% }); %>
+                <% } else { %>—<% } %>
+              </td>
+              <td><span class="status-badge s-<%= u.status %>"><%= u.status %></span></td>
+              <td>
+                <div class="button-spacing">
+                  <button class="btn-table btn-edit"
+                    data-id="<%= u.id %>"
+                    data-username="<%= u.username %>"
+                    data-display="<%= u.display_name || '' %>"
+                    data-email="<%= u.email %>"
+                    data-role="<%= u.role %>"
+                    data-status="<%= u.status %>"
+                    data-teams="<%= JSON.stringify(u.teams ? u.teams.map(function(t){return t.id;}) : []) %>">Edit</button>
+                  <button class="btn-table btn-destroy" data-id="<%= u.id %>" data-name="<%= u.username %>">Delete</button>
+                </div>
+              </td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ TAB: TEAMS ══════════════════ -->
+  <div class="tab-panel" id="tab-teams">
+    <div class="toolbar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M21 21L16.65 16.65M10.5 18C14.6421 18 18 14.6421 18 10.5C18 6.35786 14.6421 3 10.5 3C6.35786 3 3 6.35786 3 10.5C3 14.6421 6.35786 18 10.5 18Z"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        </svg>
+        <input type="text" id="searchTeam" placeholder="Search team..." />
+      </div>
+      <button class="add-table-box" id="addTeamBtn">
+        <span style="font-size:20px;line-height:1;">+</span> Add Team
+      </button>
+    </div>
+
+    <div class="card1">
+      <div class="table-header">
+        <h3>Team List</h3>
+        <div class="table-count" id="teamCount">Showing <%= teams.length %> teams</div>
+      </div>
+      <div class="table-body">
+        <table id="teamTable">
+          <colgroup>
+            <col style="width:8%;" /><col style="width:72%;" /><col style="width:20%;" />
+          </colgroup>
+          <thead>
+            <tr><th>#</th><th>Team Name</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="teamBody">
+            <% teams.forEach(function(t) { %>
+            <tr data-id="<%= t.id %>">
+              <td><%= t.id %></td>
+              <td><strong><%= t.name %></strong></td>
+              <td>
+                <div class="button-spacing">
+                  <button class="btn-table btn-team-edit" data-id="<%= t.id %>" data-name="<%= t.name %>">Edit</button>
+                  <button class="btn-table btn-team-destroy" data-id="<%= t.id %>" data-name="<%= t.name %>">Delete</button>
+                </div>
+              </td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ TAB: ASSIGNMENTS ══════════════════ -->
+  <div class="tab-panel" id="tab-assignments">
+    <div class="toolbar">
+      <button class="add-table-box" id="addAssignBtn">
+        <span style="font-size:20px;line-height:1;">+</span> Assign User to Team
+      </button>
+    </div>
+
+    <div class="card1">
+      <div class="table-header">
+        <h3>User — Team Assignments</h3>
+      </div>
+      <div class="table-body">
+        <table id="assignTable">
+          <colgroup>
+            <col style="width:5%;" /><col style="width:35%;" /><col style="width:40%;" /><col style="width:20%;" />
+          </colgroup>
+          <thead>
+            <tr><th>#</th><th>User</th><th>Team</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="assignBody">
+            <% users.forEach(function(u) { %>
+              <% if (u.teams && u.teams.length) { %>
+                <% u.teams.forEach(function(t) { %>
+                <tr>
+                  <td>—</td>
+                  <td><strong><%= u.display_name || u.username %></strong> <span style="font-size:11px;color:var(--muted);">(@<%= u.username %>)</span></td>
+                  <td><span class="team-chip"><%= t.name %></span></td>
+                  <td>
+                    <button class="btn-table btn-assign-remove"
+                      data-user-id="<%= u.id %>"
+                      data-team-id="<%= t.id %>"
+                      data-label="<%= (u.display_name || u.username) + ' → ' + t.name %>">Remove</button>
+                  </td>
+                </tr>
+                <% }); %>
+              <% } %>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══ Modal: User ══ -->
+<div class="modal-content" id="userModal">
+  <div class="modal">
+    <h2 id="userModalTitle">Add User</h2>
+    <input type="hidden" id="userEditId" />
+    <div class="form-bar">
+      <div class="form-group2"><label>Username</label><input type="text" id="fUsername" /></div>
+      <div class="form-group2"><label>Display Name</label><input type="text" id="fDisplay" /></div>
+    </div>
+    <div class="form-bar">
+      <div class="form-group2"><label>Email</label><input type="email" id="fEmail" /></div>
+      <div class="form-group2">
+        <label>Password <span id="pwHint" style="font-size:10px;color:var(--muted);">(leave blank to keep)</span></label>
+        <input type="password" id="fPassword" />
+      </div>
+    </div>
+    <div class="form-bar">
+      <div class="form-group2">
+        <label>Role</label>
+        <select id="fRole">
+          <option value="engineer">Engineer</option>
+          <option value="head_engineer">Head Engineer</option>
+          <option value="manager">Manager</option>
+          <option value="admin">Admin</option>
+          <option value="sale">Sale</option>
+          <option value="adminsystem">Adminsystem</option>
+        </select>
+      </div>
+      <div class="form-group2">
+        <label>Status</label>
+        <select id="fStatus">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-bar">
+      <div class="form-group2 form-group1">
+        <label>Teams</label>
+        <div id="fTeamsBox" style="display:flex;flex-wrap:wrap;gap:10px 18px;padding:6px 0;">
+          <% teams.forEach(function(t) { %>
+          <label class="team-check-label">
+            <input type="checkbox" class="team-check" value="<%= t.id %>" />
+            <%= t.name %>
+          </label>
+          <% }); %>
+          <% if (!teams.length) { %><span style="color:var(--muted);font-size:13px;">No teams yet</span><% } %>
+        </div>
+      </div>
+    </div>
+    <div class="modal-spacing">
+      <button class="btn-cancel" id="cancelUserModal">Cancel</button>
+      <button class="btn-save" id="saveUserBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Modal: Team ══ -->
+<div class="modal-content" id="teamModal">
+  <div class="modal">
+    <h2 id="teamModalTitle">Add Team</h2>
+    <input type="hidden" id="teamEditId" />
+    <div class="form-bar">
+      <div class="form-group2 form-group1"><label>Team Name</label><input type="text" id="fTeamName" /></div>
+    </div>
+    <div class="modal-spacing">
+      <button class="btn-cancel" id="cancelTeamModal">Cancel</button>
+      <button class="btn-save" id="saveTeamBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Modal: Assign ══ -->
+<div class="modal-content" id="assignModal">
+  <div class="modal">
+    <h2>Assign User to Team</h2>
+    <div class="form-bar">
+      <div class="form-group2">
+        <label>User</label>
+        <select id="fAssignUser">
+          <option value="">— Select User —</option>
+          <% users.forEach(function(u) { %>
+            <option value="<%= u.id %>"><%= u.display_name || u.username %> (@<%= u.username %>)</option>
+          <% }); %>
+        </select>
+      </div>
+      <div class="form-group2">
+        <label>Team</label>
+        <select id="fAssignTeam">
+          <option value="">— Select Team —</option>
+          <% teams.forEach(function(t) { %>
+            <option value="<%= t.id %>"><%= t.name %></option>
+          <% }); %>
+        </select>
+      </div>
+    </div>
+    <div class="modal-spacing">
+      <button class="btn-cancel" id="cancelAssignModal">Cancel</button>
+      <button class="btn-save" id="saveAssignBtn">Assign</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Tabs ─────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ── User filter ───────────────────────────────────────
+function filterUsers() {
+  const q      = document.getElementById('searchUser').value.toLowerCase();
+  const role   = document.getElementById('filterRole').value;
+  const status = document.getElementById('filterStatus').value;
+  let count = 0;
+  document.querySelectorAll('#userBody tr').forEach(tr => {
+    const text = tr.textContent.toLowerCase();
+    const show = (!q || text.includes(q))
+              && (!role   || tr.dataset.role   === role)
+              && (!status || tr.dataset.status === status);
+    tr.style.display = show ? '' : 'none';
+    if (show) count++;
+  });
+  document.getElementById('userCount').textContent = `Showing ${count} users`;
+}
+document.getElementById('searchUser').addEventListener('input', filterUsers);
+document.getElementById('filterRole').addEventListener('change', filterUsers);
+document.getElementById('filterStatus').addEventListener('change', filterUsers);
+
+// ── Team filter ───────────────────────────────────────
+document.getElementById('searchTeam').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  let count = 0;
+  document.querySelectorAll('#teamBody tr').forEach(tr => {
+    const show = !q || tr.textContent.toLowerCase().includes(q);
+    tr.style.display = show ? '' : 'none';
+    if (show) count++;
+  });
+  document.getElementById('teamCount').textContent = `Showing ${count} teams`;
+});
+
+// ── Modal helpers ─────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+['userModal','teamModal','assignModal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', e => {
+    if (e.target === document.getElementById(id)) closeModal(id);
+  });
+});
+
+// ── User CRUD ─────────────────────────────────────────
+let _originalTeams = [];
+
+function resetTeamChecks(checkedIds) {
+  document.querySelectorAll('.team-check').forEach(cb => {
+    cb.checked = checkedIds.includes(+cb.value);
+  });
+}
+
+document.getElementById('addUserBtn').addEventListener('click', () => {
+  document.getElementById('userModalTitle').textContent = 'Add User';
+  document.getElementById('userEditId').value = '';
+  document.getElementById('fUsername').disabled = false;
+  document.getElementById('pwHint').style.display = 'none';
+  ['fUsername','fDisplay','fEmail','fPassword'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fRole').value = 'engineer';
+  document.getElementById('fStatus').value = 'active';
+  _originalTeams = [];
+  resetTeamChecks([]);
+  openModal('userModal');
+});
+
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('btn-edit')) {
+    const b = e.target;
+    document.getElementById('userModalTitle').textContent = 'Edit User';
+    document.getElementById('userEditId').value  = b.dataset.id;
+    document.getElementById('fUsername').value   = b.dataset.username;
+    document.getElementById('fUsername').disabled = true;
+    document.getElementById('fDisplay').value    = b.dataset.display;
+    document.getElementById('fEmail').value      = b.dataset.email;
+    document.getElementById('fPassword').value   = '';
+    document.getElementById('fRole').value       = b.dataset.role;
+    document.getElementById('fStatus').value     = b.dataset.status;
+    document.getElementById('pwHint').style.display = '';
+    try { _originalTeams = JSON.parse(b.dataset.teams || '[]').map(Number); } catch { _originalTeams = []; }
+    resetTeamChecks(_originalTeams);
+    openModal('userModal');
+  }
+  if (e.target.classList.contains('btn-destroy')) {
+    if (!confirm(`Delete user "${e.target.dataset.name}"?`)) return;
+    fetch(`/user-management/api/users/${e.target.dataset.id}`, { method:'DELETE' })
+      .then(() => location.reload());
+  }
+});
+
+document.getElementById('cancelUserModal').addEventListener('click', () => closeModal('userModal'));
+
+document.getElementById('saveUserBtn').addEventListener('click', async () => {
+  const id = document.getElementById('userEditId').value;
+  const payload = {
+    username:     document.getElementById('fUsername').value.trim(),
+    display_name: document.getElementById('fDisplay').value.trim() || null,
+    email:        document.getElementById('fEmail').value.trim(),
+    password:     document.getElementById('fPassword').value || undefined,
+    role:         document.getElementById('fRole').value,
+    status:       document.getElementById('fStatus').value,
+  };
+  if (!payload.email) { alert('Email is required'); return; }
+  if (!id && !payload.username) { alert('Username is required'); return; }
+  if (!id && !payload.password) { alert('Password is required for new user'); return; }
+  if (id) delete payload.username;
+  if (!payload.password) delete payload.password;
+
+  const res = await fetch(id ? `/user-management/api/users/${id}` : '/user-management/api/users', {
+    method: id ? 'PUT' : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) { const e = await res.json(); alert(e.message || 'Error'); return; }
+
+  const savedUser = await res.json();
+  const userId = +(id || savedUser.id);
+
+  const newTeams = Array.from(document.querySelectorAll('.team-check:checked')).map(cb => +cb.value);
+  const toAdd    = newTeams.filter(tid => !_originalTeams.includes(tid));
+  const toRemove = _originalTeams.filter(tid => !newTeams.includes(tid));
+
+  await Promise.all([
+    ...toAdd.map(tid => fetch('/user-management/api/assignments', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, team_id: tid }),
+    })),
+    ...toRemove.map(tid => fetch('/user-management/api/assignments/remove', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId, team_id: tid }),
+    })),
+  ]);
+
+  location.reload();
+});
+
+// ── Team CRUD ─────────────────────────────────────────
+document.getElementById('addTeamBtn').addEventListener('click', () => {
+  document.getElementById('teamModalTitle').textContent = 'Add Team';
+  document.getElementById('teamEditId').value = '';
+  document.getElementById('fTeamName').value = '';
+  openModal('teamModal');
+});
+
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('btn-team-edit')) {
+    document.getElementById('teamModalTitle').textContent = 'Edit Team';
+    document.getElementById('teamEditId').value = e.target.dataset.id;
+    document.getElementById('fTeamName').value  = e.target.dataset.name;
+    openModal('teamModal');
+  }
+  if (e.target.classList.contains('btn-team-destroy')) {
+    if (!confirm(`Delete team "${e.target.dataset.name}"?`)) return;
+    fetch(`/user-management/api/teams/${e.target.dataset.id}`, { method:'DELETE' })
+      .then(() => location.reload());
+  }
+});
+
+document.getElementById('cancelTeamModal').addEventListener('click', () => closeModal('teamModal'));
+
+document.getElementById('saveTeamBtn').addEventListener('click', async () => {
+  const id   = document.getElementById('teamEditId').value;
+  const name = document.getElementById('fTeamName').value.trim();
+  if (!name) { alert('Team name is required'); return; }
+  const res = await fetch(id ? `/user-management/api/teams/${id}` : '/user-management/api/teams', {
+    method: id ? 'PUT' : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  if (!res.ok) { const e = await res.json(); alert(e.message || 'Error'); return; }
+  location.reload();
+});
+
+// ── Assignment ────────────────────────────────────────
+document.getElementById('addAssignBtn').addEventListener('click', () => openModal('assignModal'));
+document.getElementById('cancelAssignModal').addEventListener('click', () => closeModal('assignModal'));
+
+document.getElementById('saveAssignBtn').addEventListener('click', async () => {
+  const user_id = parseInt(document.getElementById('fAssignUser').value);
+  const team_id = parseInt(document.getElementById('fAssignTeam').value);
+  if (!user_id || !team_id) { alert('Please select both user and team'); return; }
+  const res = await fetch('/user-management/api/assignments', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id, team_id }),
+  });
+  if (!res.ok) { const e = await res.json(); alert(e.message || 'Error'); return; }
+  location.reload();
+});
+
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('btn-assign-remove')) {
+    if (!confirm(`Remove assignment: ${e.target.dataset.label}?`)) return;
+    fetch('/user-management/api/assignments/remove', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: +e.target.dataset.userId, team_id: +e.target.dataset.teamId }),
+    }).then(() => location.reload());
+  }
+});
+</script>

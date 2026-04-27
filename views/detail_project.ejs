@@ -165,9 +165,52 @@
     .ai-insight-text .title { font-size: 13px; font-weight: 700; color: #7C5CBF; margin-bottom: 4px; }
     .ai-insight-text .body  { font-size: 12px; color: #4a3870; line-height: 1.55; }
 
+    .ai-ring-wrap {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 6px 0 20px;
+    }
+    .ai-ring-label {
+      font-size: 11px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-top: 10px;
+    }
+    .ai-ring-svg { position: relative; }
+    .ai-ring-bg   { fill: none; stroke: #edf2f7; stroke-width: 10; }
+    .ai-ring-fill {
+      fill: none; stroke-width: 10;
+      stroke: url(#ringGrad);
+      stroke-linecap: round;
+      transform: rotate(-90deg); transform-origin: 50% 50%;
+      transition: stroke-dashoffset 1s ease;
+    }
+    .ai-ring-pct {
+      font-size: 26px; font-weight: 900; fill: var(--primary);
+      dominant-baseline: middle; text-anchor: middle;
+    }
+    .ai-ring-sub {
+      font-size: 10px; fill: var(--muted);
+      dominant-baseline: middle; text-anchor: middle;
+    }
+    @keyframes ringDraw {
+      from { stroke-dashoffset: 314; }
+    }
+
     /* =============================================
        B. Documents
     ============================================= */
+    .doc-cat-tabs {
+      display: flex; gap: 3px;
+      background: #eef3f9; border-radius: 10px; padding: 3px;
+    }
+    .doc-cat-btn {
+      padding: 5px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      border: none; background: transparent; color: var(--muted); cursor: pointer;
+      transition: all 0.18s; white-space: nowrap;
+    }
+    .doc-cat-btn.active {
+      background: #fff; color: var(--primary);
+      box-shadow: 0 2px 6px rgba(30,58,95,0.1);
+    }
+    .doc-cat-btn:not(.active):hover { color: var(--primary); background: rgba(255,255,255,0.5); }
     .doc-progress-wrap {
       display: flex; align-items: center; gap: 10px;
     }
@@ -283,7 +326,7 @@
     }
     .info-item:nth-child(odd)  { padding-right: 20px; border-right: 1px solid #f0f4f9; }
     .info-item:nth-child(even) { padding-left: 20px; }
-    .info-item:nth-last-child(-n+2) { border-bottom: none; }
+    .info-item:nth-last-child(-n+3) { border-bottom: none; }
 
     .info-label {
       font-size: 11px; color: var(--muted);
@@ -432,11 +475,25 @@
 
               <div class="ai-body">
 
-                <!-- Gauge metrics -->
-                <div class="ai-metrics">
-
-   
-
+                <!-- Progress Ring -->
+                <div class="ai-ring-wrap">
+                  <svg class="ai-ring-svg" width="120" height="120" viewBox="0 0 120 120">
+                    <defs>
+                      <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%"   stop-color="#4A90E2"/>
+                        <stop offset="50%"  stop-color="#7C5CBF"/>
+                        <stop offset="100%" stop-color="#35B37E"/>
+                      </linearGradient>
+                    </defs>
+                    <circle class="ai-ring-bg"   cx="60" cy="60" r="50"/>
+                    <circle class="ai-ring-fill" cx="60" cy="60" r="50"
+                      stroke-dasharray="314"
+                      stroke-dashoffset="78.5"
+                      style="animation: ringDraw 1.2s ease both;"/>
+                    <text class="ai-ring-pct" x="60" y="56">75%</text>
+                    <text class="ai-ring-sub"  x="60" y="72">Overall</text>
+                  </svg>
+                  <div class="ai-ring-label">Project Progress</div>
                 </div>
                 <!-- Value boxes -->
                 <div class="ai-values">
@@ -477,16 +534,21 @@
           </div>
     <!-- Documents Card -->
     <div class="card" style="animation-delay:0.18s;">
-      <div class="card-header">
+      <div class="card-header" style="flex-wrap:wrap;gap:10px;">
         <div class="card-title">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           Documents
         </div>
-        <div class="doc-progress-wrap" style="min-width:140px;">
+        <div class="doc-cat-tabs">
+          <button class="doc-cat-btn active" data-cat="all">All</button>
+          <button class="doc-cat-btn" data-cat="engineer_task">Engineer Tasks</button>
+          <button class="doc-cat-btn" data-cat="draft">Draft</button>
+        </div>
+        <div class="doc-progress-wrap" style="min-width:120px;">
           <div class="doc-progress-bar">
-            <div class="doc-progress-fill" style="width:<%= progress.total > 0 ? Math.round(progress.uploaded / progress.total * 100) : 0 %>%"></div>
+            <div class="doc-progress-fill" id="docProgressFill" style="width:<%= progress.total > 0 ? Math.round(progress.uploaded / progress.total * 100) : 0 %>%"></div>
           </div>
-          <span class="doc-progress-text"><%= progress.uploaded %>/<%= progress.total %></span>
+          <span class="doc-progress-text" id="docProgressText"><%= progress.uploaded %>/<%= progress.total %></span>
         </div>
       </div>
 
@@ -499,7 +561,7 @@
             const statusLabel = { missing:'Pending', uploaded:'Uploaded', approved:'Approved', rejected:'Rejected' }[doc.status] || doc.status;
             const statusCls   = { missing:'ds-missing', uploaded:'ds-uploaded', approved:'ds-approved', rejected:'ds-rejected' }[doc.status] || '';
           %>
-          <div class="doc-row">
+          <div class="doc-row" data-cat="<%= doc.category %>">
             <div class="doc-row-top">
               <div class="doc-name">
                 <%= doc.typeName %>
@@ -597,6 +659,17 @@
             <div class="info-value"><%= project.statusLabel %></div>
           </div>
 
+          <% if (project.types && project.types.length) { %>
+          <div class="info-item" style="grid-column:span 2;border-bottom:none;">
+            <div class="info-label">Project Types</div>
+            <div class="info-value" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
+              <% project.types.forEach(function(type) { %>
+                <span style="display:inline-block;background:#e8f1fb;color:#2a5fa0;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;"><%= type %></span>
+              <% }); %>
+            </div>
+          </div>
+          <% } %>
+
         </div>
       </div>
     </div>
@@ -646,6 +719,34 @@
 </section>
 
 <script>
+// ── Document category filter ──────────────────────────────
+(function() {
+  const CHECKLIST = <%- JSON.stringify(checklist) %>;
+
+  document.querySelectorAll('.doc-cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.doc-cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const cat = btn.dataset.cat;
+      const rows = document.querySelectorAll('.doc-row');
+      rows.forEach(row => {
+        row.style.display = (cat === 'all' || row.dataset.cat === cat) ? '' : 'none';
+      });
+
+      // Recalc progress for selected category
+      const items = cat === 'all'
+        ? CHECKLIST
+        : CHECKLIST.filter(d => d.category === cat);
+      const total    = items.filter(d => d.isRequired).length;
+      const uploaded = items.filter(d => d.isRequired && d.status !== 'missing').length;
+      const pct = total > 0 ? Math.round(uploaded / total * 100) : 0;
+      document.getElementById('docProgressFill').style.width = pct + '%';
+      document.getElementById('docProgressText').textContent = uploaded + '/' + total;
+    });
+  });
+})();
+
 async function uploadDoc(input) {
   const projectId = input.dataset.projectId;
   const typeId    = input.dataset.typeId;

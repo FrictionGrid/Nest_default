@@ -14,6 +14,8 @@ import { TaskTeam } from './database/entities/task_team.entity';
 import { OverviewProjectModule } from './overview_project/overview_project.module';
 import { DetailProjectModule } from './detail_project/detail_project.module';
 import { DashboardTeamModule } from './dashboard_team/dashboard_team.module';
+import { TimelineModule } from './timeline/timeline.module';
+import { UserManagementModule } from './user_management/user_management.module';
 import { AuthModule } from './auth/auth.module';
 import { UserContextMiddleware } from './common/middleware/user-context.middleware';
 import { DocumentType } from './database/entities/document_type.entity';
@@ -44,6 +46,8 @@ import { ProjectDocumentFile } from './database/entities/project_document_file.e
     OverviewProjectModule,
     DetailProjectModule,
     DashboardTeamModule,
+    TimelineModule,
+    UserManagementModule,
   ],
 })
 export class AppModule implements NestModule {

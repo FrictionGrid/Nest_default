@@ -12,7 +12,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
   adminsystem: ['*'],
   manager:     ['*'],
 
-  // ── overview + incoming + detail (GET/POST/PUT/DELETE) ───────────────────
+  // ── overview + incoming + detail ────────────────────────────────────────
   admin: [
     'GET:/overview-project',
     'GET:/overview-project/api/team-stats',
@@ -22,27 +22,26 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'PUT:/incoming-project/api/projects/:id',
     'DELETE:/incoming-project/api/projects/:id',
     'GET:/detail-project/:id',
+    'GET:/detail-project/:id/documents',
+    'POST:/detail-project/:id/documents/:typeId/upload',
+    'DELETE:/detail-project/documents/file/:fileId',
+    'GET:/detail-project/documents/file/:fileId/download',
   ],
 
-  // ── All pages + POST/PUT only (no DELETE) ───────────────────────────────
+  // ── overview + detail + manage-project + manage-task + dashboard + timeline
   head_engineer: [
-    // Pages
     'GET:/overview-project',
     'GET:/overview-project/api/team-stats',
-    'GET:/incoming-project',
+    'GET:/timeline',
     'GET:/manage-project',
     'GET:/manage-task',
     'GET:/dashboard-team',
     'GET:/detail-project/:id',
-    // Manage Project
-    'GET:/incoming-project/api/projects',
-    'POST:/incoming-project/api/projects',
-    'PUT:/incoming-project/api/projects/:id',
     // Manage Project API
     'POST:/manage-project/api',
     'PUT:/manage-project/api/:id',
     'PUT:/manage-project/api/:id/complete',
-    // Manage Team API
+    // Manage Task API
     'GET:/manage-task/api',
     'POST:/manage-task/api',
     'PUT:/manage-task/api/:id',
@@ -52,24 +51,28 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     // Dashboard Team API
     'PUT:/dashboard-team/api/tasks/:id/complete',
     'PUT:/dashboard-team/api/tasks/:id/problem',
+    // Document API
+    'GET:/detail-project/:id/documents',
+    'POST:/detail-project/:id/documents/:typeId/upload',
+    'DELETE:/detail-project/documents/file/:fileId',
+    'GET:/detail-project/documents/file/:fileId/download',
   ],
 
-  // ── dashboard-team page only (all actions) + detail ─────────────────────
+  // ── dashboard-team + detail ──────────────────────────────────────────────
   engineer: [
     'GET:/dashboard-team',
     'PUT:/dashboard-team/api/tasks/:id/complete',
     'PUT:/dashboard-team/api/tasks/:id/problem',
     'GET:/detail-project/:id',
+    'GET:/detail-project/:id/documents',
+    'POST:/detail-project/:id/documents/:typeId/upload',
+    'DELETE:/detail-project/documents/file/:fileId',
+    'GET:/detail-project/documents/file/:fileId/download',
   ],
 
-  // ── overview + incoming + detail (GET/POST/PUT, no DELETE) ───────────────
+  // ── overview only ────────────────────────────────────────────────────────
   sale: [
     'GET:/overview-project',
     'GET:/overview-project/api/team-stats',
-    'GET:/incoming-project',
-    'GET:/incoming-project/api/projects',
-    'POST:/incoming-project/api/projects',
-    'PUT:/incoming-project/api/projects/:id',
-    'GET:/detail-project/:id',
   ],
 };

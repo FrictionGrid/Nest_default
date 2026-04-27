@@ -15,6 +15,9 @@ export class DocumentType {
   @Column({ default: 0 })
   sort_order: number;
 
+  @Column({ length: 50, default: 'engineer_task' })
+  category: string;
+
   @OneToMany(() => ProjectDocument, (pd) => pd.documentType)
   projectDocuments: ProjectDocument[];
 }

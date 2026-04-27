@@ -229,11 +229,11 @@
     <div class="card">
       <div class="card-header">
         <span class="card-title">Projects by Region</span>
-        <span class="card-sub">4 regions</span>
+        <span class="card-sub">6 regions</span>
       </div>
       <div class="card-body">
-        <% const regionColors = ['#4A90E2','#35B37E','#F4A62A','#9B59B6']; %>
-        <% const regionColorPairs = [['#4A90E2','#6baef5'],['#35B37E','#5fd4a1'],['#F4A62A','#f7c060'],['#9B59B6','#c090d8']]; %>
+        <% const regionColors = ['#4A90E2','#35B37E','#F4A62A','#9B59B6','#E45757','#14B8A6']; %>
+        <% const regionColorPairs = [['#4A90E2','#6baef5'],['#35B37E','#5fd4a1'],['#F4A62A','#f7c060'],['#9B59B6','#c090d8'],['#E45757','#f08080'],['#14B8A6','#2dd4bf']]; %>
         <% const maxRegion = regionStats.reduce((m, r) => Math.max(m, r.total), 1); %>
         <div class="country-list">
           <% regionStats.forEach(function(r, i) {
@@ -350,7 +350,7 @@
     data: {
       labels: _teams.map(t => t.team_name),
       datasets: [
-        { label: "Total",       data: _teams.map(t => Number(t.total_projects)), backgroundColor: "rgba(142,159,178,0.22)", borderColor: "#8E9FB2", borderWidth: 1.5, borderRadius: 5 },
+        { label: "Total",       data: _teams.map(t => Number(t.total_projects)), backgroundColor: "rgba(99,102,241,0.22)",  borderColor: "#4338CA", borderWidth: 1.5, borderRadius: 5 },
         { label: "In Progress", data: _teams.map(t => Number(t.in_progress)),    backgroundColor: "rgba(74,144,226,0.22)",  borderColor: "#4A90E2", borderWidth: 1.5, borderRadius: 5 },
         { label: "Completed",   data: _teams.map(t => Number(t.completed)),      backgroundColor: "rgba(53,179,126,0.22)",  borderColor: "#35B37E", borderWidth: 1.5, borderRadius: 5 },
         { label: "Delayed",     data: _teams.map(t => Number(t.delayed)),        backgroundColor: "rgba(228,87,87,0.18)",   borderColor: "#E45757", borderWidth: 1.5, borderRadius: 5 }

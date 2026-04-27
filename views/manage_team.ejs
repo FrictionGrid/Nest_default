@@ -35,8 +35,8 @@
     font-weight: 700;
   }
   .tl-general { background: rgba(65,121,191,0.1);  color: #2a5fa0; }
-  .tl-near    { background: rgba(29,143,86,0.1);   color: #1a7a54; }
-  .tl-urgent  { background: rgba(234,179,8,0.15);  color: #8a6400; }
+  .tl-near    { background: rgba(234,179,8,0.15);   color: #7a5c00; }
+  .tl-urgent  { background: rgba(249,115,22,0.15); color: #b84600; }
   .tl-overdue { background: rgba(220,53,69,0.1);   color: #b91c1c; }
 
   .form-group2 input[type="date"],
@@ -75,6 +75,12 @@
       <option value="problem">Problem</option>
       <option value="completed">Completed</option>
     </select>
+    <select id="filterProject" class="filter-box">
+      <option value="">All Projects</option>
+      <% projectList.forEach(function(pj) { %>
+        <option value="<%= pj.id %>"><%= pj.project_name %></option>
+      <% }); %>
+    </select>
     <select id="filterTeam" class="filter-box">
       <option value="">All Teams</option>
       <% teamList.forEach(function(tm) { %>
@@ -84,8 +90,8 @@
     <select id="filterPriority" class="filter-box">
       <option value="">All Priority</option>
       <option value="overdue">Overdue</option>
-      <option value="urgent">Urgent (≤3 days)</option>
-      <option value="near">Near (≤7 days)</option>
+      <option value="urgent">Critical (≤3 days)</option>
+      <option value="near">Warning (≤7 days)</option>
       <option value="general">In Progress</option>
     </select>
     <button class="add-table-box" id="addTaskBtn">
@@ -101,17 +107,17 @@
     <div class="table-body">
       <table>
         <colgroup>
-          <col style="width:12%;" /><col style="width:12%;" />
-          <col style="width:9%;"  /><col style="width:12%;" />
-          <col style="width:10%;" /><col style="width:8%;"  />
-          <col style="width:10%;" /><col style="width:10%;" />
-          <col style="width:17%;" />
+          <col style="width:12%;" /><col style="width:11%;" />
+          <col style="width:8%;"  /><col style="width:11%;" />
+          <col style="width:9%;"  /><col style="width:7%;"  />
+          <col style="width:7%;"  /><col style="width:9%;"  />
+          <col style="width:9%;"  /><col style="width:17%;" />
         </colgroup>
         <thead>
           <tr>
             <th>Task Name</th><th>Task Detail</th>
-            <th>User</th><th>Project</th>
-            <th>Team</th><th>End Date</th>
+            <th>Project</th><th>User</th>
+            <th>Team</th><th>Start Date</th><th>End Date</th>
             <th>Priority</th><th>Status</th>
             <th>Actions</th>
           </tr>
@@ -126,8 +132,8 @@
               };
               const prMap = {
                 general: { label: 'In Progress', cls: 'tl-general' },
-                near:    { label: 'Near',        cls: 'tl-near'    },
-                urgent:  { label: 'Urgent',      cls: 'tl-urgent'  },
+                near:    { label: 'Warning',  cls: 'tl-near'   },
+                urgent:  { label: 'Critical', cls: 'tl-urgent' },
                 overdue: { label: 'Overdue',     cls: 'tl-overdue' },
               };
               const s  = statusMap[t.status]   || { label: t.status,    cls: '' };
@@ -141,12 +147,13 @@
                 return new Date(d).toISOString().split('T')[0];
               }
             %>
-            <tr data-id="<%= t.id %>" data-status="<%= t.status %>" data-team="<%= t.team_id || '' %>" data-priority="<%= t.status !== 'completed' ? (t.priority || 'general') : '' %>">
+            <tr data-id="<%= t.id %>" data-status="<%= t.status %>" data-team="<%= t.team_id || '' %>" data-project="<%= t.project_id || '' %>" data-priority="<%= t.status !== 'completed' ? (t.priority || 'general') : '' %>">
               <td><strong><%= t.task_name %></strong></td>
               <td><%= t.task_description || '—' %></td>
-              <td><%= t.display_name || t.username || '—' %></td>
               <td><a href="/detail-project/<%= t.project_id %>" style="color:var(--primary);font-weight:600;text-decoration:none;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--primary)'"><%= t.project_name || '—' %></a></td>
+              <td><%= t.display_name || t.username || '—' %></td>
               <td><%= t.team_name || '—' %></td>
+              <td><%= fmtD(t.start_date) %></td>
               <td><%= fmtD(t.end_date) %></td>
               <td><% if (t.status !== 'completed') { %><span class="tl-badge <%= tl.cls %>"><%= tl.label %></span><% } else { %>—<% } %></td>
               <td><span class="badge <%= s.cls %>"><%= s.label %></span></td>
@@ -158,6 +165,7 @@
                     data-project-id="<%= t.project_id %>"
                     data-task-name="<%= t.task_name %>"
                     data-task-desc="<%= t.task_description || '' %>"
+                    data-start="<%= toInput(t.start_date) %>"
                     data-end="<%= toInput(t.end_date) %>"
                     data-status="<%= t.status %>">Edit</button>
                   <button class="btn-table btn-destroy" data-id="<%= t.id %>">Delete</button>
@@ -215,6 +223,10 @@
     </div>
     <div class="form-bar">
       <div class="form-group2 form-group1">
+        <label>Start Date</label>
+        <input type="date" id="fieldTaskStartDate" />
+      </div>
+      <div class="form-group2 form-group1">
         <label>End Date</label>
         <input type="date" id="fieldTaskEndDate" />
       </div>
@@ -250,6 +262,7 @@
   function applyTaskFilters() {
     const q        = document.getElementById('searchTask').value.trim().toLowerCase();
     const status   = document.getElementById('filterTaskStatus').value;
+    const project  = document.getElementById('filterProject').value;
     const team     = document.getElementById('filterTeam').value;
     const priority = document.getElementById('filterPriority').value;
     const rows     = document.querySelectorAll('#taskBody tr');
@@ -257,13 +270,15 @@
     rows.forEach((tr) => {
       const cells  = tr.querySelectorAll('td');
       const task   = (cells[0]?.textContent || '').toLowerCase();
-      const user   = (cells[2]?.textContent || '').toLowerCase();
-      const proj   = (cells[3]?.textContent || '').toLowerCase();
+      const proj   = (cells[2]?.textContent || '').toLowerCase();
+      const user   = (cells[3]?.textContent || '').toLowerCase();
       const rowSt  = tr.dataset.status   || '';
+      const rowPj  = tr.dataset.project  || '';
       const rowTm  = tr.dataset.team     || '';
       const rowPr  = tr.dataset.priority || '';
       const ok = (!q        || task.includes(q) || user.includes(q) || proj.includes(q))
               && (!status   || rowSt === status)
+              && (!project  || rowPj === project)
               && (!team     || rowTm === team)
               && (!priority || rowPr === priority);
       tr.style.display = ok ? '' : 'none';
@@ -273,6 +288,7 @@
   }
   document.getElementById('searchTask').addEventListener('input', applyTaskFilters);
   document.getElementById('filterTaskStatus').addEventListener('change', applyTaskFilters);
+  document.getElementById('filterProject').addEventListener('change', applyTaskFilters);
   document.getElementById('filterTeam').addEventListener('change', applyTaskFilters);
   document.getElementById('filterPriority').addEventListener('change', applyTaskFilters);
 
@@ -291,6 +307,7 @@
     document.getElementById('fieldTaskDesc').value         = '';
     document.getElementById('fieldTaskUserId').value       = '';
     document.getElementById('fieldTaskProjectId').value    = '';
+    document.getElementById('fieldTaskStartDate').value    = '';
     document.getElementById('fieldTaskEndDate').value      = '';
     document.getElementById('fieldTaskStatus').value       = 'in_progress';
     taskModal.classList.add('open');
@@ -305,6 +322,7 @@
       document.getElementById('fieldTaskDesc').value         = btn.dataset.taskDesc  || '';
       document.getElementById('fieldTaskUserId').value       = btn.dataset.userId    || '';
       document.getElementById('fieldTaskProjectId').value    = btn.dataset.projectId || '';
+      document.getElementById('fieldTaskStartDate').value    = btn.dataset.start     || '';
       document.getElementById('fieldTaskEndDate').value      = btn.dataset.end       || '';
       document.getElementById('fieldTaskStatus').value       = btn.dataset.status    || 'in_progress';
       taskModal.classList.add('open');
@@ -331,6 +349,7 @@
       task_description: document.getElementById('fieldTaskDesc').value || null,
       user_id:          parseInt(document.getElementById('fieldTaskUserId').value),
       project_id:       parseInt(document.getElementById('fieldTaskProjectId').value),
+      start_date:       document.getElementById('fieldTaskStartDate').value || null,
       end_date:         document.getElementById('fieldTaskEndDate').value || null,
       status:           document.getElementById('fieldTaskStatus').value,
     };

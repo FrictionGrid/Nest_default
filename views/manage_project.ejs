@@ -24,6 +24,15 @@
     background: rgba(53,179,126,0.22);
   }
 
+  .team-check-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 600; color: #4a6483; cursor: pointer;
+    padding: 4px 10px; border-radius: 8px; border: 1px solid #cdd9e8;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .team-check-label:has(input:checked) { background: #e8f1fb; border-color: #4179bf; color: #1d5fa8; }
+  .team-check-label input { width: 15px; height: 15px; accent-color: #4179bf; cursor: pointer; }
+
   .form-group2 input[type="date"] {
     height: 40px;
     border: 1px solid #cdd9e8;
@@ -175,10 +184,25 @@
         </select>
       </div>
     </div>
-    <div class="form-bar">
+    <!-- Add mode: checkboxes (multi-select) -->
+    <div class="form-bar" id="teamsCheckGroup">
+      <div class="form-group2 form-group1">
+        <label>Teams</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px 14px;padding:6px 0;">
+          <% teamList.forEach(function(t) { %>
+          <label class="team-check-label">
+            <input type="checkbox" class="proj-team-check" value="<%= t.id %>" />
+            <%= t.name %>
+          </label>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+    <!-- Edit mode: single select -->
+    <div class="form-bar" id="teamSelectGroup" style="display:none;">
       <div class="form-group2 form-group1">
         <label>Team</label>
-        <select id="fieldTeamId" style="height:40px; border:1px solid #cdd9e8; border-radius:10px; padding:0 14px; font-size:15px; color:var(--text); outline:none; width:100%;">
+        <select id="fieldTeamId" style="height:40px;border:1px solid #cdd9e8;border-radius:10px;padding:0 14px;font-size:15px;color:var(--text);outline:none;width:100%;background:#fff;">
           <option value="">-- Select Team --</option>
           <% teamList.forEach(function(t) { %>
             <option value="<%= t.id %>"><%= t.name %></option>
@@ -250,14 +274,21 @@
   document.getElementById('filterStatus').addEventListener('change', applyFilters);
   document.getElementById('filterTeam').addEventListener('change', applyFilters);
 
+  function setModalMode(isEdit) {
+    document.getElementById('teamsCheckGroup').style.display  = isEdit ? 'none' : '';
+    document.getElementById('teamSelectGroup').style.display  = isEdit ? ''     : 'none';
+    document.getElementById('fieldProjectId').disabled = isEdit;
+  }
+
   // Open modal (Add)
   document.getElementById('addBtn').addEventListener('click', () => {
     document.getElementById('modalTitle').textContent = 'Add New';
     document.getElementById('editId').value = '';
     document.getElementById('fieldProjectId').value = '';
-    document.getElementById('fieldTeamId').value = '';
     document.getElementById('fieldStartDate').value = '';
     document.getElementById('fieldEndDate').value = '';
+    document.querySelectorAll('.proj-team-check').forEach(cb => cb.checked = false);
+    setModalMode(false);
     overlay.classList.add('open');
   });
 
@@ -271,6 +302,7 @@
       document.getElementById('fieldTeamId').value = btn.dataset.teamId || '';
       document.getElementById('fieldStartDate').value = btn.dataset.start || '';
       document.getElementById('fieldEndDate').value = btn.dataset.end || '';
+      setModalMode(true);
       overlay.classList.add('open');
     }
   });
@@ -306,27 +338,34 @@
 
   // Save (Add / Edit)
   document.getElementById('saveBtn').addEventListener('click', async () => {
-    const id      = document.getElementById('editId').value;
-    const payload = {
-      project_id: parseInt(document.getElementById('fieldProjectId').value),
-      team_id:    parseInt(document.getElementById('fieldTeamId').value),
-      start_date: document.getElementById('fieldStartDate').value || null,
-      end_date:   document.getElementById('fieldEndDate').value || null,
-    };
+    const id         = document.getElementById('editId').value;
+    const project_id = parseInt(document.getElementById('fieldProjectId').value);
+    const start_date = document.getElementById('fieldStartDate').value || null;
+    const end_date   = document.getElementById('fieldEndDate').value || null;
 
-    if (!payload.project_id || !payload.team_id) {
-      alert('Please select a project and team');
-      return;
+    if (!project_id) { alert('Please select a project'); return; }
+
+    if (id) {
+      // Edit mode — single team update
+      const team_id = parseInt(document.getElementById('fieldTeamId').value);
+      if (!team_id) { alert('Please select a team'); return; }
+      await fetch('/manage-project/api/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project_id, team_id, start_date, end_date }),
+      });
+    } else {
+      // Add mode — create one row per checked team
+      const teamIds = Array.from(document.querySelectorAll('.proj-team-check:checked')).map(cb => +cb.value);
+      if (teamIds.length === 0) { alert('Please select at least one team'); return; }
+      await Promise.all(teamIds.map(team_id =>
+        fetch('/manage-project/api', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ project_id, team_id, start_date, end_date }),
+        })
+      ));
     }
-
-    const url    = id ? '/manage-project/api/' + id : '/manage-project/api';
-    const method = id ? 'PUT' : 'POST';
-
-    await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
 
     overlay.classList.remove('open');
     showToast(id ? 'Item updated successfully' : 'Item added successfully');

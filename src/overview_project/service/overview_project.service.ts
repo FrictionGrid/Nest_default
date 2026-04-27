@@ -84,10 +84,12 @@ export class OverviewProjectService {
 
   async getRegionStats() {
     const regionLabels = [
-      { key: 'bangkok',        label: 'Bangkok'        },
-      { key: 'greater_bangkok', label: 'Greater Bangkok' },
-      { key: 'central',        label: 'Central'        },
-      { key: 'other',          label: 'Other'          },
+      { key: 'bangkok', label: 'Bangkok' },
+      { key: 'central', label: 'Central' },
+      { key: 'north',   label: 'North'   },
+      { key: 'east',    label: 'East'    },
+      { key: 'west',    label: 'West'    },
+      { key: 'south',   label: 'South'   },
     ];
 
     const rows = await this.projectRepo

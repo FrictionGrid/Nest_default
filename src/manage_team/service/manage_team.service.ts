@@ -84,13 +84,14 @@ export class ManageTeamService {
       .createQueryBuilder('t')
       .leftJoin('t.user', 'u')
       .leftJoin('t.project', 'p')
-      .leftJoin('project_team', 'pt', 'pt.project_id = t.project_id')
-      .leftJoin('team', 'tm', 'tm.id = pt.team_id')
+      .leftJoin('user_teams', 'ut', 'ut.user_id = t.user_id')
+      .leftJoin('team', 'tm', 'tm.id = ut.team_id')
       .select('t.id', 'id')
       .addSelect('t.user_id', 'user_id')
       .addSelect('t.project_id', 'project_id')
       .addSelect('t.task_name', 'task_name')
       .addSelect('t.task_description', 'task_description')
+      .addSelect('t.start_date', 'start_date')
       .addSelect('t.end_date', 'end_date')
       .addSelect('t.status', 'status')
       .addSelect('u.username', 'username')
@@ -110,6 +111,7 @@ export class ManageTeamService {
         project_id: r.project_id,
         task_name: r.task_name,
         task_description: r.task_description,
+        start_date: r.start_date,
         end_date: r.end_date,
         status: r.status,
         priority: this.calcPriority(r.end_date ?? null),
@@ -146,13 +148,14 @@ export class ManageTeamService {
       .createQueryBuilder('t')
       .leftJoin('t.user', 'u')
       .leftJoin('t.project', 'p')
-      .leftJoin('project_team', 'pt', 'pt.project_id = t.project_id AND pt.team_id IN (:...teamIds)', { teamIds })
-      .leftJoin('team', 'tm', 'tm.id = pt.team_id')
+      .leftJoin('user_teams', 'ut', 'ut.user_id = t.user_id')
+      .leftJoin('team', 'tm', 'tm.id = ut.team_id')
       .select('t.id', 'id')
       .addSelect('t.user_id', 'user_id')
       .addSelect('t.project_id', 'project_id')
       .addSelect('t.task_name', 'task_name')
       .addSelect('t.task_description', 'task_description')
+      .addSelect('t.start_date', 'start_date')
       .addSelect('t.end_date', 'end_date')
       .addSelect('t.status', 'status')
       .addSelect('u.username', 'username')
@@ -174,6 +177,7 @@ export class ManageTeamService {
         project_id:       r.project_id,
         task_name:        r.task_name,
         task_description: r.task_description,
+        start_date:       r.start_date,
         end_date:         r.end_date,
         status:           r.status,
         priority:         this.calcPriority(r.end_date ?? null),

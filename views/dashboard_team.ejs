@@ -19,8 +19,8 @@
   .db-stat p { font-size: 12px; color: var(--muted); margin-top: 6px; }
   .db-stat.s-total      { border-color: #1e3a5f; }
   .db-stat.s-incomplete { border-color: #4a90e2; }
-  .db-stat.s-general    { border-color: #1d8f56; }
-  .db-stat.s-near       { border-color: #e2a93b; }
+  .db-stat.s-general    { border-color: #EAB308; }
+  .db-stat.s-near       { border-color: #F97316; }
   .db-stat.s-overdue    { border-color: #dc3545; }
 
   /* ── Two-col grid ──────────────────────────────── */
@@ -83,8 +83,8 @@
     margin-top: 5px;
   }
   .dot-general { background: #4a90e2; }
-  .dot-near    { background: #1d8f56; }
-  .dot-urgent  { background: #e2a93b; }
+  .dot-near    { background: #EAB308; }
+  .dot-urgent  { background: #F97316; }
   .dot-overdue { background: #dc3545; }
   .task-info { flex: 1; min-width: 0; }
   .task-name { font-size: 14px; font-weight: 700; color: var(--text); }
@@ -105,8 +105,8 @@
     padding: 3px 10px; border-radius: 999px; white-space: nowrap;
   }
   .pr-general { background: rgba(65,121,191,0.1);  color: #2a5fa0; }
-  .pr-near    { background: rgba(29,143,86,0.1);   color: #1a7a54; }
-  .pr-urgent  { background: rgba(234,179,8,0.15);  color: #8a6400; }
+  .pr-near    { background: rgba(234,179,8,0.15);   color: #7a5c00; }
+  .pr-urgent  { background: rgba(249,115,22,0.15); color: #b84600; }
   .pr-overdue { background: #dc3545; color: #fff; }
 
   /* ── Action buttons ────────────────────────────── */
@@ -214,14 +214,14 @@
       <p>More than 7 days left</p>
     </div>
     <div class="db-stat s-general">
-      <h4>Near</h4>
+      <h4>Warning</h4>
       <div class="val"><%= summary.general %></div>
-      <p>4 – 7 days left</p>
+      <p>7 days left</p>
     </div>
     <div class="db-stat s-near">
-      <h4>Urgent</h4>
+      <h4>Critical</h4>
       <div class="val"><%= summary.near %></div>
-      <p>0 – 3 days left</p>
+      <p>3 days left</p>
     </div>
     <div class="db-stat s-overdue">
       <h4>Overdue</h4>
@@ -244,8 +244,8 @@
         <% tasks.filter(t => t.status !== 'completed').forEach(function(t) {
           const prMap = {
             general: { dotCls:'dot-general', badgeCls:'pr-general', label:'In Progress' },
-            near:    { dotCls:'dot-near',    badgeCls:'pr-near',    label:'Near'        },
-            urgent:  { dotCls:'dot-urgent',  badgeCls:'pr-urgent',  label:'Urgent'      },
+            near:    { dotCls:'dot-near',    badgeCls:'pr-near',    label:'Warning'  },
+            urgent:  { dotCls:'dot-urgent',  badgeCls:'pr-urgent',  label:'Critical' },
             overdue: { dotCls:'dot-overdue', badgeCls:'pr-overdue', label:'Overdue'     },
           };
           const pr = prMap[t.priority] || prMap.general;

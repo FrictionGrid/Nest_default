@@ -34,6 +34,9 @@ export class TaskTeam {
   task_description: string;
 
   @Column({ type: 'date', nullable: true })
+  start_date: Date;
+
+  @Column({ type: 'date', nullable: true })
   end_date: Date;
 
   @Column({

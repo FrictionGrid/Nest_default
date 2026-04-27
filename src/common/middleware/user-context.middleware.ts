@@ -8,6 +8,8 @@ const PAGE_ROUTES: Record<string, string> = {
   'manage-project':   'GET:/manage-project',
   'manage-task':      'GET:/manage-task',
   'dashboard-team':   'GET:/dashboard-team',
+  'timeline':         'GET:/timeline',
+  'user-management':  'GET:/user-management',
 };
 
 @Injectable()

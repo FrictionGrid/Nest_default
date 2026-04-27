@@ -35,6 +35,7 @@ export class DocumentService {
         typeId:      type.id,
         typeName:    type.name,
         isRequired:  type.is_required,
+        category:    type.category || 'engineer_task',
         docId:       doc?.id ?? null,
         status:      doc?.status ?? 'missing',
         rejectedReason: doc?.rejected_reason ?? null,
