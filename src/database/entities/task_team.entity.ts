@@ -50,6 +50,9 @@ export class TaskTeam {
   })
   status: TaskStatus;
 
+  @Column({ length: 100, nullable: true })
+  task_type: string;
+
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;

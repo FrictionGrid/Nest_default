@@ -57,6 +57,15 @@
     padding: 10px 14px;
     resize: vertical;
   }
+
+  /* ── modal override สำหรับหน้านี้ ──────────── */
+  #taskModal {
+    align-items: flex-start;
+    padding-top: 40px;
+  }
+  #taskModal .modal {
+    width: 700px;
+  }
 </style>
 
 <section class="content">
@@ -167,7 +176,8 @@
                     data-task-desc="<%= t.task_description || '' %>"
                     data-start="<%= toInput(t.start_date) %>"
                     data-end="<%= toInput(t.end_date) %>"
-                    data-status="<%= t.status %>">Edit</button>
+                    data-status="<%= t.status %>"
+                    data-task-type="<%= t.task_type || '' %>">Edit</button>
                   <button class="btn-table btn-destroy" data-id="<%= t.id %>">Delete</button>
                 </div>
               </td>
@@ -198,7 +208,33 @@
       </div>
     </div>
     <div class="form-bar">
-      <div class="form-group2 form-group1">
+      <div class="form-group2">
+        <label>Type</label>
+        <select id="fieldTaskType">
+          <option value="">-- Select Type --</option>
+          <option value="PO/Quotation">PO/Quotation</option>
+          <option value="Wiring Diagram">Wiring Diagram</option>
+          <option value="Graphic 3D">Graphic 3D</option>
+          <option value="Controller I/O">Controller I/O</option>
+          <option value="T & SAT">T &amp; SAT</option>
+          <option value="Programming/GUI">Programming/GUI</option>
+          <option value="Testing & Commissioning">Testing &amp; Commissioning</option>
+          <option value="Handover Doc">Handover Doc</option>
+          <option value="Defect list">Defect list</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group2">
+        <label>Status</label>
+        <select id="fieldTaskStatus">
+          <option value="in_progress">In Progress</option>
+          <option value="problem">Problem</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-bar">
+      <div class="form-group2">
         <label>User</label>
         <select id="fieldTaskUserId">
           <option value="">-- Select User --</option>
@@ -207,9 +243,7 @@
           <% }); %>
         </select>
       </div>
-    </div>
-    <div class="form-bar">
-      <div class="form-group2 form-group1">
+      <div class="form-group2">
         <label>Project</label>
         <select id="fieldTaskProjectId">
           <option value="">-- Select Project --</option>
@@ -222,23 +256,13 @@
       </div>
     </div>
     <div class="form-bar">
-      <div class="form-group2 form-group1">
+      <div class="form-group2">
         <label>Start Date</label>
         <input type="date" id="fieldTaskStartDate" />
       </div>
-      <div class="form-group2 form-group1">
+      <div class="form-group2">
         <label>End Date</label>
         <input type="date" id="fieldTaskEndDate" />
-      </div>
-    </div>
-    <div class="form-bar">
-      <div class="form-group2 form-group1">
-        <label>Status</label>
-        <select id="fieldTaskStatus">
-          <option value="in_progress">In Progress</option>
-          <option value="problem">Problem</option>
-          <option value="completed">Completed</option>
-        </select>
       </div>
     </div>
     <div class="modal-spacing">
@@ -329,6 +353,7 @@
     document.getElementById('fieldTaskStartDate').value    = '';
     document.getElementById('fieldTaskEndDate').value      = '';
     document.getElementById('fieldTaskStatus').value       = 'in_progress';
+    document.getElementById('fieldTaskType').value         = '';
     taskModal.classList.add('open');
   });
 
@@ -344,6 +369,7 @@
       document.getElementById('fieldTaskStartDate').value    = btn.dataset.start     || '';
       document.getElementById('fieldTaskEndDate').value      = btn.dataset.end       || '';
       document.getElementById('fieldTaskStatus').value       = btn.dataset.status    || 'in_progress';
+      document.getElementById('fieldTaskType').value         = btn.dataset.taskType  || '';
       taskModal.classList.add('open');
     }
   });
@@ -371,6 +397,7 @@
       start_date:       document.getElementById('fieldTaskStartDate').value || null,
       end_date:         document.getElementById('fieldTaskEndDate').value || null,
       status:           document.getElementById('fieldTaskStatus').value,
+      task_type:        document.getElementById('fieldTaskType').value || null,
     };
     if (!payload.task_name) { alert('Please enter a task name'); return; }
     if (!payload.user_id || !payload.project_id) { alert('Please select a user and project'); return; }
