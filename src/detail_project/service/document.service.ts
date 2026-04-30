@@ -4,7 +4,8 @@ import { Repository } from 'typeorm';
 import { DocumentType } from '../../database/entities/document_type.entity';
 import { ProjectDocument } from '../../database/entities/project_document.entity';
 import { ProjectDocumentFile } from '../../database/entities/project_document_file.entity';
-import { SynologyService } from './synology.service';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class DocumentService {
@@ -15,7 +16,6 @@ export class DocumentService {
     private readonly projectDocRepo: Repository<ProjectDocument>,
     @InjectRepository(ProjectDocumentFile)
     private readonly fileRepo: Repository<ProjectDocumentFile>,
-    private readonly synology: SynologyService,
   ) {}
 
   // ── GET checklist ──────────────────────────────────────────────────────────
@@ -63,13 +63,7 @@ export class DocumentService {
     file: Express.Multer.File,
     userId: number,
   ) {
-    const nasPath = await this.synology.uploadFile(
-      projectId,
-      file.originalname,
-      file.buffer,
-      file.mimetype,
-    );
-
+    // หา or สร้าง project_document
     let doc = await this.projectDocRepo.findOne({
       where: { project_id: projectId, document_type_id: typeId },
     });
@@ -86,10 +80,11 @@ export class DocumentService {
       await this.projectDocRepo.save(doc);
     }
 
+    // บันทึก file record
     const newFile = this.fileRepo.create({
       project_document_id: doc.id,
       filename:    file.originalname,
-      file_path:   nasPath,
+      file_path:   file.path,
       file_size:   file.size,
       mime_type:   file.mimetype,
       uploaded_by: userId,
@@ -107,9 +102,14 @@ export class DocumentService {
     });
     if (!file) throw new NotFoundException('File not found');
 
-    await this.synology.deleteFile(file.file_path);
+    // ลบไฟล์จริงบน disk
+    if (fs.existsSync(file.file_path)) {
+      fs.unlinkSync(file.file_path);
+    }
+
     await this.fileRepo.remove(file);
 
+    // ถ้าไม่เหลือไฟล์ → reset status กลับเป็น missing
     const remaining = file.projectDocument.files.filter((f) => f.id !== fileId);
     if (remaining.length === 0) {
       await this.projectDocRepo.update(file.projectDocument.id, { status: 'missing' });
@@ -119,15 +119,9 @@ export class DocumentService {
   }
 
   // ── DOWNLOAD file ─────────────────────────────────────────────────────────
-  async downloadFile(fileId: number): Promise<{ buffer: Buffer; filename: string; mimeType: string }> {
+  async getFilePath(fileId: number): Promise<string> {
     const file = await this.fileRepo.findOne({ where: { id: fileId } });
     if (!file) throw new NotFoundException('File not found');
-
-    const buffer = await this.synology.downloadFile(file.file_path);
-    return {
-      buffer,
-      filename: file.filename,
-      mimeType: file.mime_type ?? 'application/octet-stream',
-    };
+    return path.resolve(file.file_path);
   }
 }

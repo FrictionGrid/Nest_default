@@ -53,12 +53,7 @@ export class DetailProjectController {
   // ── DOWNLOAD file ─────────────────────────────────────────────────────────
   @Get('documents/file/:fileId/download')
   async downloadFile(@Param('fileId') fileId: string, @Res() res: Response) {
-    const { buffer, filename, mimeType } = await this.documentService.downloadFile(+fileId);
-    res.set({
-      'Content-Type': mimeType,
-      'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(filename)}`,
-      'Content-Length': buffer.length.toString(),
-    });
-    return res.send(buffer);
+    const filePath = await this.documentService.getFilePath(+fileId);
+    return res.download(filePath);
   }
 }
