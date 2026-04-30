@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Param, Body, Render, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Put, Patch, Param, Body, Render, UseGuards, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { DashboardTeamService } from './service/dashboard_team.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
@@ -19,6 +19,11 @@ export class DashboardTeamController {
       this.dashboardTeamService.getTeamProjects(userId),
     ]);
     return { pageTitle: 'Dashboard Team', pageSubtitle: 'Team task overview and progress', summary, tasks, teamProjects };
+  }
+
+  @Patch('api/tasks/:id/progress')
+  async updateProgress(@Param('id') id: string, @Body('progress') progress: number) {
+    return this.dashboardTeamService.updateProgress(+id, +progress);
   }
 
   @Put('api/tasks/:id/complete')

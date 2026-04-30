@@ -73,6 +73,10 @@
       <input type="text" id="searchInput" placeholder="Search Item, Project Name, Sales Name..." />
     </div>
 
+    <select id="filterYear" class="filter-box">
+      <option value="">All Years</option>
+    </select>
+
     <select id="filterStatus" class="filter-box">
       <option value="">All Months</option>
       <option value="1">January</option>
@@ -111,7 +115,7 @@
           <col style="width: 110px;" />
           <col style="width: 130px;" />
           <col style="width: 110px;" />
-          <col style="width: 190px;" />
+          <col style="width: 240px;" />
         </colgroup>
         <thead>
           <tr>
@@ -156,8 +160,9 @@
       <div class="form-group2 form-group1">
         <label>Type</label>
         <div class="type-checkbox-group">
-          <label class="type-checkbox-item"><input type="checkbox" name="projectType" value="1" /> BMS/SCADA</label>
-          <label class="type-checkbox-item"><input type="checkbox" name="projectType" value="2" /> PME</label>
+          <label class="type-checkbox-item"><input type="checkbox" name="projectType" value="1" /> BMS</label>
+          <label class="type-checkbox-item"><input type="checkbox" name="projectType" value="2" /> EPO</label>
+          <label class="type-checkbox-item"><input type="checkbox" name="projectType" value="7" /> PME</label>
           <label class="type-checkbox-item"><input type="checkbox" name="projectType" value="3" /> CCTV</label>
           <label class="type-checkbox-item"><input type="checkbox" name="projectType" value="4" /> ACS</label>
           <label class="type-checkbox-item"><input type="checkbox" name="projectType" value="5" /> Installation</label>
@@ -214,12 +219,13 @@
   let allRows = [];
 
   const TYPE_NAMES = {
-    1: 'BMS/SCADA',
-    2: 'PME',
+    1: 'BMS',
+    2: 'EPO',
     3: 'CCTV',
     4: 'ACS',
     5: 'Installation',
     6: 'Engineer',
+    7: 'PME',
   };
 
   async function loadProjects() {
@@ -229,11 +235,30 @@
       if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
       if (!Array.isArray(data)) throw new Error('Invalid response: ' + JSON.stringify(data).slice(0, 100));
       allRows = data;
-      renderTable(allRows);
+      populateYears(data);
+      applyFilters();
     } catch (err) {
       document.getElementById('tableBody').innerHTML =
         '<tr><td colspan="7" class="empty-state">Failed to load data: ' + err.message + '</td></tr>';
     }
+  }
+
+  function populateYears(rows) {
+    const years = [...new Set(rows
+      .filter(r => r.created_at)
+      .map(r => new Date(r.created_at).getFullYear())
+    )].sort((a, b) => b - a);
+
+    const sel = document.getElementById('filterYear');
+    sel.innerHTML = '<option value="">All Years</option>';
+    years.forEach(y => {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      sel.appendChild(opt);
+    });
+    const urlYear = new URLSearchParams(location.search).get('year');
+    if (urlYear) sel.value = urlYear;
   }
 
   function renderTypeBadges(types) {
@@ -283,10 +308,12 @@
   }
 
   document.getElementById('searchInput').addEventListener('input', applyFilters);
+  document.getElementById('filterYear').addEventListener('change', applyFilters);
   document.getElementById('filterStatus').addEventListener('change', applyFilters);
 
   function applyFilters() {
-    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const q     = document.getElementById('searchInput').value.trim().toLowerCase();
+    const year  = document.getElementById('filterYear').value;
     const month = document.getElementById('filterStatus').value;
 
     const filtered = allRows.filter((r) => {
@@ -295,13 +322,25 @@
         (r.project_name || '').toLowerCase().includes(q) ||
         (r.sales_name || '').toLowerCase().includes(q);
 
+      const matchYear  = !year  ||
+        (r.created_at && new Date(r.created_at).getFullYear() === Number(year));
+
       const matchMonth = !month ||
         (r.created_at && new Date(r.created_at).getMonth() + 1 === Number(month));
 
-      return matchSearch && matchMonth;
+      return matchSearch && matchYear && matchMonth;
     });
 
     renderTable(filtered);
+    syncURL({ q, year, month });
+  }
+
+  function syncURL(filters) {
+    const p = new URLSearchParams();
+    if (filters.q)     p.set('q',     filters.q);
+    if (filters.year)  p.set('year',  filters.year);
+    if (filters.month) p.set('month', filters.month);
+    history.replaceState(null, '', p.toString() ? '?' + p.toString() : location.pathname);
   }
 
   const overlay = document.getElementById('modalOverlay');
@@ -414,5 +453,13 @@
   }
 
   document.getElementById('addBtn').addEventListener('click', openAdd);
+
+  // restore search & month from URL before load (year restored inside populateYears)
+  (function() {
+    const p = new URLSearchParams(location.search);
+    if (p.get('q'))     document.getElementById('searchInput').value = p.get('q');
+    if (p.get('month')) document.getElementById('filterStatus').value = p.get('month');
+  })();
+
   loadProjects();
 </script>

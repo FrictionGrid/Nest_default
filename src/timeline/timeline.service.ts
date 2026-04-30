@@ -93,6 +93,7 @@ export class TimelineService {
       .addSelect('t.start_date',      'start')
       .addSelect('t.end_date',        'end')
       .addSelect('t.status',          'dbStatus')
+      .addSelect('t.progress',        'progress')
       .addSelect('p.project_name',    'project_name')
       .where('t.start_date IS NOT NULL')
       .andWhere('t.end_date IS NOT NULL')
@@ -126,11 +127,7 @@ export class TimelineService {
         status = 'in_progress';
       }
 
-      const totalMs   = endDate.getTime() - startDate.getTime();
-      const elapsedMs = today.getTime()   - startDate.getTime();
-      const progress  = totalMs > 0
-        ? Math.min(100, Math.max(0, Math.round((elapsedMs / totalMs) * 100)))
-        : 0;
+      const progress = t.progress ?? 0;
 
       return {
         id:       t.id,

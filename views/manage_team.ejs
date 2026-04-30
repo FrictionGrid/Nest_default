@@ -285,7 +285,26 @@
       if (ok) visible++;
     });
     document.getElementById('taskCount').textContent = 'Showing ' + visible + ' items';
+    const p = new URLSearchParams();
+    if (q)        p.set('q',        q);
+    if (status)   p.set('status',   status);
+    if (project)  p.set('project',  project);
+    if (team)     p.set('team',     team);
+    if (priority) p.set('priority', priority);
+    history.replaceState(null, '', p.toString() ? '?' + p.toString() : location.pathname);
   }
+
+  // restore filters from URL on load
+  (function() {
+    const p = new URLSearchParams(location.search);
+    if (p.get('q'))        document.getElementById('searchTask').value        = p.get('q');
+    if (p.get('status'))   document.getElementById('filterTaskStatus').value  = p.get('status');
+    if (p.get('project'))  document.getElementById('filterProject').value     = p.get('project');
+    if (p.get('team'))     document.getElementById('filterTeam').value        = p.get('team');
+    if (p.get('priority')) document.getElementById('filterPriority').value    = p.get('priority');
+    applyTaskFilters();
+  })();
+
   document.getElementById('searchTask').addEventListener('input', applyTaskFilters);
   document.getElementById('filterTaskStatus').addEventListener('change', applyTaskFilters);
   document.getElementById('filterProject').addEventListener('change', applyTaskFilters);

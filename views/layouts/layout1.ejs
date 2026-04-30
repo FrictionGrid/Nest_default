@@ -40,7 +40,10 @@
           <a href="/dashboard-team" class="<%= pageTitle === 'Dashboard Team' ? 'active' : '' %>">Dashboard Team</a>
         <% } %>
         <% if (locals.visibleMenus?.['timeline']) { %>
-          <a href="/timeline" class="<%= pageTitle === 'Timeline' ? 'active' : '' %>">Timeline</a>
+          <a href="/timeline" class="<%= pageTitle === 'Task Timeline' ? 'active' : '' %>">Task Timeline</a>
+        <% } %>
+        <% if (locals.visibleMenus?.['timeline-project']) { %>
+          <a href="/timeline-project" class="<%= pageTitle === 'Project Timeline' ? 'active' : '' %>">Project Timeline</a>
         <% } %>
         <% if (locals.visibleMenus?.['user-management']) { %>
           <a href="/user-management" class="<%= pageTitle === 'User Management' ? 'active' : '' %>">User Management</a>

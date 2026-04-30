@@ -268,7 +268,21 @@
     });
 
     document.getElementById('projectCount').textContent = 'Showing ' + visible + ' items';
+    const p = new URLSearchParams();
+    if (q)      p.set('q',      q);
+    if (status) p.set('status', status);
+    if (team)   p.set('team',   team);
+    history.replaceState(null, '', p.toString() ? '?' + p.toString() : location.pathname);
   }
+
+  // restore filters from URL on load
+  (function() {
+    const p = new URLSearchParams(location.search);
+    if (p.get('q'))      document.getElementById('searchInput').value  = p.get('q');
+    if (p.get('status')) document.getElementById('filterStatus').value = p.get('status');
+    if (p.get('team'))   document.getElementById('filterTeam').value   = p.get('team');
+    applyFilters();
+  })();
 
   document.getElementById('searchInput').addEventListener('input', applyFilters);
   document.getElementById('filterStatus').addEventListener('change', applyFilters);

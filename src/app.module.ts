@@ -15,6 +15,7 @@ import { OverviewProjectModule } from './overview_project/overview_project.modul
 import { DetailProjectModule } from './detail_project/detail_project.module';
 import { DashboardTeamModule } from './dashboard_team/dashboard_team.module';
 import { TimelineModule } from './timeline/timeline.module';
+import { TimelineProjectModule } from './timeline_project/timeline_project.module';
 import { UserManagementModule } from './user_management/user_management.module';
 import { AuthModule } from './auth/auth.module';
 import { UserContextMiddleware } from './common/middleware/user-context.middleware';
@@ -47,6 +48,7 @@ import { ProjectDocumentFile } from './database/entities/project_document_file.e
     DetailProjectModule,
     DashboardTeamModule,
     TimelineModule,
+    TimelineProjectModule,
     UserManagementModule,
   ],
 })

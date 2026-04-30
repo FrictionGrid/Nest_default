@@ -96,7 +96,8 @@
 /* ส่วนล่าง */
 .table-body {
     width: 100%;
-    overflow-x: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .table-header h3 {

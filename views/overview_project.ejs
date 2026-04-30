@@ -218,7 +218,7 @@
           <canvas id="teamProjectChart"></canvas>
         </div>
         <div class="chart-legend">
-          <div class="legend-item"><div class="ld-bar" style="background:#8E9FB2;"></div>Total</div>
+          <div class="legend-item"><div class="ld-bar" style="background:#6366F1;"></div>Total</div>
           <div class="legend-item"><div class="ld-bar" style="background:#4A90E2;"></div>In Progress</div>
           <div class="legend-item"><div class="ld-bar" style="background:#35B37E;"></div>Completed</div>
           <div class="legend-item"><div class="ld-bar" style="background:#E45757;"></div>Delayed</div>
@@ -232,8 +232,8 @@
         <span class="card-sub">6 regions</span>
       </div>
       <div class="card-body">
-        <% const regionColors = ['#4A90E2','#35B37E','#F4A62A','#9B59B6','#E45757','#14B8A6']; %>
-        <% const regionColorPairs = [['#4A90E2','#6baef5'],['#35B37E','#5fd4a1'],['#F4A62A','#f7c060'],['#9B59B6','#c090d8'],['#E45757','#f08080'],['#14B8A6','#2dd4bf']]; %>
+        <% const regionColors = ['#4A90E2','#35B37E','#F4A62A','#9B59B6','#E45757','#EC4899']; %>
+        <% const regionColorPairs = [['#4A90E2','#6baef5'],['#35B37E','#5fd4a1'],['#F4A62A','#f7c060'],['#9B59B6','#c090d8'],['#E45757','#f08080'],['#EC4899','#f472b6']]; %>
         <% const maxRegion = regionStats.reduce((m, r) => Math.max(m, r.total), 1); %>
         <div class="country-list">
           <% regionStats.forEach(function(r, i) {
@@ -316,7 +316,7 @@
           <thead>
             <tr>
               <th>Month</th>
-              <th style="text-align:center;">Total</th>
+              <th style="text-align:center;color:#6366F1;">Total</th>
               <th style="text-align:center;color:#4A90E2;">In Progress</th>
               <th style="text-align:center;color:#1a7a54;">Completed</th>
               <th style="text-align:center;color:#c0392b;">Delayed</th>
@@ -326,7 +326,7 @@
             <% monthlySummary.forEach(function(m) { %>
             <tr>
               <td><%= m.month_name %></td>
-              <td style="text-align:center;"><%= m.total_projects !== null ? m.total_projects : '—' %></td>
+              <td style="text-align:center;color:#6366F1;font-weight:600;"><%= m.total_projects !== null ? m.total_projects : '—' %></td>
               <td style="text-align:center;color:#4A90E2;font-weight:600;"><%= m.in_progress !== null ? m.in_progress : '—' %></td>
               <td style="text-align:center;color:#1a7a54;font-weight:600;"><%= m.completed !== null ? m.completed : '—' %></td>
               <td style="text-align:center;color:#c0392b;font-weight:600;"><%= m.delayed !== null ? m.delayed : '—' %></td>
@@ -350,7 +350,7 @@
     data: {
       labels: _teams.map(t => t.team_name),
       datasets: [
-        { label: "Total",       data: _teams.map(t => Number(t.total_projects)), backgroundColor: "rgba(99,102,241,0.22)",  borderColor: "#4338CA", borderWidth: 1.5, borderRadius: 5 },
+        { label: "Total",       data: _teams.map(t => Number(t.total_projects)), backgroundColor: "rgba(99,102,241,0.22)",  borderColor: "#6366F1", borderWidth: 1.5, borderRadius: 5 },
         { label: "In Progress", data: _teams.map(t => Number(t.in_progress)),    backgroundColor: "rgba(74,144,226,0.22)",  borderColor: "#4A90E2", borderWidth: 1.5, borderRadius: 5 },
         { label: "Completed",   data: _teams.map(t => Number(t.completed)),      backgroundColor: "rgba(53,179,126,0.22)",  borderColor: "#35B37E", borderWidth: 1.5, borderRadius: 5 },
         { label: "Delayed",     data: _teams.map(t => Number(t.delayed)),        backgroundColor: "rgba(228,87,87,0.18)",   borderColor: "#E45757", borderWidth: 1.5, borderRadius: 5 }
@@ -399,25 +399,6 @@
       teamChart.data.datasets[2].data = data.map(t => Number(t.completed));
       teamChart.data.datasets[3].data = data.map(t => Number(t.delayed));
       teamChart.update();
-      const maxProj = data.reduce((m, t) => Math.max(m, Number(t.total_projects)), 1);
-      const listEl  = document.querySelector(".country-list");
-      listEl.innerHTML = data.map((t, i) => {
-        const ci  = i % teamColors.length;
-        const pct = Math.round((Number(t.total_projects) / maxProj) * 100);
-        return `<div class="country-item">
-          <div class="country-row">
-            <div class="country-name">
-              <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${teamColors[ci]};flex-shrink:0;"></span>
-              ${t.team_name}
-            </div>
-            <div class="country-value">${t.total_projects} projects</div>
-          </div>
-          <div class="prog-bar">
-            <div class="prog-fill" data-w="${pct}" style="background:linear-gradient(90deg,${teamColorPairs[ci][0]},${teamColorPairs[ci][1]});width:0%"></div>
-          </div>
-        </div>`;
-      }).join('');
-      animateProgressBars();
     });
   });
 </script>

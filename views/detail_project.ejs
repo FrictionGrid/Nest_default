@@ -399,10 +399,9 @@
     .b-blocked    { background: rgba(228,87,87,0.12);  color: #c0392b; }
     .b-pending    { background: rgba(244,166,42,0.14); color: #9a6000; }
 
-    .ts-overdue      { background: rgba(220,53,69,0.12);  color: #b91c1c; }
-    .ts-near_deadline{ background: rgba(234,179,8,0.13);  color: #8a6400; }
-    .ts-has_time     { background: rgba(53,179,126,0.12); color: #1a7a54; }
-    .ts-just_started { background: rgba(65,121,191,0.12); color: #2a5fa0; }
+    .ts-inprogress { background: rgba(65,121,191,0.15);  color: #1d5fa8; }
+    .ts-completed  { background: rgba(53,179,126,0.15);  color: #1a7a54; }
+    .ts-problem    { background: rgba(234,179,8,0.18);   color: #8a6000; }
 
     /* Responsive */
     @media (max-width: 1100px) {
@@ -476,6 +475,10 @@
               <div class="ai-body">
 
                 <!-- Progress Ring -->
+                <%
+                  const docPct = progress.total > 0 ? Math.round(progress.uploaded / progress.total * 100) : 0;
+                  const ringOffset = (314 * (1 - docPct / 100)).toFixed(1);
+                %>
                 <div class="ai-ring-wrap">
                   <svg class="ai-ring-svg" width="120" height="120" viewBox="0 0 120 120">
                     <defs>
@@ -488,9 +491,9 @@
                     <circle class="ai-ring-bg"   cx="60" cy="60" r="50"/>
                     <circle class="ai-ring-fill" cx="60" cy="60" r="50"
                       stroke-dasharray="314"
-                      stroke-dashoffset="78.5"
+                      stroke-dashoffset="<%= ringOffset %>"
                       style="animation: ringDraw 1.2s ease both;"/>
-                    <text class="ai-ring-pct" x="60" y="56">75%</text>
+                    <text class="ai-ring-pct" x="60" y="56"><%= docPct %>%</text>
                     <text class="ai-ring-sub"  x="60" y="72">Overall</text>
                   </svg>
                   <div class="ai-ring-label">Project Progress</div>
@@ -706,7 +709,7 @@
               </td>
               <td><%= t.user_name %></td>
               <td><%= t.end_date %></td>
-              <td><span class="badge ts-badge ts-<%= t.status %>"><%= t.statusLabel %></span></td>
+              <td><span class="badge <%= t.statusCls %>"><%= t.statusLabel %></span></td>
             </tr>
             <% }); %>
           </tbody>

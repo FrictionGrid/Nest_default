@@ -109,6 +109,33 @@
   .pr-urgent  { background: rgba(249,115,22,0.15); color: #b84600; }
   .pr-overdue { background: #dc3545; color: #fff; }
 
+  /* ── Progress input ────────────────────────────── */
+  .task-progress-wrap {
+    display: flex; align-items: center; gap: 8px; margin-top: 8px;
+  }
+  .task-progress-bar {
+    flex: 1; height: 6px; background: #e8f0f9;
+    border-radius: 999px; overflow: hidden;
+  }
+  .task-progress-fill {
+    height: 100%; border-radius: 999px;
+    background: linear-gradient(90deg, #4a90e2, #35B37E);
+    transition: width 0.4s ease;
+  }
+  .task-progress-input {
+    width: 52px; height: 30px;
+    border: 1.5px solid #cdd9e8; border-radius: 8px;
+    padding: 0 8px; font-size: 13px; font-weight: 700;
+    color: var(--primary); text-align: center;
+    outline: none; transition: border 0.2s;
+    background: #fff;
+  }
+  .task-progress-input:focus { border-color: #4a90e2; }
+  .task-progress-label {
+    font-size: 12px; font-weight: 700; color: var(--muted);
+    white-space: nowrap;
+  }
+
   /* ── Action buttons ────────────────────────────── */
   .btn-complete {
     font-size: 12px; font-weight: 700;
@@ -252,11 +279,23 @@
         %>
         <div class="task-item">
           <div class="task-dot <%= pr.dotCls %>"></div>
-          <div class="task-info">
+          <div class="task-info" style="flex:1;min-width:0;">
             <div class="task-name"><%= t.task_name %></div>
             <div class="task-meta"><%= t.member_name %> · <%= t.project_name %></div>
+            <div class="task-progress-wrap">
+              <div class="task-progress-bar">
+                <div class="task-progress-fill" style="width:<%= t.progress %>%"></div>
+              </div>
+              <input
+                class="task-progress-input"
+                type="number" min="0" max="100"
+                value="<%= t.progress %>"
+                data-id="<%= t.id %>"
+              />
+              <span class="task-progress-label">%</span>
+            </div>
           </div>
-          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:10px;">
             <button class="btn-problem" data-id="<%= t.id %>" <%= t.status === 'problem' ? 'disabled' : '' %>>⚠ Problem</button>
             <button class="btn-complete" data-id="<%= t.id %>">✓ Complete</button>
           </div>
@@ -377,6 +416,31 @@
     t.style.opacity = '1';
     setTimeout(() => { t.style.opacity = '0'; }, 2500);
   }
+
+  async function saveProgress(input) {
+    let val = parseInt(input.value);
+    if (isNaN(val)) val = 0;
+    if (val < 0) val = 0;
+    if (val > 100) val = 100;
+    input.value = val;
+    const fill = input.closest('.task-progress-wrap').querySelector('.task-progress-fill');
+    fill.style.width = val + '%';
+    await fetch('/dashboard-team/api/tasks/' + input.dataset.id + '/progress', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ progress: val }),
+    });
+    showToast('Progress updated: ' + val + '%');
+  }
+
+  document.addEventListener('change', (e) => {
+    if (e.target.classList.contains('task-progress-input')) saveProgress(e.target);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target.classList.contains('task-progress-input')) {
+      e.target.blur();
+    }
+  });
 
   document.addEventListener('click', (e) => {
     if (e.target.classList.contains('btn-complete')) {

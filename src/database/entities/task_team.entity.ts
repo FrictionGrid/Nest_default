@@ -39,6 +39,9 @@ export class TaskTeam {
   @Column({ type: 'date', nullable: true })
   end_date: Date;
 
+  @Column({ type: 'int', default: 0 })
+  progress: number;
+
   @Column({
     type: 'enum',
     enum: TaskStatus,

@@ -64,6 +64,7 @@ export class DashboardTeamService {
       member_name:  t.user?.display_name || t.user?.username || '—',
       project_name: (t.project as any)?.project_name || '—',
       status:       t.status,
+      progress:     t.progress ?? 0,
       end_date:     t.end_date ?? null,
       priority:     this.deadlineGroup(t.end_date ?? null),
     }));
@@ -90,6 +91,11 @@ export class DashboardTeamService {
       end_date:     pt.project?.end_date     || null,
       status:       pt.project?.status       || '—',
     }));
+  }
+
+  async updateProgress(id: number, progress: number) {
+    await this.taskRepo.update(id, { progress });
+    return { ok: true };
   }
 
   async completeTask(id: number, description?: string) {

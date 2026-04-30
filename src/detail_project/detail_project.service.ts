@@ -57,10 +57,9 @@ export class DetailProjectService {
     const statusInfo = statusMap[project.status] ?? { label: project.status, cls: 'b-pending' };
 
     const taskStatusMap = {
-      just_started:  { label: 'Just Started',  cls: 'ts-started'  },
-      has_time:      { label: 'Has Time',      cls: 'ts-hastime'  },
-      near_deadline: { label: 'Near Deadline', cls: 'ts-near'     },
-      overdue:       { label: 'Overdue',       cls: 'ts-overdue'  },
+      in_progress: { label: 'In Progress', cls: 'ts-inprogress' },
+      completed:   { label: 'Completed',   cls: 'ts-completed'  },
+      problem:     { label: 'Problem',     cls: 'ts-problem'    },
     };
 
     return {
