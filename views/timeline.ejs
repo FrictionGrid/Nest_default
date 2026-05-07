@@ -288,6 +288,12 @@
   top: 0;
   z-index: 5;
 }
+/* Fix overlap: give user col a real stacking context above chart bars */
+.tl-user-col {
+  position: sticky;
+  left: 0;
+  z-index: 15;
+}
 .tl-user-header {
   position: sticky;
   top: 0;
