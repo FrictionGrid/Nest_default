@@ -69,12 +69,13 @@
 
 .tl-header-right { display: flex; align-items: center; gap: 8px; }
 
-.tl-outer { display: flex; }
+.tl-outer { display: flex; flex-direction: column; }
 
 /* User column */
 .tl-user-col {
   width: 250px; flex-shrink: 0;
-  border-right: 1px solid var(--border); background: #fff; z-index: 2;
+  border-right: 1px solid var(--border); background: #fff;
+  position: relative; z-index: 2;
 }
 .tl-user-header {
   height: 58px; display: flex; align-items: center; padding: 0 20px;
@@ -102,7 +103,7 @@
 }
 
 /* Scroll area */
-.tl-right { flex: 1; overflow: hidden; min-width: 0; }
+.tl-right { flex: 1; min-width: 0; position: relative; z-index: 1; }
 .tl-inner { position: relative; width: 100%; }
 
 /* Date header */
@@ -275,29 +276,39 @@
   min-height: 0;
 }
 .tl-card-header { flex-shrink: 0; }
+/* tl-outer: column flex, header on top, scroll body below */
 .tl-outer {
   flex: 1;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   min-height: 0;
 }
-
-/* Lock date header row — must remove overflow:hidden from .tl-right first */
-.tl-right { overflow: visible; }
-.tl-dates-row {
-  position: sticky;
-  top: 0;
+/* Header row locked naturally (outside scroll area) */
+.tl-header-row {
+  display: flex;
+  flex-shrink: 0;
+  position: relative;
   z-index: 5;
 }
-/* Fix overlap: give user col a real stacking context above chart bars */
-.tl-user-col {
-  position: sticky;
-  left: 0;
-  z-index: 15;
+.tl-header-row .tl-user-header {
+  width: 250px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
 }
-.tl-user-header {
-  position: sticky;
-  top: 0;
-  z-index: 6;
+.tl-header-row .tl-dates-row {
+  flex: 1;
+  position: relative;
+}
+/* Scroll body: user-col + chart scroll together */
+.tl-body-scroll {
+  flex: 1;
+  display: flex;
+  overflow-y: auto;
+  min-height: 0;
+  position: relative;
+  z-index: 1;
+  align-items: flex-start;
 }
 </style>
 
@@ -360,15 +371,19 @@
     </div>
 
     <div class="tl-outer">
-      <div class="tl-user-col">
+      <div class="tl-header-row">
         <div class="tl-user-header">Team Members</div>
-        <div id="tlUserRows"></div>
+        <div class="tl-dates-row" id="tlDates"></div>
       </div>
-      <div class="tl-right" id="tlRight">
-        <div class="tl-inner" id="tlInner">
-          <div class="tl-dates-row" id="tlDates"></div>
-          <div class="tl-rows" id="tlRows"></div>
-          <div class="tl-today-line" id="tlToday" style="display:none;"></div>
+      <div class="tl-body-scroll">
+        <div class="tl-user-col">
+          <div id="tlUserRows"></div>
+        </div>
+        <div class="tl-right" id="tlRight">
+          <div class="tl-inner" id="tlInner">
+            <div class="tl-rows" id="tlRows"></div>
+            <div class="tl-today-line" id="tlToday" style="display:none;"></div>
+          </div>
         </div>
       </div>
     </div>

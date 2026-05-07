@@ -65,7 +65,8 @@
 
 .tl-user-col {
   width: 220px; flex-shrink: 0;
-  border-right: 1px solid var(--border); background: #fff; z-index: 2;
+  border-right: 1px solid var(--border); background: #fff;
+  position: relative; z-index: 2;
 }
 .tl-user-header {
   height: 58px; display: flex; align-items: center; padding: 0 20px;
@@ -89,7 +90,7 @@
 .tl-user-name { font-size: 13px; font-weight: 700; color: var(--primary); }
 .tl-user-role { font-size: 11px; color: var(--muted); margin-top: 2px; font-weight: 500; }
 
-.tl-right { flex: 1; overflow: hidden; min-width: 0; }
+.tl-right { flex: 1; min-width: 0; position: relative; z-index: 1; }
 .tl-inner { position: relative; width: 100%; }
 
 .tl-dates-row {
@@ -234,21 +235,34 @@
 .tl-card-header { flex-shrink: 0; }
 .tl-outer {
   flex: 1;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   min-height: 0;
 }
-
-/* Lock date header row — must remove overflow:hidden from .tl-right first */
-.tl-right { overflow: visible; }
-.tl-dates-row {
-  position: sticky;
-  top: 0;
+.tl-header-row {
+  display: flex;
+  flex-shrink: 0;
+  position: relative;
   z-index: 5;
 }
-.tl-user-header {
-  position: sticky;
-  top: 0;
-  z-index: 6;
+.tl-header-row .tl-user-header {
+  width: 220px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+}
+.tl-header-row .tl-dates-row {
+  flex: 1;
+  position: relative;
+}
+.tl-body-scroll {
+  flex: 1;
+  display: flex;
+  overflow-y: auto;
+  min-height: 0;
+  position: relative;
+  z-index: 1;
+  align-items: flex-start;
 }
 </style>
 
@@ -297,15 +311,19 @@
     </div>
 
     <div class="tl-outer">
-      <div class="tl-user-col">
+      <div class="tl-header-row">
         <div class="tl-user-header">Teams</div>
-        <div id="tlTeamRows"></div>
+        <div class="tl-dates-row" id="tlDates"></div>
       </div>
-      <div class="tl-right" id="tlRight">
-        <div class="tl-inner" id="tlInner">
-          <div class="tl-dates-row" id="tlDates"></div>
-          <div class="tl-rows" id="tlRows"></div>
-          <div class="tl-today-line" id="tlToday" style="display:none;"></div>
+      <div class="tl-body-scroll">
+        <div class="tl-user-col">
+          <div id="tlTeamRows"></div>
+        </div>
+        <div class="tl-right" id="tlRight">
+          <div class="tl-inner" id="tlInner">
+            <div class="tl-rows" id="tlRows"></div>
+            <div class="tl-today-line" id="tlToday" style="display:none;"></div>
+          </div>
         </div>
       </div>
     </div>
