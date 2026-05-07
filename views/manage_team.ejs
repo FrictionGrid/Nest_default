@@ -200,7 +200,11 @@
               }
               function toInput(d) {
                 if (!d) return '';
-                return new Date(d).toISOString().split('T')[0];
+                const dt = new Date(d);
+                const y  = dt.getFullYear();
+                const m  = String(dt.getMonth() + 1).padStart(2, '0');
+                const day = String(dt.getDate()).padStart(2, '0');
+                return `${y}-${m}-${day}`;
               }
             %>
             <tr data-id="<%= t.id %>" data-status="<%= t.status %>" data-team="<%= t.team_id || '' %>" data-project="<%= t.project_id || '' %>" data-priority="<%= t.status !== 'completed' ? (t.priority || 'general') : '' %>" data-start="<%= toInput(t.start_date) %>">
