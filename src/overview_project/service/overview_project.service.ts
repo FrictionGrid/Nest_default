@@ -17,12 +17,14 @@ export class OverviewProjectService {
   ) {}
 
   async getSummary() {
+    const year = new Date().getFullYear();
     const result = await this.projectRepo
       .createQueryBuilder('p')
       .select('COUNT(*)', 'total_projects')
       .addSelect('COALESCE(SUM(p.po_value), 0)', 'total_revenue')
       .addSelect("COUNT(*) FILTER (WHERE p.status = 'completed')", 'completed')
       .addSelect("COUNT(*) FILTER (WHERE p.status = 'delayed')", 'delayed')
+      .where('EXTRACT(YEAR FROM p.created_at) = :year', { year })
       .getRawOne();
 
     return {
@@ -30,6 +32,7 @@ export class OverviewProjectService {
       total_revenue: Number(result.total_revenue),
       completed: Number(result.completed),
       delayed: Number(result.delayed),
+      year,
     };
   }
 
@@ -76,7 +79,7 @@ export class OverviewProjectService {
       .addSelect('p.status', 'status')
       .addSelect('p.created_at', 'date_in')
       .orderBy('p.created_at', 'DESC')
-      .limit(7)
+      .limit(8)
       .getRawMany();
 
     return rows;

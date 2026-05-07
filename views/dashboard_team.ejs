@@ -90,6 +90,26 @@
   .task-name { font-size: 14px; font-weight: 700; color: var(--text); }
   .task-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
 
+  /* ── Problem task highlight ───────────────────── */
+  .task-item.task-problem {
+    border-color: #e2a93b;
+    background: #fffbf0;
+  }
+  .problem-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #8a6400;
+    background: rgba(234,179,8,0.15);
+    border-radius: 6px;
+    padding: 2px 7px;
+    margin-left: 6px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
   /* ── Task badges ───────────────────────────────── */
   .task-badge {
     font-size: 11px; font-weight: 700;
@@ -277,10 +297,13 @@
           };
           const pr = prMap[t.priority] || prMap.general;
         %>
-        <div class="task-item">
+        <div class="task-item <%= t.status === 'problem' ? 'task-problem' : '' %>">
           <div class="task-dot <%= pr.dotCls %>"></div>
           <div class="task-info" style="flex:1;min-width:0;">
-            <div class="task-name"><%= t.task_name %></div>
+            <div class="task-name">
+              <%= t.task_name %>
+              <% if (t.status === 'problem') { %><span class="problem-icon">⚠ Problem</span><% } %>
+            </div>
             <div class="task-meta"><%= t.member_name %> · <%= t.project_name %></div>
             <div class="task-progress-wrap">
               <div class="task-progress-bar">

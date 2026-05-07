@@ -60,6 +60,34 @@
     accent-color: #4179bf;
     flex-shrink: 0;
   }
+
+  /* Lock toolbar — only table body scrolls */
+  .main { overflow: hidden; height: 100vh; }
+  .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+  }
+  .toolbar { flex-shrink: 0; }
+  .card1 {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+  }
+  .table-body {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+  }
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
 </style>
 
 <section class="content">
@@ -144,7 +172,7 @@
   <div class="modal">
     <h2 id="modalTitle">Add New Item</h2>
     <input type="hidden" id="editId" />
-    <div class="form-bar">
+    <div class="form-bar" id="itemGroup">
       <div class="form-group2">
         <label>Item</label>
         <input type="text" id="fieldItem" placeholder="Enter Item No." />
@@ -198,10 +226,10 @@
         </select>
       </div>
     </div>
-    <div class="form-bar" id="createdDateGroup" style="display:none;">
+    <div class="form-bar" id="createdDateGroup">
       <div class="form-group2">
         <label>Created Date</label>
-        <input type="date" id="fieldCreatedAt" />
+        <input type="date" id="fieldCreatedAt" lang="en" />
       </div>
     </div>
     <div class="modal-spacing">
@@ -268,10 +296,19 @@
       '</div>';
   }
 
+  function fmtValue(val) {
+    if (val == null || val === '') return '—';
+    const n = Number(val);
+    if (isNaN(n)) return val;
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 2).replace(/\.?0+$/, '') + 'M';
+    if (n >= 1_000)     return (n / 1_000).toFixed(n % 1_000 === 0 ? 0 : 1).replace(/\.?0+$/, '') + 'K';
+    return n.toLocaleString();
+  }
+
   function renderTable(rows) {
     const tbody = document.getElementById('tableBody');
     const count = document.getElementById('projectCount');
-    count.textContent = rows.length + ' record(s)';
+    count.textContent = rows.length + ' item(s)';
 
     if (rows.length === 0) {
       tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No data found</td></tr>';
@@ -284,9 +321,9 @@
         <td><a href="/detail-project/${row.id}" class="project-name-link"><strong>${esc(row.project_name)}</strong></a></td>
         <td>${renderTypeBadges(row.types)}</td>
         <td>${esc(row.sales_name)}</td>
-        <td>${esc(String(row.po_value ?? ''))}</td>
+        <td>${fmtValue(row.po_value)}</td>
         <td>${esc(row.po_no)}</td>
-        <td>${row.created_at ? new Date(row.created_at).toLocaleDateString('th-TH') : ''}</td>
+        <td>${row.created_at ? new Date(row.created_at).toLocaleDateString('en-GB') : ''}</td>
         <td>
           <div class="button-spacing">
             <a href="/detail-project/${row.id}" class="btn-table btn-detail">Detail</a>
@@ -348,8 +385,9 @@
   function openAdd() {
     document.getElementById('modalTitle').textContent = 'Add New Item';
     document.getElementById('editId').value = '';
-    document.getElementById('createdDateGroup').style.display = 'none';
     clearFields();
+    document.getElementById('fieldCreatedAt').value = new Date().toISOString().split('T')[0];
+    document.getElementById('itemGroup').style.display = 'none';
     overlay.classList.add('open');
   }
 
@@ -357,6 +395,7 @@
     const row = allRows.find((r) => r.id === id);
     if (!row) return;
     document.getElementById('modalTitle').textContent = 'Edit Item';
+    document.getElementById('itemGroup').style.display = '';
     document.getElementById('editId').value = id;
     document.getElementById('fieldItem').value = row.item || '';
     document.getElementById('fieldProjectName').value = row.project_name || '';
@@ -365,9 +404,8 @@
     document.getElementById('fieldPoNos').value = row.po_no || '';
     document.getElementById('fieldRegion').value = row.region || '';
 
-    const createdVal = row.created_at ? row.created_at.slice(0, 10) : '';
+    const createdVal = row.created_at ? new Date(row.created_at).toLocaleDateString('en-CA') : '';
     document.getElementById('fieldCreatedAt').value = createdVal;
-    document.getElementById('createdDateGroup').style.display = 'flex';
 
     const checkedIds = (row.types || []).map((t) => String(t.id));
     document.querySelectorAll('input[name="projectType"]').forEach((cb) => {
@@ -401,7 +439,7 @@
       region: document.getElementById('fieldRegion').value,
       type_ids: typeIds,
     };
-    if (id && document.getElementById('fieldCreatedAt').value) {
+    if (document.getElementById('fieldCreatedAt').value) {
       dto.created_at = document.getElementById('fieldCreatedAt').value;
     }
 

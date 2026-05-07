@@ -45,6 +45,33 @@
     box-sizing: border-box;
   }
 
+  /* Lock toolbar — only table body scrolls */
+  .main { overflow: hidden; height: 100vh; }
+  .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+  }
+  .toolbar { flex-shrink: 0; }
+  .card1 {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+  }
+  .table-body {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+  }
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
 </style>
 
 <section class="content">
@@ -69,6 +96,25 @@
       <% teamList.forEach(function(t) { %>
         <option value="<%= t.id %>"><%= t.name %></option>
       <% }); %>
+    </select>
+
+    <select id="filterYear" class="filter-box">
+      <option value="">All Years</option>
+    </select>
+    <select id="filterMonth" class="filter-box">
+      <option value="">All Months</option>
+      <option value="1">January</option>
+      <option value="2">February</option>
+      <option value="3">March</option>
+      <option value="4">April</option>
+      <option value="5">May</option>
+      <option value="6">June</option>
+      <option value="7">July</option>
+      <option value="8">August</option>
+      <option value="9">September</option>
+      <option value="10">October</option>
+      <option value="11">November</option>
+      <option value="12">December</option>
     </select>
 
     <button class="add-table-box" id="addBtn">
@@ -138,7 +184,7 @@
                 return dt.toISOString().split('T')[0];
               }
             %>
-            <tr data-id="<%= p.id %>" data-status="<%= p.status %>" data-team="<%= p.team_id || '' %>">
+            <tr data-id="<%= p.id %>" data-status="<%= p.status %>" data-team="<%= p.team_id || '' %>" data-start="<%= toInputDate(p.start_date) %>">
               <td><a href="/detail-project/<%= p.project_id %>" style="color:var(--primary);font-weight:700;text-decoration:none;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--primary)'"><%= p.project_name || '—' %></a></td>
               <td><%= p.team_name || '—' %></td>
               <td><%= fmtDate(p.start_date) %></td>
@@ -240,11 +286,27 @@
     setTimeout(() => t.classList.remove('show'), 2800);
   }
 
+  function populateYears() {
+    const years = new Set();
+    document.querySelectorAll('#tableBody tr').forEach(tr => {
+      const d = tr.dataset.start;
+      if (d) years.add(d.split('-')[0]);
+    });
+    const sel = document.getElementById('filterYear');
+    [...years].sort((a, b) => b - a).forEach(y => {
+      const opt = document.createElement('option');
+      opt.value = y; opt.textContent = y;
+      sel.appendChild(opt);
+    });
+  }
+
   // Search & filter
   function applyFilters() {
     const q      = document.getElementById('searchInput').value.trim().toLowerCase();
     const status = document.getElementById('filterStatus').value;
     const team   = document.getElementById('filterTeam').value;
+    const year   = document.getElementById('filterYear').value;
+    const month  = document.getElementById('filterMonth').value;
     const rows   = document.querySelectorAll('#tableBody tr');
     let visible  = 0;
 
@@ -254,12 +316,17 @@
       const teamText  = (cells[1]?.textContent || '').toLowerCase();
       const rowStatus = tr.dataset.status || '';
       const rowTeam   = tr.dataset.team   || '';
+      const rowStart  = tr.dataset.start  || '';
+      const rowYear   = rowStart ? rowStart.split('-')[0] : '';
+      const rowMonth  = rowStart ? String(parseInt(rowStart.split('-')[1])) : '';
 
-      const matchSearch = !q || project.includes(q) || teamText.includes(q);
+      const matchSearch = !q      || project.includes(q) || teamText.includes(q);
       const matchStatus = !status || rowStatus === status;
-      const matchTeam   = !team   || rowTeam === team;
+      const matchTeam   = !team   || rowTeam   === team;
+      const matchYear   = !year   || rowYear   === year;
+      const matchMonth  = !month  || rowMonth  === month;
 
-      if (matchSearch && matchStatus && matchTeam) {
+      if (matchSearch && matchStatus && matchTeam && matchYear && matchMonth) {
         tr.style.display = '';
         visible++;
       } else {
@@ -272,6 +339,8 @@
     if (q)      p.set('q',      q);
     if (status) p.set('status', status);
     if (team)   p.set('team',   team);
+    if (year)   p.set('year',   year);
+    if (month)  p.set('month',  month);
     history.replaceState(null, '', p.toString() ? '?' + p.toString() : location.pathname);
   }
 
@@ -281,12 +350,17 @@
     if (p.get('q'))      document.getElementById('searchInput').value  = p.get('q');
     if (p.get('status')) document.getElementById('filterStatus').value = p.get('status');
     if (p.get('team'))   document.getElementById('filterTeam').value   = p.get('team');
+    if (p.get('year'))   document.getElementById('filterYear').value   = p.get('year');
+    if (p.get('month'))  document.getElementById('filterMonth').value  = p.get('month');
+    populateYears();
     applyFilters();
   })();
 
   document.getElementById('searchInput').addEventListener('input', applyFilters);
   document.getElementById('filterStatus').addEventListener('change', applyFilters);
   document.getElementById('filterTeam').addEventListener('change', applyFilters);
+  document.getElementById('filterYear').addEventListener('change', applyFilters);
+  document.getElementById('filterMonth').addEventListener('change', applyFilters);
 
   function setModalMode(isEdit) {
     document.getElementById('teamsCheckGroup').style.display  = isEdit ? 'none' : '';

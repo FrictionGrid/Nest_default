@@ -130,12 +130,13 @@ export class TimelineService {
       const progress = t.progress ?? 0;
 
       return {
-        id:       t.id,
-        userId:   Number(t.userId),
-        name:     t.name,
-        desc:     t.desc || '',
-        start:    startDate.toISOString().split('T')[0],
-        end:      endDate.toISOString().split('T')[0],
+        id:          t.id,
+        userId:      Number(t.userId),
+        name:        t.name,
+        desc:        t.desc || '',
+        projectName: t.project_name || '',
+        start:       startDate.toISOString().split('T')[0],
+        end:         endDate.toISOString().split('T')[0],
         status,
         progress,
       };

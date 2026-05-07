@@ -151,7 +151,7 @@
       <div class="stat-body">
         <div class="stat-label">Value</div>
         <div class="stat-value">฿<%= (Number(summary.total_revenue) / 1000000).toFixed(1) %>M</div>
-        <div class="stat-from">Total project value</div>
+        <div class="stat-from">Total value <%= summary.year %></div>
       </div>
     </div>
 
@@ -164,7 +164,7 @@
       <div class="stat-body">
         <div class="stat-label">Total Projects</div>
         <div class="stat-value"><%= summary.total_projects %></div>
-        <div class="stat-from">All projects</div>
+        <div class="stat-from">All projects <%= summary.year %></div>
       </div>
     </div>
 
@@ -178,7 +178,7 @@
       <div class="stat-body">
         <div class="stat-label">Completed</div>
         <div class="stat-value"><%= summary.completed %></div>
-        <div class="stat-from">Projects done</div>
+        <div class="stat-from">Projects done <%= summary.year %></div>
       </div>
     </div>
 
@@ -193,7 +193,7 @@
       <div class="stat-body">
         <div class="stat-label">Delayed</div>
         <div class="stat-value"><%= summary.delayed %></div>
-        <div class="stat-from">Behind schedule</div>
+        <div class="stat-from">Behind schedule <%= summary.year %></div>
       </div>
     </div>
 
@@ -264,7 +264,7 @@
     <div class="card">
       <div class="card-header">
         <span class="card-title">New Projects</span>
-        <span class="card-sub">Latest 7 entries</span>
+        <span class="card-sub">Latest 8 entries</span>
       </div>
       <div class="table-wrap">
         <table>

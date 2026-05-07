@@ -213,6 +213,43 @@
 .b-ip { background:rgba(74,144,226,0.12);  color:#1d5fa8; }
 .b-dl { background:rgba(228,87,87,0.12);   color:#c0392b; }
 .b-cp { background:rgba(53,179,126,0.12);  color:#1a7a54; }
+
+/* Lock toolbar — chart area scrolls */
+.main { overflow: hidden; height: 100vh; }
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+.toolbar { flex-shrink: 0; }
+.tl-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+.tl-card-header { flex-shrink: 0; }
+.tl-outer {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* Lock date header row — must remove overflow:hidden from .tl-right first */
+.tl-right { overflow: visible; }
+.tl-dates-row {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.tl-user-header {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+}
 </style>
 
 <section class="content">

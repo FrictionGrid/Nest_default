@@ -256,6 +256,43 @@
 .b-cr { background:rgba(249,115,22,0.15);  color:#b84600; }
 .b-od { background:rgba(228,87,87,0.12);   color:#c0392b; }
 .b-cp { background:rgba(53,179,126,0.12);  color:#1a7a54; }
+
+/* Lock toolbar — chart area scrolls */
+.main { overflow: hidden; height: 100vh; }
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+.toolbar { flex-shrink: 0; }
+.tl-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+.tl-card-header { flex-shrink: 0; }
+.tl-outer {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* Lock date header row — must remove overflow:hidden from .tl-right first */
+.tl-right { overflow: visible; }
+.tl-dates-row {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.tl-user-header {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+}
 </style>
 
 <section class="content">
@@ -336,6 +373,7 @@
 <!-- Tooltip -->
 <div class="tl-tooltip" id="tlTip">
   <div class="tl-tip-title" id="ttName"></div>
+  <div class="tl-tip-row"><span>Project</span><span id="ttProject"></span></div>
   <div class="tl-tip-row"><span>Start</span><span id="ttStart"></span></div>
   <div class="tl-tip-row"><span>End</span><span id="ttEnd"></span></div>
   <div class="tl-tip-row"><span>Status</span><span id="ttStatus"></span></div>
@@ -349,6 +387,7 @@
       <div>
         <h3 id="mTitle"></h3>
         <p id="mUser"></p>
+        <p id="mProject" style="font-size:11px;color:var(--muted);margin-top:3px;font-weight:600;"></p>
       </div>
       <button class="tl-modal-close" id="tlModalClose">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -581,11 +620,12 @@ function render() {
 const tip=document.getElementById('tlTip');
 function showTip(e,task) {
   const col=COLORS[task.status]||COLORS.in_progress;
-  document.getElementById('ttName').textContent  = task.name;
-  document.getElementById('ttStart').textContent = fmt(new Date(task.start));
-  document.getElementById('ttEnd').textContent   = fmt(new Date(task.end));
-  document.getElementById('ttStatus').textContent= col.label;
-  document.getElementById('ttProg').textContent  = task.progress+'%';
+  document.getElementById('ttName').textContent    = task.name;
+  document.getElementById('ttProject').textContent = task.projectName || '—';
+  document.getElementById('ttStart').textContent   = fmt(new Date(task.start));
+  document.getElementById('ttEnd').textContent     = fmt(new Date(task.end));
+  document.getElementById('ttStatus').textContent  = col.label;
+  document.getElementById('ttProg').textContent    = task.progress+'%';
   tip.style.display='block'; moveTip(e);
 }
 function moveTip(e) {
@@ -601,12 +641,13 @@ modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove(
 
 function openModal(task,user) {
   const col=COLORS[task.status]||COLORS.in_progress;
-  document.getElementById('mTitle').textContent  = task.name;
-  document.getElementById('mUser').textContent   = `${user.name} · ${user.role}`;
-  document.getElementById('mStart').textContent  = fmt(new Date(task.start));
-  document.getElementById('mEnd').textContent    = fmt(new Date(task.end));
-  document.getElementById('mProg').textContent   = task.progress+'%';
-  document.getElementById('mDesc').textContent   = task.desc;
+  document.getElementById('mTitle').textContent   = task.name;
+  document.getElementById('mUser').textContent    = `${user.name} · ${user.role}`;
+  document.getElementById('mProject').textContent = task.projectName ? `📁 ${task.projectName}` : '';
+  document.getElementById('mStart').textContent   = fmt(new Date(task.start));
+  document.getElementById('mEnd').textContent     = fmt(new Date(task.end));
+  document.getElementById('mProg').textContent    = task.progress+'%';
+  document.getElementById('mDesc').textContent    = task.desc;
   document.getElementById('mProgFill').style.width = task.progress+'%';
   const badge=document.getElementById('mStatus');
   badge.textContent=col.label; badge.className=`tl-badge ${col.badge}`;
