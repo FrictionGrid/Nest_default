@@ -17,6 +17,7 @@ import { DashboardTeamModule } from './dashboard_team/dashboard_team.module';
 import { TimelineModule } from './timeline/timeline.module';
 import { TimelineProjectModule } from './timeline_project/timeline_project.module';
 import { UserManagementModule } from './user_management/user_management.module';
+import { WorkloadModule } from './workload/workload.module';
 import { AuthModule } from './auth/auth.module';
 import { UserContextMiddleware } from './common/middleware/user-context.middleware';
 import { DocumentType } from './database/entities/document_type.entity';
@@ -50,6 +51,7 @@ import { ProjectDocumentFile } from './database/entities/project_document_file.e
     TimelineModule,
     TimelineProjectModule,
     UserManagementModule,
+    WorkloadModule,
   ],
 })
 export class AppModule implements NestModule {

@@ -1,0 +1,172 @@
+<link rel="stylesheet" href="/css/tools/table.css" />
+<style>
+  .main { overflow: hidden; height: 100vh; }
+  .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 28px 28px 0;
+    gap: 20px;
+  }
+
+  /* ── Header ── */
+  .detail-header {
+    background: var(--card-bg, #fff);
+    border-radius: 14px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    padding: 22px 26px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-shrink: 0;
+  }
+  .back-btn {
+    background: none;
+    border: 1.5px solid #cdd9e8;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text, #1e2a3a);
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .back-btn:hover { background: #f0f4fa; }
+  .detail-name {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text, #1e2a3a);
+    white-space: nowrap;
+  }
+  .detail-pct-block { display: flex; flex-direction: column; gap: 6px; min-width: 200px; }
+  .detail-pct-row { display: flex; align-items: baseline; gap: 10px; }
+  .detail-pct { font-size: 32px; font-weight: 800; line-height: 1; }
+  .detail-score { font-size: 13px; color: var(--text-muted, #888); }
+  .detail-bar-bg { height: 10px; background: #e8edf5; border-radius: 999px; overflow: hidden; }
+  .detail-bar-fill { height: 100%; border-radius: 999px; }
+
+  .color-green  .detail-pct, .color-green  .detail-bar-fill { color: #1a7a54; background: #1a7a54; }
+  .color-yellow .detail-pct, .color-yellow .detail-bar-fill { color: #d4a000; background: #d4a000; }
+  .color-orange .detail-pct, .color-orange .detail-bar-fill { color: #f97316; background: #f97316; }
+  .color-red    .detail-pct, .color-red    .detail-bar-fill { color: #dc2626; background: #dc2626; }
+
+  /* ── Table ── */
+  .card1 {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+    padding-bottom: 28px;
+  }
+  .table-body { flex: 1; overflow-y: auto; min-height: 0; }
+  thead th { position: sticky; top: 0; z-index: 1; }
+
+  .task-bar-bg {
+    height: 6px;
+    background: #e8edf5;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 4px;
+    min-width: 80px;
+  }
+  .task-bar-fill { height: 100%; border-radius: 999px; background: var(--primary, #3b6fc7); }
+
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+  .badge-in_progress { background: rgba(59,111,199,0.12); color: #2a5fa0; }
+  .badge-problem     { background: rgba(234,179,8,0.13);  color: #8a6400; }
+</style>
+
+<% if (!data) { %>
+  <section class="content"><p>User not found.</p></section>
+<% } else { %>
+<section class="content color-<%= data.color %>">
+
+  <!-- Header -->
+  <div class="detail-header">
+    <a class="back-btn" href="/workload">← Back</a>
+    <div class="detail-name"><%= data.user.name %></div>
+    <div class="detail-pct-block color-<%= data.color %>">
+      <div class="detail-pct-row">
+        <div class="detail-pct"><%= data.pct %>%</div>
+        <div class="detail-score"><%= data.total_load.toLocaleString() %> / 5,000</div>
+      </div>
+      <div class="detail-bar-bg">
+        <div class="detail-bar-fill" style="width:<%= Math.min(data.pct, 100) %>%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Table -->
+  <div class="card1">
+    <div class="table-header">
+      <h3>Active Tasks</h3>
+      <div class="table-count">Showing <%= data.tasks.length %> tasks</div>
+    </div>
+    <div class="table-body">
+      <table>
+        <colgroup>
+          <col style="width:18%;" /><col style="width:15%;" />
+          <col style="width:12%;" /><col style="width:12%;" />
+          <col style="width:8%;"  /><col style="width:8%;"  />
+          <col style="width:8%;"  /><col style="width:19%;" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Task Name</th>
+            <th>Project</th>
+            <th>Type</th>
+            <th>Project Type</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Days Left</th>
+            <th>Load Contribution</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% data.tasks.forEach(function(t) {
+               function fmtD(d) {
+                 if (!d) return '—';
+                 const dt = new Date(d);
+                 return dt.getDate().toString().padStart(2,'0') + '/' +
+                        (dt.getMonth()+1).toString().padStart(2,'0') + '/' +
+                        dt.getFullYear();
+               }
+          %>
+          <tr>
+            <td><strong><%= t.task_name %></strong></td>
+            <td>
+              <a href="/detail-project/<%= t.project_id %>"
+                 style="color:var(--primary);font-weight:600;text-decoration:none;"
+                 onmouseover="this.style.color='var(--accent)'"
+                 onmouseout="this.style.color='var(--primary)'">
+                <%= t.project_name %>
+              </a>
+            </td>
+            <td><%= t.task_type || '—' %></td>
+            <td><%= t.project_types %></td>
+            <td><%= fmtD(t.start_date) %></td>
+            <td><%= fmtD(t.end_date) %></td>
+            <td><%= t.remaining_days %> days</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-weight:700;font-size:13px;min-width:44px;"><%= t.load_pct %>%</span>
+                <div style="flex:1;">
+                  <div class="task-bar-bg">
+                    <div class="task-bar-fill" style="width:<%= Math.min(t.load_pct, 100) %>%"></div>
+                  </div>
+                  <div style="font-size:11px;color:var(--text-muted,#888);margin-top:2px;">score: <%= t.load.toLocaleString() %></div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
+<% } %>

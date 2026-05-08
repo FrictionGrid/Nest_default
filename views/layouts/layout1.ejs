@@ -48,6 +48,9 @@
         <% if (locals.visibleMenus?.['user-management']) { %>
           <a href="/user-management" class="<%= pageTitle === 'User Management' ? 'active' : '' %>">User Management</a>
         <% } %>
+        <% if (locals.visibleMenus?.['workload']) { %>
+          <a href="/workload" class="<%= pageTitle === 'Workload' ? 'active' : '' %>">Workload</a>
+        <% } %>
       </nav>
     </aside>
 

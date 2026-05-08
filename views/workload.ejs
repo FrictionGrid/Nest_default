@@ -1,0 +1,117 @@
+<link rel="stylesheet" href="/css/tools/table.css" />
+<style>
+  .main { overflow: hidden; height: 100vh; }
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .card-grid {
+    
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+  }
+
+  .workload-card {
+    background: var(--card-bg, #fff);
+    border-radius: 14px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    padding: 20px 22px;
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    cursor: pointer;
+    transition: box-shadow .2s, transform .15s;
+    text-decoration: none;
+    border-top: 4px solid transparent;
+  }
+  .workload-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-2px); }
+
+  .workload-card.color-green  { border-top-color: #1a7a54; }
+  .workload-card.color-yellow { border-top-color: #d4a000; }
+  .workload-card.color-orange { border-top-color: #f97316; }
+  .workload-card.color-red    { border-top-color: #dc2626; }
+
+  .card-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text, #1e2a3a);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-pct-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .card-pct {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .color-green  .card-pct { color: #1a7a54; }
+  .color-yellow .card-pct { color: #d4a000; }
+  .color-orange .card-pct { color: #f97316; }
+  .color-red    .card-pct { color: #dc2626; }
+
+  .card-bar-bg {
+    height: 8px;
+    background: #e8edf5;
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .card-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width .4s ease;
+  }
+  .color-green  .card-bar-fill { background: #1a7a54; }
+  .color-yellow .card-bar-fill { background: #d4a000; }
+  .color-orange .card-bar-fill { background: #f97316; }
+  .color-red    .card-bar-fill { background: #dc2626; }
+
+  .card-meta {
+    font-size: 12px;
+    color: var(--text-muted, #888);
+    font-weight: 600;
+  }
+
+  .card-status-row {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .s-blue   { color: #2a5fa0; }
+  .s-yellow { color: #8a6400; }
+</style>
+
+<section class="content">
+  <div class="card-grid">
+    <% users.forEach(function(u) { %>
+      <a class="workload-card color-<%= u.color %>" href="/workload/<%= u.id %>">
+        <div class="card-name"><%= u.name %></div>
+        <div class="card-pct-row">
+          <div class="card-pct"><%= u.pct %>%</div>
+        </div>
+        <div class="card-bar-bg">
+          <div class="card-bar-fill" style="width:<%= Math.min(u.pct, 100) %>%"></div>
+        </div>
+        <div class="card-meta">Active: <%= u.active %> tasks</div>
+        <div class="card-status-row">
+          <span class="s-blue">● <%= u.in_progress %> In Progress</span>
+          <span class="s-yellow">▲ <%= u.problem %> Problem</span>
+        </div>
+      </a>
+    <% }); %>
+  </div>
+</section>
