@@ -299,10 +299,27 @@
       </div>
       <div class="form-group2">
         <label>Project</label>
+        <select id="taskProjectMonth" onchange="filterTaskProjects()" style="margin-bottom:6px;">
+          <option value="">All Months</option>
+          <option value="1">January</option>
+          <option value="2">February</option>
+          <option value="3">March</option>
+          <option value="4">April</option>
+          <option value="5">May</option>
+          <option value="6">June</option>
+          <option value="7">July</option>
+          <option value="8">August</option>
+          <option value="9">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
         <select id="fieldTaskProjectId">
           <option value="">-- Select Project --</option>
           <% projectList.forEach(function(p) { %>
-            <option value="<%= p.id %>" data-end="<%= p.end_date ? new Date(p.end_date).toISOString().split('T')[0] : '' %>">
+            <option value="<%= p.id %>"
+              data-end="<%= p.end_date ? new Date(p.end_date).toISOString().split('T')[0] : '' %>"
+              data-month="<%= p.created_at ? String(parseInt(new Date(p.created_at).toISOString().slice(5,7))) : '' %>">
               <%= p.project_name %>
             </option>
           <% }); %>
@@ -419,6 +436,15 @@
 
   const taskModal = document.getElementById('taskModal');
 
+  function filterTaskProjects() {
+    const month = document.getElementById('taskProjectMonth').value;
+    document.getElementById('fieldTaskProjectId').value = '';
+    document.querySelectorAll('#fieldTaskProjectId option').forEach(opt => {
+      if (!opt.value) return;
+      opt.style.display = (!month || opt.dataset.month === month) ? '' : 'none';
+    });
+  }
+
   document.getElementById('fieldTaskProjectId').addEventListener('change', function() {
     const opt = this.options[this.selectedIndex];
     const endDate = opt.dataset.end || '';
@@ -432,6 +458,8 @@
     document.getElementById('fieldTaskDesc').value         = '';
     document.getElementById('fieldTaskUserId').value       = '';
     document.getElementById('fieldTaskProjectId').value    = '';
+    document.getElementById('taskProjectMonth').value      = '';
+    filterTaskProjects();
     document.getElementById('fieldTaskStartDate').value    = '';
     document.getElementById('fieldTaskEndDate').value      = '';
     document.getElementById('fieldTaskStatus').value       = 'in_progress';

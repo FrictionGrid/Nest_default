@@ -220,14 +220,34 @@
     <h2 id="modalTitle">Add New</h2>
     <input type="hidden" id="editId" />
     <div class="form-bar">
-      <div class="form-group2 form-group1">
+      <div class="form-group2 form-group1" style="position:relative;">
         <label>Project Name</label>
-        <select id="fieldProjectId" style="height:40px; border:1px solid #cdd9e8; border-radius:10px; padding:0 14px; font-size:15px; color:var(--text); outline:none; width:100%;">
-          <option value="">-- Select Project --</option>
-          <% projectList.forEach(function(proj) { %>
-            <option value="<%= proj.id %>"><%= proj.project_name || '(no name)' %></option>
-          <% }); %>
-        </select>
+        <input type="hidden" id="fieldProjectId" />
+        <div style="display:flex;gap:8px;margin-bottom:6px;">
+          <select id="projectMonthFilter"
+            style="height:40px;border:1px solid #cdd9e8;border-radius:10px;padding:0 14px;font-size:15px;font-family:'Segoe UI',Tahoma,sans-serif;color:var(--text);outline:none;background:#fff;width:150px;flex-shrink:0;">
+            <option value="">All Months</option>
+            <option value="1">January</option>
+            <option value="2">February</option>
+            <option value="3">March</option>
+            <option value="4">April</option>
+            <option value="5">May</option>
+            <option value="6">June</option>
+            <option value="7">July</option>
+            <option value="8">August</option>
+            <option value="9">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+          <input type="text" id="projectSearch"
+            placeholder="Search project..."
+            autocomplete="off"
+            style="height:40px;border:1px solid #cdd9e8;border-radius:10px;padding:0 14px;font-size:15px;font-family:'Segoe UI',Tahoma,sans-serif;color:var(--text);outline:none;flex:1;box-sizing:border-box;"
+            onfocus="showProjectDropdown()"
+          />
+        </div>
+        <div id="projectDropdown" style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:#fff;border:1px solid #cdd9e8;border-radius:10px;box-shadow:0 4px 16px rgba(30,58,95,0.12);max-height:220px;overflow-y:auto;z-index:999;"></div>
       </div>
     </div>
     <!-- Add mode: checkboxes (multi-select) -->
@@ -362,10 +382,68 @@
   document.getElementById('filterYear').addEventListener('change', applyFilters);
   document.getElementById('filterMonth').addEventListener('change', applyFilters);
 
+  // ── Searchable Project Dropdown ──────────────────────────────────────────
+  const PROJECT_LIST = <%- JSON.stringify(projectList) %>;
+
+  function renderDropdown(items) {
+    const dd = document.getElementById('projectDropdown');
+    if (items.length === 0) {
+      dd.innerHTML = '<div style="padding:12px 14px;font-size:13px;color:#8a9bb5;">No results found</div>';
+    } else {
+      dd.innerHTML = items.map(p =>
+        `<div class="proj-dd-item" data-id="${p.id}" data-name="${(p.project_name || '').replace(/"/g,'&quot;')}"
+          style="padding:10px 14px;font-size:15px;font-family:'Segoe UI',Tahoma,sans-serif;color:var(--text);cursor:pointer;border-bottom:1px solid #f0f4f9;">
+          ${p.project_name || '(no name)'}
+        </div>`
+      ).join('');
+      dd.querySelectorAll('.proj-dd-item').forEach(item => {
+        item.addEventListener('mouseenter', () => item.style.background = '#f0f7ff');
+        item.addEventListener('mouseleave', () => item.style.background = '');
+        item.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          document.getElementById('fieldProjectId').value = item.dataset.id;
+          document.getElementById('projectSearch').value  = item.dataset.name;
+          document.getElementById('projectDropdown').style.display = 'none';
+        });
+      });
+    }
+    dd.style.display = 'block';
+  }
+
+  function showProjectDropdown() {
+    const q     = document.getElementById('projectSearch').value.toLowerCase();
+    const month = document.getElementById('projectMonthFilter').value;
+    const filtered = PROJECT_LIST.filter(p => {
+      const nameMatch  = !q || (p.project_name || '').toLowerCase().includes(q);
+      const monthMatch = !month || (p.created_at && String(parseInt(String(p.created_at).slice(5, 7))) === month);
+      return nameMatch && monthMatch;
+    });
+    renderDropdown(filtered);
+  }
+
+  document.getElementById('projectSearch').addEventListener('input', showProjectDropdown);
+  document.getElementById('projectMonthFilter').addEventListener('change', () => {
+    document.getElementById('projectSearch').value = '';
+    document.getElementById('fieldProjectId').value = '';
+    showProjectDropdown();
+  });
+  let dropdownHovered = false;
+  const dd = document.getElementById('projectDropdown');
+  dd.addEventListener('mouseenter', () => { dropdownHovered = true; });
+  dd.addEventListener('mouseleave', () => { dropdownHovered = false; });
+  dd.addEventListener('touchstart', () => { dropdownHovered = true; });
+
+  document.getElementById('projectSearch').addEventListener('blur', () => {
+    setTimeout(() => {
+      if (!dropdownHovered) dd.style.display = 'none';
+    }, 150);
+  });
+
   function setModalMode(isEdit) {
     document.getElementById('teamsCheckGroup').style.display  = isEdit ? 'none' : '';
     document.getElementById('teamSelectGroup').style.display  = isEdit ? ''     : 'none';
-    document.getElementById('fieldProjectId').disabled = isEdit;
+    document.getElementById('projectSearch').disabled = isEdit;
+    document.getElementById('projectSearch').style.background = isEdit ? '#f4f7fb' : '';
   }
 
   // Open modal (Add)
@@ -373,6 +451,8 @@
     document.getElementById('modalTitle').textContent = 'Add New';
     document.getElementById('editId').value = '';
     document.getElementById('fieldProjectId').value = '';
+    document.getElementById('projectSearch').value = '';
+    document.getElementById('projectMonthFilter').value = '';
     document.getElementById('fieldStartDate').value = '';
     document.getElementById('fieldEndDate').value = '';
     document.querySelectorAll('.proj-team-check').forEach(cb => cb.checked = false);
@@ -384,9 +464,11 @@
   document.addEventListener('click', (e) => {
     if (e.target.classList.contains('btn-edit')) {
       const btn = e.target;
+      const proj = PROJECT_LIST.find(p => p.id == btn.dataset.projectId);
       document.getElementById('modalTitle').textContent = 'Edit Item';
       document.getElementById('editId').value = btn.dataset.id;
       document.getElementById('fieldProjectId').value = btn.dataset.projectId || '';
+      document.getElementById('projectSearch').value = proj ? (proj.project_name || '') : '';
       document.getElementById('fieldTeamId').value = btn.dataset.teamId || '';
       document.getElementById('fieldStartDate').value = btn.dataset.start || '';
       document.getElementById('fieldEndDate').value = btn.dataset.end || '';
@@ -418,6 +500,14 @@
       await fetch('/manage-project/api/' + id, { method: 'DELETE' });
       showToast('Item deleted successfully');
       setTimeout(() => location.reload(), 1000);
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    const search = document.getElementById('projectSearch');
+    if (!dd.contains(e.target) && e.target !== search) {
+      dropdownHovered = false;
+      dd.style.display = 'none';
     }
   });
 

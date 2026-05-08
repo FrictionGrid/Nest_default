@@ -476,8 +476,7 @@
 
                 <!-- Progress Ring -->
                 <%
-                  const docPct = progress.total > 0 ? Math.round(progress.uploaded / progress.total * 100) : 0;
-                  const ringOffset = (314 * (1 - docPct / 100)).toFixed(1);
+                  const ringOffset = (314 * (1 - taskProgress / 100)).toFixed(1);
                 %>
                 <div class="ai-ring-wrap">
                   <svg class="ai-ring-svg" width="120" height="120" viewBox="0 0 120 120">
@@ -493,7 +492,7 @@
                       stroke-dasharray="314"
                       stroke-dashoffset="<%= ringOffset %>"
                       style="animation: ringDraw 1.2s ease both;"/>
-                    <text class="ai-ring-pct" x="60" y="56"><%= docPct %>%</text>
+                    <text class="ai-ring-pct" x="60" y="56"><%= taskProgress %>%</text>
                     <text class="ai-ring-sub"  x="60" y="72">Overall</text>
                   </svg>
                   <div class="ai-ring-label">Project Progress</div>
