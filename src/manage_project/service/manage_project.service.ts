@@ -5,6 +5,9 @@ import { ProjectTeam } from '../../database/entities/project_team.entity';
 import { ProjectIncoming } from '../../database/entities/project_incoming.entity';
 import { Team } from '../../database/entities/team.entity';
 import { UsersTeam } from '../../database/entities/users_team.entity';
+import { TaskTeam } from '../../database/entities/task_team.entity';
+import { DocumentType } from '../../database/entities/document_type.entity';
+import { ProjectDocument } from '../../database/entities/project_document.entity';
 import { CreateManageProjectDto } from '../dto/create-manage_project.dto';
 import { UpdateManageProjectDto } from '../dto/update-manage_project.dto';
 
@@ -19,6 +22,12 @@ export class ManageProjectService {
     private readonly teamRepo: Repository<Team>,
     @InjectRepository(UsersTeam)
     private readonly userTeamRepo: Repository<UsersTeam>,
+    @InjectRepository(TaskTeam)
+    private readonly taskRepo: Repository<TaskTeam>,
+    @InjectRepository(DocumentType)
+    private readonly docTypeRepo: Repository<DocumentType>,
+    @InjectRepository(ProjectDocument)
+    private readonly projectDocRepo: Repository<ProjectDocument>,
   ) {}
 
   private async getTeamIdsByUser(userId: number): Promise<number[]> {
@@ -138,6 +147,33 @@ export class ManageProjectService {
       await this.projectRepo.update(projectId, { start_date, end_date } as any);
     }
     return this.projectTeamRepo.findOne({ where: { id }, relations: ['project', 'team'] });
+  }
+
+  async checkComplete(id: number): Promise<{ canComplete: boolean; incompleteTasks: string[]; missingDocs: string[] }> {
+    const row = await this.projectTeamRepo.findOne({ where: { id } });
+    if (!row) return { canComplete: false, incompleteTasks: [], missingDocs: [] };
+
+    const projectId = row.project_id;
+
+    const [tasks, docTypes, docs] = await Promise.all([
+      this.taskRepo.find({ where: { project_id: projectId } }),
+      this.docTypeRepo.find({ where: { is_required: true } }),
+      this.projectDocRepo.find({ where: { project_id: projectId } }),
+    ]);
+
+    const incompleteTasks = tasks
+      .filter((t) => t.status !== 'completed')
+      .map((t) => t.task_name);
+
+    const docMap = new Map(docs.map((d) => [d.document_type_id, d]));
+    const missingDocs = docTypes
+      .filter((t) => {
+        const doc = docMap.get(t.id);
+        return !doc || doc.status === 'missing';
+      })
+      .map((t) => t.name);
+
+    return { canComplete: incompleteTasks.length === 0 && missingDocs.length === 0, incompleteTasks, missingDocs };
   }
 
   async complete(id: number) {
