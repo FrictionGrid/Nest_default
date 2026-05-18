@@ -16,7 +16,7 @@ export class IncomingProjectService {
   ) {}
 
   findAll() {
-    return this.repo.find({ order: { created_at: 'ASC' }, relations: ['types'] });
+    return this.repo.find({ order: { created_at: 'ASC', id: 'ASC' }, relations: ['types'] });
   }
 
   async create(dto: CreateIncomingProjectDto) {
@@ -57,7 +57,7 @@ export class IncomingProjectService {
   }
 
   private async renumberItems(): Promise<void> {
-    const all = await this.repo.find({ order: { created_at: 'ASC' } });
+    const all = await this.repo.find({ order: { created_at: 'ASC', id: 'ASC' } });
     all.forEach((p, i) => { p.item = i + 1; });
     if (all.length > 0) await this.repo.save(all);
   }
