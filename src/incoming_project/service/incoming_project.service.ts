@@ -21,19 +21,16 @@ export class IncomingProjectService {
 
   async create(dto: CreateIncomingProjectDto) {
     const { type_ids, item: _item, ...data } = dto;
-    const maxResult = await this.repo
-      .createQueryBuilder('p')
-      .select('MAX(p.item)', 'max')
-      .getRawOne();
-    const nextItem = (maxResult?.max ?? 0) + 1;
     if (data.po_no) {
       data.project_name = `${data.project_name}_${data.po_no}`;
     }
-    const project = this.repo.create({ ...data, item: nextItem });
+    const project = this.repo.create({ ...data, item: 0 });
     if (type_ids && type_ids.length > 0) {
       project.types = await this.typeRepo.findBy({ id: In(type_ids) });
     }
-    return this.repo.save(project);
+    await this.repo.save(project);
+    await this.renumberItems();
+    return project;
   }
 
   findOne(id: number) {
@@ -56,8 +53,12 @@ export class IncomingProjectService {
 
   async remove(id: number) {
     await this.repo.delete(id);
-    const remaining = await this.repo.find({ order: { id: 'ASC' } });
-    remaining.forEach((p, i) => { p.item = i + 1; });
-    if (remaining.length > 0) await this.repo.save(remaining);
+    await this.renumberItems();
+  }
+
+  private async renumberItems(): Promise<void> {
+    const all = await this.repo.find({ order: { created_at: 'ASC' } });
+    all.forEach((p, i) => { p.item = i + 1; });
+    if (all.length > 0) await this.repo.save(all);
   }
 }
