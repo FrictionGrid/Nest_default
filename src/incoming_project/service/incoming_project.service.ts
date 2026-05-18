@@ -16,7 +16,7 @@ export class IncomingProjectService {
   ) {}
 
   findAll() {
-    return this.repo.find({ order: { item: 'ASC', id: 'ASC' }, relations: ['types'] });
+    return this.repo.find({ order: { created_at: 'ASC' }, relations: ['types'] });
   }
 
   async create(dto: CreateIncomingProjectDto) {

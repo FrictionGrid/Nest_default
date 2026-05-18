@@ -6,7 +6,7 @@ import { CreateIncomingProjectDto } from './dto/create-incoming_project.dto';
 import { UpdateIncomingProjectDto } from './dto/update-incoming_project.dto';
 
 @UseGuards(AuthGuard, RolesGuard)
-@Controller('incoming-project')
+@Controller('incoming-project') // ไปตัวขึ้น Route address
 export class IncomingProjectController {
   constructor(private readonly incomingProjectService: IncomingProjectService) {}
 
