@@ -12,6 +12,7 @@ const PAGE_ROUTES: Record<string, string> = {
   'timeline-project': 'GET:/timeline-project',
   'user-management':  'GET:/user-management',
   'workload':         'GET:/workload',
+  'summary-year':     'GET:/summary-year',
 };
 
 @Injectable()

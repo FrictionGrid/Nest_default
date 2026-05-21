@@ -51,6 +51,9 @@
         <% if (locals.visibleMenus?.['workload']) { %>
           <a href="/workload" class="<%= pageTitle === 'Workload' ? 'active' : '' %>">Workload</a>
         <% } %>
+        <% if (locals.visibleMenus?.['summary-year']) { %>
+          <a href="/summary-year" class="<%= pageTitle === 'Summary Year' ? 'active' : '' %>">Summary Year</a>
+        <% } %>
       </nav>
     </aside>
 
