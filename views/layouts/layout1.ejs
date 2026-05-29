@@ -54,6 +54,9 @@
         <% if (locals.visibleMenus?.['summary-year']) { %>
           <a href="/summary-year" class="<%= pageTitle === 'Summary Year' ? 'active' : '' %>">Summary Year</a>
         <% } %>
+        <% if (locals.visibleMenus?.['payment']) { %>
+          <a href="/payment" class="<%= pageTitle === 'Payment' ? 'active' : '' %>">Payment</a>
+        <% } %>
       </nav>
     </aside>
 

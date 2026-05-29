@@ -27,6 +27,7 @@ export class IncomingProjectController {
   }
 
   @Put('api/projects/:id')
+  // ดึงค่า id
   update(@Param('id') id: string, @Body() dto: UpdateIncomingProjectDto) {
     return this.incomingProjectService.update(+id, dto);
   }

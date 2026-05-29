@@ -14,7 +14,7 @@ export class IncomingProjectService {
     @InjectRepository(ProjectType)
     private readonly typeRepo: Repository<ProjectType>,
   ) {}
-
+// ดึงจาก DB ที่ประกาศมาใช้
   findAll() {
     return this.repo.find({ order: { created_at: 'ASC', id: 'ASC' }, relations: ['types'] });
   }
@@ -41,14 +41,20 @@ export class IncomingProjectService {
     const { type_ids, ...data } = dto;
     const project = await this.repo.findOne({ where: { id }, relations: ['types'] });
     if (!project) return null;
-
+// ปลายทางกับต้นทางที่จะเอามาใส่
     Object.assign(project, data);
+    // 
     if (type_ids !== undefined) {
       project.types = type_ids.length > 0
         ? await this.typeRepo.findBy({ id: In(type_ids) })
         : [];
+       
     }
-    return this.repo.save(project);
+    // สร้างตัวเเปร save สำหรับฟังชั่นข้างบน
+  const saved = await this.repo.save(project); 
+  //เเล้วให้ทำงานเรียงตามฟังชั่นที่เราเขียนก่อน
+  await this.renumberItems();                  
+  return saved;
   }
 
   async remove(id: number) {

@@ -1,0 +1,444 @@
+<style>
+  /* ── Back button ── */
+  .dp-back {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 16px; margin-bottom: 20px;
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: 10px; color: var(--primary);
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; text-decoration: none;
+    transition: all .2s;
+  }
+  .dp-back:hover { background: #f0f5fb; border-color: #4A90E2; color: #2d5a9e; }
+
+  /* ── Header card ── */
+  .dp-header {
+    background: linear-gradient(135deg, #1E3A5F 0%, #2d5a9e 55%, #4A90E2 100%);
+    border-radius: var(--radius); padding: 24px 28px;
+    margin-bottom: 20px; position: relative; overflow: hidden;
+    animation: fadeUp .35s ease both;
+  }
+  .dp-header::before {
+    content: ''; position: absolute; width: 240px; height: 240px;
+    border-radius: 50%; background: rgba(255,255,255,.07);
+    top: -70px; right: -50px;
+  }
+  .dp-header::after {
+    content: ''; position: absolute; width: 140px; height: 140px;
+    border-radius: 50%; background: rgba(255,255,255,.05);
+    bottom: -40px; left: 180px;
+  }
+
+  .dp-header-top {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; gap: 16px;
+    position: relative; z-index: 1; margin-bottom: 20px;
+  }
+  .dp-eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: 2px;
+    text-transform: uppercase; color: rgba(255,255,255,.6); margin-bottom: 5px;
+  }
+  .dp-project-name {
+    font-size: 18px; font-weight: 800; color: #fff;
+    line-height: 1.3; margin-bottom: 4px;
+  }
+  .dp-po-no { font-size: 13px; color: rgba(255,255,255,.65); }
+
+  .dp-status-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 14px; border-radius: 999px;
+    font-size: 12px; font-weight: 700;
+    background: rgba(255,255,255,.15);
+    border: 1.5px solid rgba(255,255,255,.25);
+    color: #fff; white-space: nowrap; flex-shrink: 0;
+  }
+  .dp-status-badge::before {
+    content: ''; width: 6px; height: 6px;
+    border-radius: 50%; background: currentColor;
+  }
+
+  /* ── Stats row ── */
+  .dp-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; position: relative; z-index: 1;
+  }
+  @media (max-width: 700px) { .dp-stats { grid-template-columns: repeat(2, 1fr); } }
+  .dp-stat {
+    background: rgba(255,255,255,.1);
+    border: 1.5px solid rgba(255,255,255,.15);
+    border-radius: 10px; padding: 12px 14px;
+    backdrop-filter: blur(6px);
+  }
+  .dp-stat-label { font-size: 11px; color: rgba(255,255,255,.6); margin-bottom: 4px; }
+  .dp-stat-val   { font-size: 17px; font-weight: 800; color: #fff; }
+  .dp-stat-sub   { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 2px; }
+
+  /* ── Installment card ── */
+  .inst-card {
+    background: var(--card); border-radius: var(--radius);
+    box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden;
+    animation: fadeUp .4s ease both; animation-delay: .1s;
+  }
+  .inst-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+    flex-wrap: wrap; gap: 8px;
+  }
+  .inst-card-title { font-size: 14px; font-weight: 700; color: var(--primary); }
+  .inst-count {
+    font-size: 12px; font-weight: 600;
+    background: rgba(74,144,226,.12); color: #1d5fa8;
+    padding: 3px 10px; border-radius: 999px;
+  }
+
+  /* ── Table header ── */
+  .inst-thead {
+    display: grid;
+    grid-template-columns: 36px 1fr 1fr 1fr 130px 38px;
+    gap: 8px; padding: 10px 20px;
+    background: #f0f5fb; border-bottom: 1px solid var(--border);
+  }
+  .inst-thead span {
+    font-size: 11px; font-weight: 700; color: #2a4a70;
+    text-transform: uppercase; letter-spacing: .5px;
+  }
+
+  /* ── Row ── */
+  .inst-row {
+    display: grid;
+    grid-template-columns: 36px 1fr 1fr 1fr 130px 38px;
+    gap: 8px; align-items: center;
+    padding: 10px 20px; border-bottom: 1px solid #f0f4f8;
+    transition: background .15s;
+  }
+  .inst-row:last-child { border-bottom: none; }
+  .inst-row:hover { background: #f8fbff; }
+
+  .inst-num {
+    font-size: 12px; font-weight: 700;
+    color: var(--muted); text-align: center;
+  }
+  .inst-input {
+    padding: 7px 10px; border: 1.5px solid var(--border);
+    border-radius: 8px; font-size: 13px; color: var(--primary);
+    background: var(--card); outline: none; width: 100%;
+    transition: border-color .2s;
+  }
+  .inst-input:focus { border-color: #4A90E2; }
+
+  .amt-wrap { position: relative; }
+  .amt-wrap .inst-input { padding-left: 20px; }
+  .amt-prefix {
+    position: absolute; left: 8px; top: 50%;
+    transform: translateY(-50%); font-size: 13px;
+    color: var(--muted); pointer-events: none;
+  }
+
+  .status-select {
+    padding: 7px 8px; border: 1.5px solid var(--border);
+    border-radius: 8px; font-size: 12px; font-weight: 600;
+    outline: none; cursor: pointer; width: 100%;
+    transition: border-color .2s, background .2s;
+  }
+  .ss-paid     { background: rgba(53,179,126,.1);  color: #1a7a54; border-color: #35B37E; }
+  .ss-pending  { background: rgba(244,166,42,.1);  color: #9a6000; border-color: #F4A62A; }
+  .ss-upcoming { background: rgba(148,163,184,.1); color: #475569; border-color: #94A3B8; }
+
+  .del-btn {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: 1.5px solid #fecaca; background: #fef2f2;
+    color: #ef4444; cursor: pointer; display: flex;
+    align-items: center; justify-content: center;
+    transition: all .2s; flex-shrink: 0;
+  }
+  .del-btn:hover { background: #fee2e2; border-color: #ef4444; }
+
+  .inst-empty {
+    padding: 32px 20px; text-align: center;
+    color: var(--muted); font-size: 13px; font-style: italic;
+  }
+
+  /* ── Footer ── */
+  .dp-footer {
+    display: flex; justify-content: space-between;
+    align-items: center; gap: 12px;
+    animation: fadeUp .45s ease both; animation-delay: .15s;
+  }
+  .btn-add {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 10px 18px; border-radius: 10px;
+    border: 1.5px dashed #94A3B8; background: transparent;
+    color: #56718f; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all .2s;
+  }
+  .btn-add:hover { border-color: #4A90E2; color: #2d5a9e; background: rgba(74,144,226,.05); }
+
+  .btn-save {
+    padding: 10px 28px; border-radius: 10px; border: none;
+    background: linear-gradient(135deg, #2d5a9e, #4A90E2);
+    color: #fff; font-size: 13px; font-weight: 700;
+    cursor: pointer; box-shadow: 0 4px 12px rgba(74,144,226,.3);
+    transition: all .2s;
+  }
+  .btn-save:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(74,144,226,.4); }
+  .btn-save:disabled { opacity: .65; pointer-events: none; }
+
+  /* ── Toast ── */
+  .dp-toast {
+    position: fixed; bottom: 24px; right: 24px;
+    padding: 12px 20px; border-radius: 10px;
+    font-size: 13px; font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0,0,0,.15);
+    z-index: 9999; animation: toastIn .3s ease;
+    transition: opacity .3s;
+  }
+  .dp-toast.ok  { background: #1a7a54; color: #fff; }
+  .dp-toast.err { background: #b91c1c; color: #fff; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 768px) {
+    .inst-thead, .inst-row {
+      grid-template-columns: 30px 1fr 1fr 110px 32px;
+    }
+    .inst-thead span:nth-child(4),
+    .inst-row .inst-paid-date { display: none; }
+  }
+</style>
+
+<section class="content">
+
+<% if (!project) { %>
+  <a href="/payment" class="dp-back">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    กลับ
+  </a>
+  <div style="text-align:center;padding:60px 20px;color:var(--muted);">
+    <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
+    <div style="font-size:15px;font-weight:700;color:var(--primary);">ไม่พบโครงการนี้</div>
+  </div>
+<% } else { %>
+
+  <a href="/payment" class="dp-back">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+    กลับหน้า Payment
+  </a>
+
+  <!-- Header -->
+  <div class="dp-header">
+    <div class="dp-header-top">
+      <div>
+        <div class="dp-eyebrow">Payment Plan</div>
+        <div class="dp-project-name"><%= project.project_name %></div>
+        <div class="dp-po-no"><%= project.po_no ? 'PO: ' + project.po_no : 'ไม่มีเลข PO' %></div>
+      </div>
+      <span class="dp-status-badge">
+        <%= project.status === 'in_progress' ? 'In Progress' : project.status === 'completed' ? 'Completed' : 'Delayed' %>
+      </span>
+    </div>
+    <div class="dp-stats">
+      <div class="dp-stat">
+        <div class="dp-stat-label">มูลค่า PO</div>
+        <div class="dp-stat-val" id="statPoVal">฿<%= Number(project.po_value).toLocaleString('th-TH') %></div>
+      </div>
+      <div class="dp-stat">
+        <div class="dp-stat-label">จัดสรรแล้ว</div>
+        <div class="dp-stat-val" id="statAllocated">—</div>
+        <div class="dp-stat-sub" id="statAllocatedPct"></div>
+      </div>
+      <div class="dp-stat">
+        <div class="dp-stat-label">จ่ายแล้ว</div>
+        <div class="dp-stat-val" id="statPaid">—</div>
+        <div class="dp-stat-sub" id="statPaidPct"></div>
+      </div>
+      <div class="dp-stat">
+        <div class="dp-stat-label">คงค้าง</div>
+        <div class="dp-stat-val" id="statRemaining">—</div>
+        <div class="dp-stat-sub" id="statRemainingNote"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Installments -->
+  <div class="inst-card">
+    <div class="inst-card-header">
+      <span class="inst-card-title">รายการงวดชำระ</span>
+      <span class="inst-count" id="instCount">0 งวด</span>
+    </div>
+    <div class="inst-thead">
+      <span>#</span>
+      <span>วันกำหนดจ่าย</span>
+      <span>ยอดเงิน (฿)</span>
+      <span>วันที่จ่ายจริง</span>
+      <span>สถานะ</span>
+      <span></span>
+    </div>
+    <div id="instList"></div>
+  </div>
+
+  <!-- Footer -->
+  <div class="dp-footer">
+    <button class="btn-add" onclick="addRow()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      เพิ่มงวด
+    </button>
+    <button class="btn-save" id="saveBtn" onclick="save()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-right:6px;vertical-align:middle;">
+        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+        <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+      </svg>
+      บันทึก
+    </button>
+  </div>
+
+<% } %>
+</section>
+
+<% if (project) { %>
+<script>
+  const PO_VALUE  = <%- project.po_value %>;
+  let rows = <%- JSON.stringify(project.installments) %>;
+
+  const fmt = n => Number(n || 0).toLocaleString('th-TH', { maximumFractionDigits: 0 });
+
+  function updateStats() {
+    const allocated = rows.reduce((s, r) => s + Number(r.amount || 0), 0);
+    const paid      = rows.filter(r => r.status === 'paid').reduce((s, r) => s + Number(r.amount || 0), 0);
+    const remaining = PO_VALUE - paid;
+
+    const allocPct = PO_VALUE > 0 ? Math.round((allocated / PO_VALUE) * 100) : 0;
+    const paidPct  = PO_VALUE > 0 ? Math.round((paid / PO_VALUE) * 100) : 0;
+
+    document.getElementById('statAllocated').textContent     = '฿' + fmt(allocated);
+    document.getElementById('statAllocatedPct').textContent  = allocPct + '% ของ PO';
+    document.getElementById('statPaid').textContent          = '฿' + fmt(paid);
+    document.getElementById('statPaidPct').textContent       = paidPct + '% ของ PO';
+    document.getElementById('statRemaining').textContent     = '฿' + fmt(remaining < 0 ? 0 : remaining);
+    document.getElementById('statRemainingNote').textContent = remaining < 0 ? 'จัดสรรเกิน PO' : 'ยังไม่ได้รับ';
+    document.getElementById('instCount').textContent         = rows.length + ' งวด';
+  }
+
+  function renderRows() {
+    const list = document.getElementById('instList');
+    if (!rows.length) {
+      list.innerHTML = `<div class="inst-empty">ยังไม่มีงวดชำระ — กดปุ่ม "เพิ่มงวด" เพื่อเริ่มต้น</div>`;
+      updateStats();
+      return;
+    }
+
+    list.innerHTML = rows.map((r, i) => `
+      <div class="inst-row" data-idx="${i}">
+        <span class="inst-num">${r.installment_no}</span>
+
+        <input type="date" class="inst-input"
+          value="${r.due_date || ''}"
+          onchange="setField(${i},'due_date',this.value)">
+
+        <div class="amt-wrap">
+          <span class="amt-prefix">฿</span>
+          <input type="number" class="inst-input" min="0" step="1000"
+            value="${r.amount || ''}" placeholder="0"
+            oninput="setField(${i},'amount',this.value)">
+        </div>
+
+        <input type="date" class="inst-input inst-paid-date"
+          value="${r.paid_date || ''}"
+          onchange="setField(${i},'paid_date',this.value)">
+
+        <select class="status-select ss-${r.status}"
+          onchange="setStatus(${i},this.value)">
+          <option value="upcoming" ${r.status==='upcoming'?'selected':''}>Upcoming</option>
+          <option value="pending"  ${r.status==='pending' ?'selected':''}>Pending</option>
+          <option value="paid"     ${r.status==='paid'    ?'selected':''}>Paid</option>
+        </select>
+
+        <button class="del-btn" onclick="delRow(${i})" title="ลบงวดนี้">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6"/><path d="M14 11v6"/>
+          </svg>
+        </button>
+      </div>`
+    ).join('');
+
+    updateStats();
+  }
+
+  function setField(idx, field, val) {
+    rows[idx][field] = val;
+    if (field === 'amount') updateStats();
+  }
+
+  function setStatus(idx, val) {
+    rows[idx].status = val;
+    const sel = document.querySelector(`.inst-row[data-idx="${idx}"] .status-select`);
+    if (sel) sel.className = `status-select ss-${val}`;
+    updateStats();
+  }
+
+  function addRow() {
+    rows.push({
+      installment_no: rows.length + 1,
+      due_date: '', amount: '', status: 'upcoming', paid_date: '', note: '',
+    });
+    renderRows();
+    document.getElementById('instList').lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function delRow(idx) {
+    rows.splice(idx, 1);
+    rows.forEach((r, i) => { r.installment_no = i + 1; });
+    renderRows();
+  }
+
+  async function save() {
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true;
+    btn.textContent = 'กำลังบันทึก…';
+    try {
+      const body = {
+        installments: rows.map(r => ({
+          installment_no: r.installment_no,
+          due_date:   r.due_date   || null,
+          amount:     r.amount !== '' ? Number(r.amount) : null,
+          status:     r.status,
+          paid_date:  r.paid_date  || null,
+          note:       r.note       || null,
+        })),
+      };
+      const res  = await fetch(`/detail-payment/<%- project.id %>/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      toast(data.success ? 'บันทึกสำเร็จ' : 'เกิดข้อผิดพลาด', data.success ? 'ok' : 'err');
+    } catch {
+      toast('บันทึกไม่สำเร็จ', 'err');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-right:6px;vertical-align:middle;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>บันทึก`;
+    }
+  }
+
+  function toast(msg, type) {
+    const t = document.createElement('div');
+    t.className = `dp-toast ${type}`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2800);
+  }
+
+  renderRows();
+</script>
+<% } %>

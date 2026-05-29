@@ -2,10 +2,9 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+// สำหรับการสร้าง seesion ของระบบ
 const session = require('express-session');
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const expressLayouts = require('express-ejs-layouts');
 
 async function bootstrap() {

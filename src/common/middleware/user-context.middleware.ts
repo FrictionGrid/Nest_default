@@ -13,6 +13,7 @@ const PAGE_ROUTES: Record<string, string> = {
   'user-management':  'GET:/user-management',
   'workload':         'GET:/workload',
   'summary-year':     'GET:/summary-year',
+  'payment':          'GET:/payment',
 };
 
 @Injectable()

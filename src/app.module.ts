@@ -19,6 +19,8 @@ import { TimelineProjectModule } from './timeline_project/timeline_project.modul
 import { UserManagementModule } from './user_management/user_management.module';
 import { WorkloadModule } from './workload/workload.module';
 import { SummaryYearModule } from './summary_year/summary_year.module';
+import { PaymentModule } from './payment/payment.module';
+import { PaymentInstallment } from './database/entities/payment_installment.entity';
 import { AuthModule } from './auth/auth.module';
 import { UserContextMiddleware } from './common/middleware/user-context.middleware';
 import { DocumentType } from './database/entities/document_type.entity';
@@ -37,7 +39,7 @@ import { ProjectDocumentFile } from './database/entities/project_document_file.e
         username: config.get('DB_USERNAME'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [ProjectIncoming, ProjectType, Team, ProjectTeam, User, UsersTeam, TaskTeam, DocumentType, ProjectDocument, ProjectDocumentFile],
+        entities: [ProjectIncoming, ProjectType, Team, ProjectTeam, User, UsersTeam, TaskTeam, DocumentType, ProjectDocument, ProjectDocumentFile, PaymentInstallment],
         synchronize: false,
       }),
       inject: [ConfigService],
@@ -54,6 +56,7 @@ import { ProjectDocumentFile } from './database/entities/project_document_file.e
     UserManagementModule,
     WorkloadModule,
     SummaryYearModule,
+    PaymentModule,
   ],
 })
 export class AppModule implements NestModule {

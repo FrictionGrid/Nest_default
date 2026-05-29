@@ -24,8 +24,10 @@ export class AuthController {
   @Post('login')
   async login(@Body() body: LoginDto, @Req() req: Request, @Res() res: Response) {
     try {
+      // เข้าไป service เเล้วรับ return ออกมา
       const user = await this.authService.validateUser(body.username, body.password);
       (req.session as any).user = user;
+      // role เลือกหน้าที่เข้าไป
       const redirect = ROLE_DEFAULT_PAGE[user.role] ?? '/overview-project';
       return res.json({ success: true, redirect });
     } catch {
