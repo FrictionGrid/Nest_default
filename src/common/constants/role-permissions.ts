@@ -60,7 +60,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
 
   // ── dashboard-team + detail ──────────────────────────────────────────────
   engineer: [
-      'GET:/overview-project',
+    'GET:/overview-project',
     'GET:/overview-project/api/team-stats',
     'GET:/dashboard-team',
     'PUT:/dashboard-team/api/tasks/:id/complete',
