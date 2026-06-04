@@ -10,7 +10,6 @@ export class SynologyService {
   private readonly http: AxiosInstance;
   private readonly baseUrl: string;
   private readonly basePath: string;
-
   private sid: string | null = null;
   private synotoken: string | null = null;
   private loginPromise: Promise<void> | null = null;
@@ -20,7 +19,7 @@ export class SynologyService {
     const host     = config.get('NAS_HOST', '');
     const port     = config.get('NAS_PORT', '5001');
     this.baseUrl   = `${protocol}://${host}:${port}/webapi/entry.cgi`;
-    this.basePath  = config.get('NAS_BASE_PATH', '/dashboard');
+    this.basePath   = config.get('NAS_BASE_PATH', '/dashboard');
 
     this.http = axios.create({
       httpsAgent: new https.Agent({ rejectUnauthorized: false }),

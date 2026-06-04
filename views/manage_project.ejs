@@ -184,7 +184,7 @@
                 return dt.toISOString().split('T')[0];
               }
             %>
-            <tr data-id="<%= p.id %>" data-status="<%= p.status %>" data-team="<%= p.team_id || '' %>" data-start="<%= toInputDate(p.start_date) %>">
+            <tr data-id="<%= p.id %>" data-status="<%= p.status %>" data-team="<%= p.team_id || '' %>" data-start="<%= toInputDate(p.start_date) %>" data-created="<%= toInputDate(p.created_at) %>">
               <td><a href="/detail-project/<%= p.project_id %>" style="color:var(--primary);font-weight:700;text-decoration:none;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--primary)'"><%= p.project_name || '—' %></a></td>
               <td><%= p.team_name || '—' %></td>
               <td><%= fmtDate(p.start_date) %></td>
@@ -338,7 +338,7 @@
   function populateYears() {
     const years = new Set();
     document.querySelectorAll('#tableBody tr').forEach(tr => {
-      const d = tr.dataset.start;
+      const d = tr.dataset.created;
       if (d) years.add(d.split('-')[0]);
     });
     const sel = document.getElementById('filterYear');
@@ -363,11 +363,11 @@
       const cells     = tr.querySelectorAll('td');
       const project   = (cells[0]?.textContent || '').toLowerCase();
       const teamText  = (cells[1]?.textContent || '').toLowerCase();
-      const rowStatus = tr.dataset.status || '';
-      const rowTeam   = tr.dataset.team   || '';
-      const rowStart  = tr.dataset.start  || '';
-      const rowYear   = rowStart ? rowStart.split('-')[0] : '';
-      const rowMonth  = rowStart ? String(parseInt(rowStart.split('-')[1])) : '';
+      const rowStatus  = tr.dataset.status  || '';
+      const rowTeam    = tr.dataset.team    || '';
+      const rowCreated = tr.dataset.created || '';
+      const rowYear    = rowCreated ? rowCreated.split('-')[0] : '';
+      const rowMonth   = rowCreated ? String(parseInt(rowCreated.split('-')[1])) : '';
 
       const matchSearch = !q      || project.includes(q) || teamText.includes(q);
       const matchStatus = !status || rowStatus === status;

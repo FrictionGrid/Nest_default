@@ -45,6 +45,7 @@ export class ManageProjectService {
       start_date: r.project?.start_date,
       end_date: r.project?.end_date,
       status: r.project?.status,
+      created_at: r.project?.created_at,
     }));
   }
 
