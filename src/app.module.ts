@@ -22,6 +22,7 @@ import { SummaryYearModule } from './summary_year/summary_year.module';
 import { PaymentModule } from './payment/payment.module';
 import { PaymentInstallment } from './database/entities/payment_installment.entity';
 import { AuthModule } from './auth/auth.module';
+import { ProfileModule } from './profile/profile.module';
 import { UserContextMiddleware } from './common/middleware/user-context.middleware';
 import { DocumentType } from './database/entities/document_type.entity';
 import { ProjectDocument } from './database/entities/project_document.entity';
@@ -57,6 +58,7 @@ import { ProjectDocumentFile } from './database/entities/project_document_file.e
     WorkloadModule,
     SummaryYearModule,
     PaymentModule,
+    ProfileModule,
   ],
 })
 export class AppModule implements NestModule {

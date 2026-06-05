@@ -71,7 +71,7 @@
           <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
             <span></span><span></span><span></span>
           </button>
-          <div class="user-badge"><%= locals.sessionUser?.display_name || locals.sessionUser?.username || 'Guest' %></div>
+          <a href="/profile" class="user-badge"><%= locals.sessionUser?.display_name || locals.sessionUser?.username || 'Guest' %></a>
           <button class="logout-btn" onclick="fetch('/auth/logout',{method:'POST'}).then(()=>location.href='/auth/login')">Logout</button>
         </div>
       </header>
