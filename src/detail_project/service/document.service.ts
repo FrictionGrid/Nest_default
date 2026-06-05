@@ -76,7 +76,9 @@ export class DocumentService {
     const projectFolder = project?.project_name ? sanitize(project.project_name) : `project_${projectId}`;
     const typeFolder    = docType?.name         ? sanitize(docType.name)          : `type_${typeId}`;
 
-    const nasPath = await this.nas.uploadFile(file.buffer, file.originalname, `${projectFolder}/${typeFolder}`);
+    const baseFolder = `${projectFolder}/${typeFolder}`;
+    const nasPath = await this.nas.uploadFile(file.buffer, file.originalname, `${baseFolder}/main`);
+    this.nas.uploadFile(file.buffer, file.originalname, `${baseFolder}/backup`).catch(() => {});
 
     let doc = await this.projectDocRepo.findOne({
       where: { project_id: projectId, document_type_id: typeId },
