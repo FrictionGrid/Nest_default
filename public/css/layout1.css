@@ -27,7 +27,6 @@
       flex-direction: column;
       position: sticky;
       top: 0;
-      height: 100vh;
       box-shadow: 4px 0 16px rgba(0, 0, 0, 0.08);
     }
 
