@@ -30,6 +30,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
 
   // ── overview + detail + manage-project + manage-task + dashboard + timeline
   head_engineer: [
+    'GET:/chatbot',
     'GET:/overview-project',
     'GET:/overview-project/api/team-stats',
     'GET:/timeline',
@@ -49,6 +50,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'POST:/manage-task/api/tasks',
     'PUT:/manage-task/api/tasks/:id',
     // Dashboard Team API
+    'PATCH:/dashboard-team/api/tasks/:id/progress',
     'PUT:/dashboard-team/api/tasks/:id/complete',
     'PUT:/dashboard-team/api/tasks/:id/problem',
     // Document API
@@ -60,9 +62,11 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
 
   // ── dashboard-team + detail ──────────────────────────────────────────────
   engineer: [
+    'GET:/chatbot',
     'GET:/overview-project',
     'GET:/overview-project/api/team-stats',
     'GET:/dashboard-team',
+    'PATCH:/dashboard-team/api/tasks/:id/progress',
     'PUT:/dashboard-team/api/tasks/:id/complete',
     'PUT:/dashboard-team/api/tasks/:id/problem',
     'GET:/detail-project/:id',
@@ -74,6 +78,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
 
   // ── overview only ────────────────────────────────────────────────────────
   sale: [
+    'GET:/chatbot',
     'GET:/overview-project',
     'GET:/overview-project/api/team-stats',
   ],

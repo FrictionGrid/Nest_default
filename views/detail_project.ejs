@@ -543,7 +543,7 @@
         </div>
         <div class="doc-cat-tabs">
           <button class="doc-cat-btn active" data-cat="all">All</button>
-          <button class="doc-cat-btn" data-cat="engineer_task">Engineer Tasks</button>
+          <button class="doc-cat-btn" data-cat="engineer_task">Engineer</button>
           <button class="doc-cat-btn" data-cat="draft">Draft</button>
         </div>
         <div class="doc-progress-wrap" style="min-width:120px;">
@@ -692,6 +692,7 @@
           <thead>
             <tr>
               <th>Task Name</th>
+              <th>Team</th>
               <th>Assigned To</th>
               <th>End Date</th>
               <th>Status</th>
@@ -706,6 +707,7 @@
                   <div style="font-size:11px;color:#7a99b8;margin-top:2px;"><%= t.task_description %></div>
                 <% } %>
               </td>
+              <td><span style="display:inline-block;background:#e8f1fb;color:#2a5fa0;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;"><%= t.team_name %></span></td>
               <td><%= t.user_name %></td>
               <td><%= t.end_date %></td>
               <td><span class="badge <%= t.statusCls %>"><%= t.statusLabel %></span></td>

@@ -14,6 +14,8 @@ const PAGE_ROUTES: Record<string, string> = {
   'workload':         'GET:/workload',
   'summary-year':     'GET:/summary-year',
   'payment':          'GET:/payment',
+  'activity-log':     'GET:/activity-log',
+  'chatbot':          'GET:/chatbot',
 };
 
 @Injectable()

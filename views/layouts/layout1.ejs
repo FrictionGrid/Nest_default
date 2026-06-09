@@ -57,6 +57,12 @@
         <% if (locals.visibleMenus?.['payment']) { %>
           <a href="/payment" class="<%= pageTitle === 'Payment' ? 'active' : '' %>">Payment</a>
         <% } %>
+        <% if (locals.visibleMenus?.['activity-log']) { %>
+          <a href="/activity-log" class="<%= pageTitle === 'Activity Log' ? 'active' : '' %>">Activity Log</a>
+        <% } %>
+        <% if (locals.visibleMenus?.['chatbot']) { %>
+          <a href="/chatbot" class="<%= pageTitle === 'Chatbot' ? 'active' : '' %>">Chatbot</a>
+        <% } %>
       </nav>
     </aside>
 

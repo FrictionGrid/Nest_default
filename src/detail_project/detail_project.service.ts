@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { ProjectIncoming } from '../database/entities/project_incoming.entity';
 import { ProjectTeam } from '../database/entities/project_team.entity';
 import { TaskTeam } from '../database/entities/task_team.entity';
+import { UsersTeam } from '../database/entities/users_team.entity';
 
 const TASK_TYPE_WEIGHTS: Record<string, number> = {
   'PO/Quotation':             0,
@@ -57,6 +58,8 @@ export class DetailProjectService {
     private readonly projectTeamRepo: Repository<ProjectTeam>,
     @InjectRepository(TaskTeam)
     private readonly taskRepo: Repository<TaskTeam>,
+    @InjectRepository(UsersTeam)
+    private readonly usersTeamRepo: Repository<UsersTeam>,
   ) {}
 
   async findById(id: number) {
@@ -76,6 +79,23 @@ export class DetailProjectService {
       relations: ['user'],
       order: { id: 'ASC' },
     });
+
+    const projectTeamIds = projectTeams.map((pt) => pt.team_id);
+    const userIds = [...new Set(tasks.map((t) => t.user_id))];
+    const userTeamMap = new Map<number, string>();
+    if (userIds.length > 0 && projectTeamIds.length > 0) {
+      const userTeams = await this.usersTeamRepo
+        .createQueryBuilder('ut')
+        .leftJoinAndSelect('ut.team', 'team')
+        .where('ut.user_id IN (:...userIds)', { userIds })
+        .andWhere('ut.team_id IN (:...teamIds)', { teamIds: projectTeamIds })
+        .getMany();
+      for (const ut of userTeams) {
+        if (!userTeamMap.has(ut.user_id)) {
+          userTeamMap.set(ut.user_id, ut.team?.name ?? '—');
+        }
+      }
+    }
 
     const name = project.project_name || '';
     const avatarText = name
@@ -141,6 +161,7 @@ export class DetailProjectService {
           statusLabel:      si.label,
           statusCls:        si.cls,
           user_name:        t.user?.display_name || t.user?.username || '—',
+          team_name:        userTeamMap.get(t.user_id) ?? '—',
         };
       }),
       taskProgress: calcTaskProgress(tasks),

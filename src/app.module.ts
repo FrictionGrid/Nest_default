@@ -1,6 +1,8 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { IncomingProjectModule } from './incoming_project/incoming_project.module';
 import { ProjectIncoming } from './database/entities/project_incoming.entity';
 import { ProjectType } from './database/entities/project_type.entity';
@@ -23,6 +25,8 @@ import { PaymentModule } from './payment/payment.module';
 import { PaymentInstallment } from './database/entities/payment_installment.entity';
 import { AuthModule } from './auth/auth.module';
 import { ProfileModule } from './profile/profile.module';
+import { ActivityLogModule } from './activity_log/activity_log.module';
+import { ChatbotModule } from './chatbot/chatbot.module';
 import { UserContextMiddleware } from './common/middleware/user-context.middleware';
 import { DocumentType } from './database/entities/document_type.entity';
 import { ProjectDocument } from './database/entities/project_document.entity';
@@ -31,6 +35,8 @@ import { ProjectDocumentFile } from './database/entities/project_document_file.e
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    // ── 5. Rate Limiting: จำกัด 100 req/นาที ต่อ 1 IP ──────────────────────
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
@@ -59,6 +65,12 @@ import { ProjectDocumentFile } from './database/entities/project_document_file.e
     SummaryYearModule,
     PaymentModule,
     ProfileModule,
+    ActivityLogModule,
+    ChatbotModule,
+  ],
+  providers: [
+    // ── 5. Rate Limiting Guard (global) ──────────────────────────────────────
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })
 export class AppModule implements NestModule {

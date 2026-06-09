@@ -1,0 +1,194 @@
+<link rel="stylesheet" href="/css/tools/table.css" />
+<style>
+  .action-badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+    background: transparent; color: var(--text);
+  }
+
+  .status-dot {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+    background: transparent; color: var(--text);
+  }
+
+  .role-badge {
+    display: inline-block; font-size: 10px; font-weight: 600;
+    padding: 2px 8px; border-radius: 999px;
+    background: transparent; color: var(--muted);
+  }
+
+  .ts { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .desc-cell { font-size: 13px; max-width: 340px; }
+.module-chip {
+    display: inline-block;
+    font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 8px;
+    background: transparent; color: var(--muted); white-space: nowrap;
+  }
+</style>
+
+<section class="content">
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M21 21L16.65 16.65M10.5 18C14.6421 18 18 14.6421 18 10.5C18 6.35786 14.6421 3 10.5 3C6.35786 3 3 6.35786 3 10.5C3 14.6421 6.35786 18 10.5 18Z"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      <input type="text" id="searchLog" placeholder="ค้นหาผู้ใช้, คำอธิบาย, IP..." />
+    </div>
+    <select id="filterAction" class="filter-box">
+      <option value="">ทุก Action</option>
+      <option value="login">Login</option>
+      <option value="logout">Logout</option>
+      <option value="create">Create</option>
+      <option value="update">Update</option>
+      <option value="delete">Delete</option>
+      <option value="view">View</option>
+      <option value="upload">Upload</option>
+      <option value="download">Download</option>
+      <option value="error">Error</option>
+    </select>
+    <select id="filterStatus" class="filter-box">
+      <option value="">ทุก Status</option>
+      <option value="success">Success</option>
+      <option value="failed">Failed</option>
+      <option value="warning">Warning</option>
+    </select>
+    <select id="filterModule" class="filter-box">
+      <option value="">ทุก Module</option>
+      <option value="Auth">Auth</option>
+      <option value="Overview Project">Overview Project</option>
+      <option value="Incoming Project">Incoming Project</option>
+      <option value="Manage Project">Manage Project</option>
+      <option value="Manage Task">Manage Task</option>
+      <option value="Dashboard Team">Dashboard Team</option>
+      <option value="Detail Project">Detail Project</option>
+      <option value="User Management">User Management</option>
+      <option value="Payment">Payment</option>
+      <option value="Timeline">Timeline</option>
+    </select>
+  </div>
+
+  <div class="card1">
+    <div class="table-header">
+      <h3>Activity Log</h3>
+      <div class="table-count" id="logCount">Showing 30 entries</div>
+    </div>
+    <div class="table-body">
+      <table id="logTable">
+        <colgroup>
+          <col style="width:4%;"  />
+          <col style="width:14%;" />
+          <col style="width:15%;" />
+          <col style="width:10%;" />
+          <col style="width:11%;" />
+          <col style="width:12%;" />
+          <col style="width:26%;" />
+          <col style="width:8%;"  />
+        </colgroup>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>เวลา</th>
+            <th>ผู้ใช้</th>
+            <th>Role</th>
+            <th>Action</th>
+            <th>Module</th>
+            <th>รายละเอียด</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="logBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
+
+<script>
+const LOGS = [
+  { id:30, ts:'2026-06-09 14:30:00', username:'user8',  name:'User 8',  role:'engineer',      action:'login',    module:'Auth',             desc:'เข้าสู่ระบบสำเร็จ (บัญชีใหม่)',                       ip:'192.168.1.71', status:'success' },
+  { id:29, ts:'2026-06-09 14:15:59', username:'user4',  name:'User 4',  role:'head_engineer', action:'create',   module:'Manage Project',   desc:'สร้างโปรเจคใหม่ "ปูกระเบื้องห้องน้ำชั้น 4"',          ip:'192.168.1.45', status:'success' },
+  { id:28, ts:'2026-06-09 14:00:11', username:'user1',  name:'User 1',  role:'admin',         action:'upload',   module:'Detail Project',   desc:'อัปโหลดเอกสาร "contract-signed.pdf"',                  ip:'192.168.1.10', status:'success' },
+  { id:27, ts:'2026-06-09 13:45:00', username:'user3',  name:'User 3',  role:'engineer',      action:'update',   module:'Dashboard Team',   desc:'อัปเดตงาน "ตรวจรับวัสดุ" เป็นสำเร็จ',                 ip:'192.168.1.31', status:'success' },
+  { id:26, ts:'2026-06-09 13:20:33', username:'user7',  name:'User 7',  role:'adminsystem',   action:'delete',   module:'User Management',  desc:'ลบบัญชีผู้ใช้ "old_user99" ออกจากระบบ',               ip:'192.168.1.5',  status:'success' },
+  { id:25, ts:'2026-06-09 13:05:20', username:'user2',  name:'User 2',  role:'manager',       action:'login',    module:'Auth',             desc:'เข้าสู่ระบบสำเร็จ',                                   ip:'192.168.1.22', status:'success' },
+  { id:24, ts:'2026-06-09 12:30:45', username:'user2',  name:'User 2',  role:'manager',       action:'logout',   module:'Auth',             desc:'ออกจากระบบ',                                           ip:'192.168.1.22', status:'success' },
+  { id:23, ts:'2026-06-09 12:10:00', username:'user6',  name:'User 6',  role:'engineer',      action:'update',   module:'Dashboard Team',   desc:'รายงานปัญหา "วัสดุขาด" ใน task #88',                   ip:'192.168.1.60', status:'warning' },
+  { id:22, ts:'2026-06-09 11:55:14', username:'user4',  name:'User 4',  role:'head_engineer', action:'view',     module:'Timeline',         desc:'เปิดดูหน้า Task Timeline',                             ip:'192.168.1.45', status:'success' },
+  { id:21, ts:'2026-06-09 11:40:08', username:'user1',  name:'User 1',  role:'admin',         action:'error',    module:'Incoming Project', desc:'ข้อผิดพลาด: ไม่สามารถบันทึกได้ - connection timeout', status:'failed'  },
+  { id:20, ts:'2026-06-09 11:25:30', username:'user2',  name:'User 2',  role:'manager',       action:'view',     module:'Payment',          desc:'เปิดดูหน้า Payment',                                   ip:'192.168.1.22', status:'success' },
+  { id:19, ts:'2026-06-09 11:10:55', username:'user7',  name:'User 7',  role:'adminsystem',   action:'update',   module:'User Management',  desc:'เปลี่ยน role ของ "user5" เป็น admin',                  ip:'192.168.1.5',  status:'success' },
+  { id:18, ts:'2026-06-09 11:00:10', username:'user7',  name:'User 7',  role:'adminsystem',   action:'create',   module:'User Management',  desc:'สร้างบัญชีผู้ใช้ใหม่ "user8"',                         ip:'192.168.1.5',  status:'success' },
+  { id:17, ts:'2026-06-09 10:45:00', username:'user3',  name:'User 3',  role:'engineer',      action:'download', module:'Detail Project',   desc:'ดาวน์โหลดเอกสาร "spec-final.pdf"',                     ip:'192.168.1.31', status:'success' },
+  { id:16, ts:'2026-06-09 10:30:22', username:'user1',  name:'User 1',  role:'admin',         action:'delete',   module:'Detail Project',   desc:'ลบเอกสาร "draft-v1.pdf" ออกจากโปรเจค #12',            ip:'192.168.1.10', status:'success' },
+  { id:15, ts:'2026-06-09 10:15:44', username:'user4',  name:'User 4',  role:'head_engineer', action:'update',   module:'Manage Project',   desc:'อัปเดต % งาน "ติดตั้งแอร์ชั้น 2" เป็น 90%',          ip:'192.168.1.45', status:'success' },
+  { id:14, ts:'2026-06-09 10:00:00', username:'user2',  name:'User 2',  role:'manager',       action:'update',   module:'Manage Project',   desc:'แก้ไขสถานะโปรเจค "ซ่อมบำรุงลิฟต์ B" เป็น In Progress',ip:'192.168.1.22', status:'success' },
+  { id:13, ts:'2026-06-09 09:41:05', username:'user6',  name:'User 6',  role:'engineer',      action:'login',    module:'Auth',             desc:'เข้าสู่ระบบสำเร็จ (ครั้งที่ 2)',                       ip:'192.168.1.60', status:'success' },
+  { id:12, ts:'2026-06-09 09:40:18', username:'user6',  name:'User 6',  role:'engineer',      action:'login',    module:'Auth',             desc:'เข้าสู่ระบบล้มเหลว - รหัสผ่านผิด',                    ip:'192.168.1.60', status:'failed'  },
+  { id:11, ts:'2026-06-09 09:25:09', username:'user5',  name:'User 5',  role:'sale',          action:'view',     module:'Overview Project', desc:'เปิดดูหน้า Overview Project',                          ip:'192.168.1.55', status:'success' },
+  { id:10, ts:'2026-06-09 09:20:33', username:'user5',  name:'User 5',  role:'sale',          action:'login',    module:'Auth',             desc:'เข้าสู่ระบบสำเร็จ',                                   ip:'192.168.1.55', status:'success' },
+  { id:9,  ts:'2026-06-09 09:12:05', username:'user1',  name:'User 1',  role:'admin',         action:'upload',   module:'Detail Project',   desc:'อัปโหลดเอกสาร "แบบแปลน-Floor3.pdf"',                  ip:'192.168.1.10', status:'success' },
+  { id:8,  ts:'2026-06-09 09:05:17', username:'user4',  name:'User 4',  role:'head_engineer', action:'create',   module:'Manage Task',      desc:'สร้างงาน "ตรวจสอบระบบไฟฟ้าชั้น 3"',                  ip:'192.168.1.45', status:'success' },
+  { id:7,  ts:'2026-06-09 08:50:41', username:'user4',  name:'User 4',  role:'head_engineer', action:'login',    module:'Auth',             desc:'เข้าสู่ระบบสำเร็จ',                                   ip:'192.168.1.45', status:'success' },
+  { id:6,  ts:'2026-06-09 08:35:22', username:'user3',  name:'User 3',  role:'engineer',      action:'update',   module:'Dashboard Team',   desc:'อัปเดตความคืบหน้างาน "ติดตั้งท่อ B3" เป็น 75%',       ip:'192.168.1.31', status:'success' },
+  { id:5,  ts:'2026-06-09 08:30:00', username:'user3',  name:'User 3',  role:'engineer',      action:'login',    module:'Auth',             desc:'เข้าสู่ระบบสำเร็จ',                                   ip:'192.168.1.31', status:'success' },
+  { id:4,  ts:'2026-06-09 08:22:10', username:'user2',  name:'User 2',  role:'manager',       action:'view',     module:'Overview Project', desc:'เปิดดูหน้า Overview Project',                          ip:'192.168.1.22', status:'success' },
+  { id:3,  ts:'2026-06-09 08:15:30', username:'user2',  name:'User 2',  role:'manager',       action:'login',    module:'Auth',             desc:'เข้าสู่ระบบสำเร็จ',                                   ip:'192.168.1.22', status:'success' },
+  { id:2,  ts:'2026-06-09 08:10:45', username:'user1',  name:'User 1',  role:'admin',         action:'create',   module:'Incoming Project', desc:'เพิ่มโปรเจค "ปรับปรุงระบบน้ำ อาคาร A"',              ip:'192.168.1.10', status:'success' },
+  { id:1,  ts:'2026-06-09 08:03:12', username:'user1',  name:'User 1',  role:'admin',         action:'login',    module:'Auth',             desc:'เข้าสู่ระบบสำเร็จ',                                   ip:'192.168.1.10', status:'success' },
+];
+
+const ACTION_LABEL = {
+  login:'Login', logout:'Logout', create:'Create', update:'Update',
+  delete:'Delete', view:'View', upload:'Upload', download:'Download', error:'Error',
+};
+const STATUS_ICON = { success:'●', failed:'✕', warning:'▲' };
+const ROLE_LABEL  = {
+  adminsystem:'Adminsystem', admin:'Admin', manager:'Manager',
+  head_engineer:'Head Eng', engineer:'Engineer', sale:'Sale',
+};
+
+function renderRows(data) {
+  const tbody = document.getElementById('logBody');
+  tbody.innerHTML = data.map(r => `
+    <tr data-action="${r.action}" data-status="${r.status}" data-module="${r.module}">
+      <td>${r.id}</td>
+      <td class="ts">${r.ts}</td>
+      <td>
+        <div style="font-weight:600;font-size:13px;">${r.name}</div>
+        <div style="font-size:11px;color:var(--muted);">@${r.username}</div>
+      </td>
+      <td><span class="role-badge r-${r.role}">${ROLE_LABEL[r.role] || r.role}</span></td>
+      <td><span class="action-badge a-${r.action}">${ACTION_LABEL[r.action] || r.action}</span></td>
+      <td><span class="module-chip">${r.module}</span></td>
+      <td class="desc-cell">${r.desc}</td>
+      <td><span class="status-dot s-${r.status}">${STATUS_ICON[r.status]} ${r.status}</span></td>
+    </tr>
+  `).join('');
+  document.getElementById('logCount').textContent = `Showing ${data.length} entries`;
+}
+
+function applyFilter() {
+  const q      = document.getElementById('searchLog').value.toLowerCase();
+  const action = document.getElementById('filterAction').value;
+  const status = document.getElementById('filterStatus').value;
+  const mod    = document.getElementById('filterModule').value;
+  const result = LOGS.filter(r =>
+    (!q      || r.username.toLowerCase().includes(q) || r.name.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q)) &&
+    (!action || r.action === action) &&
+    (!status || r.status === status) &&
+    (!mod    || r.module  === mod)
+  );
+  renderRows(result);
+}
+
+renderRows(LOGS);
+
+document.getElementById('searchLog').addEventListener('input', applyFilter);
+document.getElementById('filterAction').addEventListener('change', applyFilter);
+document.getElementById('filterStatus').addEventListener('change', applyFilter);
+document.getElementById('filterModule').addEventListener('change', applyFilter);
+</script>

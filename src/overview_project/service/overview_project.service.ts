@@ -50,7 +50,10 @@ export class OverviewProjectService {
       .addGroupBy('team.name')
       .orderBy('team.id', 'ASC');
 
-    if (range !== 'all') {
+    if (range === 'year') {
+      const year = new Date().getFullYear();
+      qb = qb.andWhere('EXTRACT(YEAR FROM project.created_at) = :year', { year });
+    } else if (range !== 'all') {
       const months = { '1m': 1, '3m': 3, '6m': 6, '12m': 12 }[range] ?? 0;
       if (months > 0) {
         const minDate = new Date();

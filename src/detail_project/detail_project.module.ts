@@ -9,6 +9,7 @@ import { SynologyService } from './service/synology.service';
 import { ProjectIncoming } from '../database/entities/project_incoming.entity';
 import { ProjectTeam } from '../database/entities/project_team.entity';
 import { TaskTeam } from '../database/entities/task_team.entity';
+import { UsersTeam } from '../database/entities/users_team.entity';
 import { DocumentType } from '../database/entities/document_type.entity';
 import { ProjectDocument } from '../database/entities/project_document.entity';
 import { ProjectDocumentFile } from '../database/entities/project_document_file.entity';
@@ -16,7 +17,7 @@ import { ProjectDocumentFile } from '../database/entities/project_document_file.
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      ProjectIncoming, ProjectTeam, TaskTeam,
+      ProjectIncoming, ProjectTeam, TaskTeam, UsersTeam,
       DocumentType, ProjectDocument, ProjectDocumentFile,
     ]),
     MulterModule.register({

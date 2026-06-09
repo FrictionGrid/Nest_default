@@ -13,7 +13,7 @@ export class OverviewProjectController {
   async index() {
     const [summary, teams, recentProjects, monthlySummary, regionStats] = await Promise.all([
       this.overviewProjectService.getSummary(),
-      this.overviewProjectService.getTeamStats('all'),
+      this.overviewProjectService.getTeamStats('year'),
       this.overviewProjectService.getRecentProjects(),
       this.overviewProjectService.getMonthlySummary(),
       this.overviewProjectService.getRegionStats(),
