@@ -3,7 +3,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class PaymentInstallments1776000000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE payment_installments (
+      CREATE TABLE IF NOT EXISTS payment_installments (
         id              SERIAL PRIMARY KEY,
         project_id      INTEGER NOT NULL REFERENCES project_incoming(id) ON DELETE CASCADE,
         installment_no  INTEGER NOT NULL,
@@ -18,7 +18,7 @@ export class PaymentInstallments1776000000000 implements MigrationInterface {
       )
     `);
     await queryRunner.query(`
-      CREATE INDEX idx_payment_installments_project
+      CREATE INDEX IF NOT EXISTS idx_payment_installments_project
       ON payment_installments(project_id)
     `);
   }

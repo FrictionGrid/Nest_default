@@ -63,6 +63,12 @@
         <% if (locals.visibleMenus?.['chatbot']) { %>
           <a href="/chatbot" class="<%= pageTitle === 'Chatbot' ? 'active' : '' %>">Chatbot</a>
         <% } %>
+        <% if (locals.visibleMenus?.['feedback']) { %>
+          <a href="/feedback" class="<%= pageTitle === 'Feedback' ? 'active' : '' %>">Feedback</a>
+        <% } %>
+        <% if (locals.visibleMenus?.['feedback-inbox']) { %>
+          <a href="/feedback/inbox" class="<%= pageTitle === 'Feedback Inbox' ? 'active' : '' %>">Feedback Inbox</a>
+        <% } %>
       </nav>
     </aside>
 

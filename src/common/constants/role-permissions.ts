@@ -10,10 +10,13 @@ export const ROLE_DEFAULT_PAGE: Record<string, string> = {
 export const ROLE_PERMISSIONS: Record<string, string[]> = {
   // ── Full access ──────────────────────────────────────────────────────────
   adminsystem: ['*'],
+  // feedback inbox เฉพาะ adminsystem (ครอบด้วย * แล้ว ใส่ไว้เพื่อความชัดเจน)
   manager:     ['*'],
 
   // ── overview + incoming + detail ────────────────────────────────────────
   admin: [
+    'GET:/feedback',
+    'POST:/feedback/api',
     'GET:/overview-project',
     'GET:/overview-project/api/team-stats',
     'GET:/incoming-project',
@@ -30,6 +33,8 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
 
   // ── overview + detail + manage-project + manage-task + dashboard + timeline
   head_engineer: [
+    'GET:/feedback',
+    'POST:/feedback/api',
     'GET:/chatbot',
     'GET:/overview-project',
     'GET:/overview-project/api/team-stats',
@@ -62,6 +67,8 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
 
   // ── dashboard-team + detail ──────────────────────────────────────────────
   engineer: [
+    'GET:/feedback',
+    'POST:/feedback/api',
     'GET:/chatbot',
     'GET:/overview-project',
     'GET:/overview-project/api/team-stats',
@@ -78,6 +85,8 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
 
   // ── overview only ────────────────────────────────────────────────────────
   sale: [
+    'GET:/feedback',
+    'POST:/feedback/api',
     'GET:/chatbot',
     'GET:/overview-project',
     'GET:/overview-project/api/team-stats',

@@ -27,10 +27,12 @@ import { AuthModule } from './auth/auth.module';
 import { ProfileModule } from './profile/profile.module';
 import { ActivityLogModule } from './activity_log/activity_log.module';
 import { ChatbotModule } from './chatbot/chatbot.module';
+import { FeedbackModule } from './feedback/feedback.module';
 import { UserContextMiddleware } from './common/middleware/user-context.middleware';
 import { DocumentType } from './database/entities/document_type.entity';
 import { ProjectDocument } from './database/entities/project_document.entity';
 import { ProjectDocumentFile } from './database/entities/project_document_file.entity';
+import { Feedback } from './database/entities/feedback.entity';
 
 @Module({
   imports: [
@@ -46,7 +48,7 @@ import { ProjectDocumentFile } from './database/entities/project_document_file.e
         username: config.get('DB_USERNAME'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [ProjectIncoming, ProjectType, Team, ProjectTeam, User, UsersTeam, TaskTeam, DocumentType, ProjectDocument, ProjectDocumentFile, PaymentInstallment],
+        entities: [ProjectIncoming, ProjectType, Team, ProjectTeam, User, UsersTeam, TaskTeam, DocumentType, ProjectDocument, ProjectDocumentFile, PaymentInstallment, Feedback],
         synchronize: false,
       }),
       inject: [ConfigService],
@@ -67,6 +69,7 @@ import { ProjectDocumentFile } from './database/entities/project_document_file.e
     ProfileModule,
     ActivityLogModule,
     ChatbotModule,
+    FeedbackModule,
   ],
   providers: [
     // ── 5. Rate Limiting Guard (global) ──────────────────────────────────────

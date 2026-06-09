@@ -98,18 +98,18 @@ export class DashboardTeamService {
     return { ok: true };
   }
 
-  async completeTask(id: number, description?: string) {
+  async completeTask(id: number, comment?: string) {
     await this.taskRepo.update(id, {
       status: 'completed' as any,
-      ...(description ? { task_description: description } : {}),
+      ...(comment ? { task_comment: comment } : {}),
     });
     return { ok: true };
   }
 
-  async problemTask(id: number, description?: string) {
+  async problemTask(id: number, comment?: string) {
     await this.taskRepo.update(id, {
       status: 'problem' as any,
-      ...(description ? { task_description: description } : {}),
+      ...(comment ? { task_comment: comment } : {}),
     });
     return { ok: true };
   }

@@ -95,6 +95,7 @@ export class ManageTeamService {
       .addSelect('t.end_date', 'end_date')
       .addSelect('t.status', 'status')
       .addSelect('t.task_type', 'task_type')
+      .addSelect('t.task_comment', 'task_comment')
       .addSelect('u.username', 'username')
       .addSelect('u.display_name', 'display_name')
       .addSelect('p.project_name', 'project_name')
@@ -116,6 +117,7 @@ export class ManageTeamService {
         end_date: r.end_date,
         status: r.status,
         task_type: r.task_type,
+        task_comment: r.task_comment,
         priority: this.calcPriority(r.end_date ?? null),
         username: r.username,
         display_name: r.display_name,
@@ -161,6 +163,7 @@ export class ManageTeamService {
       .addSelect('t.end_date', 'end_date')
       .addSelect('t.status', 'status')
       .addSelect('t.task_type', 'task_type')
+      .addSelect('t.task_comment', 'task_comment')
       .addSelect('u.username', 'username')
       .addSelect('u.display_name', 'display_name')
       .addSelect('p.project_name', 'project_name')
@@ -184,6 +187,7 @@ export class ManageTeamService {
         end_date:         r.end_date,
         status:           r.status,
         task_type:        r.task_type,
+        task_comment:     r.task_comment,
         priority:         this.calcPriority(r.end_date ?? null),
         username:         r.username,
         display_name:     r.display_name,

@@ -1,0 +1,223 @@
+<style>
+  .inbox-wrap {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 20px;
+  }
+
+  /* ── Hero ── */
+  .inbox-hero {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2a5fa0 60%, #4a90e2 100%);
+    border-radius: 18px;
+    padding: 26px 36px;
+    color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 18px; flex-shrink: 0;
+    box-shadow: 0 6px 24px rgba(30,58,95,0.22);
+    animation: fadeUp 0.35s ease both;
+  }
+  .inbox-hero-left { display: flex; align-items: center; gap: 18px; }
+  .inbox-hero-icon {
+    width: 50px; height: 50px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+  }
+  .inbox-hero h2 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  .inbox-hero p  { font-size: 13px; opacity: 0.82; }
+  .inbox-badge {
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px; padding: 10px 20px;
+    text-align: center; flex-shrink: 0;
+  }
+  .inbox-badge .num { font-size: 32px; font-weight: 900; line-height: 1; }
+  .inbox-badge .lbl { font-size: 12px; opacity: 0.82; margin-top: 3px; }
+
+  /* ── Card ── */
+  .inbox-card {
+    background: var(--card);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    flex: 1; display: flex; flex-direction: column;
+    overflow: hidden;
+    animation: fadeUp 0.4s ease both;
+    animation-delay: 0.07s;
+    min-height: 0;
+  }
+  .inbox-card-hd {
+    padding: 16px 24px 13px;
+    border-bottom: 1px solid #eef2f8;
+    display: flex; align-items: center; gap: 10px;
+    flex-shrink: 0;
+  }
+  .inbox-card-hd h3 { font-size: 14px; font-weight: 700; color: var(--primary); }
+  .inbox-card-hd svg { color: #4a90e2; }
+  .inbox-search {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .inbox-search input {
+    height: 32px; padding: 0 12px 0 32px;
+    border: 1.5px solid #dde6f0; border-radius: 8px;
+    font-size: 13px; color: var(--text); outline: none;
+    width: 220px; background: #f9fbfd;
+    transition: border 0.2s;
+  }
+  .inbox-search input:focus { border-color: #4a90e2; }
+  .inbox-search-wrap { position: relative; }
+  .inbox-search-wrap svg {
+    position: absolute; left: 9px; top: 50%;
+    transform: translateY(-50%); pointer-events: none;
+    color: #8a9bb5;
+  }
+
+  /* ── List ── */
+  .inbox-list {
+    flex: 1; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 0;
+    min-height: 0;
+  }
+  .inbox-item {
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f4fa;
+    display: flex; gap: 16px; align-items: flex-start;
+    transition: background 0.15s;
+  }
+  .inbox-item:hover { background: #f9fbfe; }
+  .inbox-item:last-child { border-bottom: none; }
+
+  .inbox-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, #1e3a5f, #4a90e2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800; color: #fff;
+    flex-shrink: 0; margin-top: 2px;
+  }
+
+  .inbox-content { flex: 1; min-width: 0; }
+  .inbox-top {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 6px; flex-wrap: wrap;
+  }
+  .inbox-name { font-size: 13px; font-weight: 700; color: var(--primary); }
+  .inbox-time { font-size: 11px; color: var(--muted); margin-left: auto; white-space: nowrap; }
+  .inbox-msg  {
+    font-size: 13px; color: var(--text);
+    line-height: 1.65; white-space: pre-wrap; word-break: break-word;
+  }
+  .btn-inbox-del {
+    flex-shrink: 0; margin-top: 2px;
+    padding: 5px 10px; border-radius: 8px;
+    background: #ffeaea; color: #c0392b;
+    font-size: 12px; font-weight: 600;
+    border: none; cursor: pointer; transition: background 0.15s;
+  }
+  .btn-inbox-del:hover { background: #ffd0d0; }
+
+  .inbox-empty {
+    text-align: center; color: var(--muted);
+    font-size: 14px; padding: 60px 0;
+  }
+  .inbox-empty span { font-size: 36px; display: block; margin-bottom: 12px; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+<section class="content" style="display:flex;flex-direction:column;height:100%;">
+<div class="inbox-wrap">
+
+  <!-- Hero -->
+  <div class="inbox-hero">
+    <div class="inbox-hero-left">
+      <div class="inbox-hero-icon">📬</div>
+      <div>
+        <h2>Feedback Inbox</h2>
+        <p>รายการ Feedback จากผู้ใช้งานในระบบทั้งหมด</p>
+      </div>
+    </div>
+    <div class="inbox-badge">
+      <div class="num"><%= feedbacks.length %></div>
+      <div class="lbl">รายการทั้งหมด</div>
+    </div>
+  </div>
+
+  <!-- Card -->
+  <div class="inbox-card">
+    <div class="inbox-card-hd">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <h3>ข้อความทั้งหมด</h3>
+      <div class="inbox-search">
+        <div class="inbox-search-wrap">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="inboxSearch" placeholder="ค้นหา..." />
+        </div>
+        <span id="inboxCount" style="font-size:12px;color:var(--muted);white-space:nowrap;"><%= feedbacks.length %> รายการ</span>
+      </div>
+    </div>
+
+    <div class="inbox-list" id="inboxList">
+      <% if (feedbacks.length === 0) { %>
+        <div class="inbox-empty">
+          <span>📭</span>
+          ยังไม่มี Feedback
+        </div>
+      <% } else { %>
+        <% feedbacks.forEach(function(fb) {
+          const name = fb.user?.display_name || fb.user?.username || 'Anonymous';
+          const initial = name.charAt(0).toUpperCase();
+          const dt = new Date(fb.created_at).toLocaleString('th-TH', { dateStyle:'medium', timeStyle:'short' });
+        %>
+        <div class="inbox-item" id="fb-<%= fb.id %>" data-text="<%= (name + ' ' + fb.message).toLowerCase() %>">
+          <div class="inbox-avatar"><%= initial %></div>
+          <div class="inbox-content">
+            <div class="inbox-top">
+              <span class="inbox-name"><%= name %></span>
+              <span class="inbox-time">🕐 <%= dt %></span>
+            </div>
+            <div class="inbox-msg"><%= fb.message %></div>
+          </div>
+          <button class="btn-inbox-del" data-id="<%= fb.id %>">ลบ</button>
+        </div>
+        <% }); %>
+      <% } %>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<script>
+  document.addEventListener('click', async (e) => {
+    if (!e.target.classList.contains('btn-inbox-del')) return;
+    const id   = e.target.dataset.id;
+    const item = document.getElementById('fb-' + id);
+    if (!confirm('ลบ Feedback นี้?')) return;
+    const res = await fetch('/feedback/api/' + id, { method: 'DELETE' });
+    if (res.ok) {
+      item.remove();
+      const remaining = document.querySelectorAll('.inbox-item').length;
+      document.getElementById('inboxCount').textContent = remaining + ' รายการ';
+    }
+  });
+
+  const searchInput = document.getElementById('inboxSearch');
+  const countEl     = document.getElementById('inboxCount');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const q     = searchInput.value.trim().toLowerCase();
+      const items = document.querySelectorAll('.inbox-item');
+      let visible = 0;
+      items.forEach(item => {
+        const show = !q || item.dataset.text.includes(q);
+        item.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      countEl.textContent = visible + ' รายการ';
+    });
+  }
+</script>

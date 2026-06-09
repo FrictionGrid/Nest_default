@@ -1,0 +1,231 @@
+<style>
+  .fb-outer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 20px;
+  }
+
+  .fb-hero {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2a5fa0 60%, #4a90e2 100%);
+    border-radius: 18px;
+    padding: 28px 36px;
+    color: #fff;
+    display: flex; align-items: center; gap: 18px;
+    box-shadow: 0 6px 24px rgba(30,58,95,0.22);
+    flex-shrink: 0;
+    animation: fadeUp 0.35s ease both;
+  }
+  .fb-hero-icon {
+    width: 52px; height: 52px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; flex-shrink: 0;
+  }
+  .fb-hero h2 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  .fb-hero p  { font-size: 13px; opacity: 0.82; }
+
+  /* ── Layout เมื่อ admin ── */
+  .fb-body {
+    flex: 1;
+    display: grid;
+    gap: 20px;
+    min-height: 0;
+  }
+  .fb-body.has-list { grid-template-columns: 1fr 1.2fr; }
+  .fb-body.no-list  { grid-template-columns: 1fr; }
+
+  .fb-card {
+    background: var(--card);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    animation: fadeUp 0.4s ease both;
+    animation-delay: 0.07s;
+  }
+  .fb-card-hd {
+    padding: 18px 24px 14px;
+    border-bottom: 1px solid #eef2f8;
+    display: flex; align-items: center; gap: 9px;
+    flex-shrink: 0;
+  }
+  .fb-card-hd h3 { font-size: 14px; font-weight: 700; color: var(--primary); }
+  .fb-card-hd svg { color: #4a90e2; }
+  .fb-card-body {
+    flex: 1; display: flex; flex-direction: column;
+    padding: 20px 24px 22px; gap: 14px; min-height: 0;
+  }
+
+  /* ── Form ── */
+  .fb-textarea {
+    flex: 1;
+    width: 100%; box-sizing: border-box;
+    border: 1.5px solid #dde6f0; border-radius: 14px;
+    padding: 16px 18px; font-size: 15px; color: var(--text);
+    font-family: inherit; line-height: 1.7;
+    outline: none; resize: none; background: #fafcff;
+    transition: border 0.2s, background 0.2s;
+  }
+  .fb-textarea:focus { border-color: #4a90e2; background: #fff; }
+  .fb-textarea::placeholder { color: #aab8cc; }
+
+  .fb-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .fb-char { font-size: 12px; color: var(--muted); }
+  .btn-fb-submit {
+    display: flex; align-items: center; gap: 8px;
+    padding: 11px 28px; border-radius: 12px;
+    background: linear-gradient(135deg, #1e3a5f, #2a5fa0);
+    color: #fff; font-size: 14px; font-weight: 700;
+    border: none; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(30,58,95,0.22);
+    transition: all 0.2s;
+  }
+  .btn-fb-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(30,58,95,0.3); }
+  .btn-fb-submit:active { transform: translateY(0); }
+
+  /* ── Success ── */
+  .fb-success {
+    display: none; flex: 1;
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; text-align: center; padding: 40px;
+  }
+  .fb-success-icon {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: linear-gradient(135deg, #35B37E, #1a7a54);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; color: #fff;
+    box-shadow: 0 6px 22px rgba(53,179,126,0.3);
+    animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+  .fb-success h3 { font-size: 20px; font-weight: 800; color: var(--primary); }
+  .fb-success p  { font-size: 14px; color: var(--muted); line-height: 1.6; }
+  .btn-fb-new {
+    margin-top: 4px; padding: 10px 24px; border-radius: 12px;
+    background: #eef4fb; color: #2a5fa0;
+    font-size: 13px; font-weight: 700;
+    border: 1.5px solid #c5d8ef; cursor: pointer;
+    transition: all 0.18s;
+  }
+  .btn-fb-new:hover { background: #ddeaf7; border-color: #4a90e2; }
+
+  /* ── Feedback List (admin) ── */
+  .fb-list {
+    flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+    min-height: 0;
+  }
+  .fb-item {
+    border: 1px solid #eef2f8; border-radius: 12px;
+    padding: 14px 16px; background: #fafcff;
+    transition: border-color 0.18s;
+  }
+  .fb-item:hover { border-color: #c5d8ef; }
+  .fb-item-msg { font-size: 14px; color: var(--text); line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+  .fb-item-meta { font-size: 11px; color: var(--muted); margin-top: 8px; display: flex; gap: 12px; }
+  .fb-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 40px 0; }
+
+  .fb-count {
+    font-size: 12px; color: var(--muted);
+    background: #f0f4f9; border-radius: 999px;
+    padding: 3px 10px; font-weight: 700; margin-left: auto;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.5); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  @media (max-width: 900px) {
+    .fb-body.has-list { grid-template-columns: 1fr; }
+  }
+</style>
+
+<section class="content" style="display:flex;flex-direction:column;height:100%;">
+<div class="fb-outer">
+
+  <!-- Hero -->
+  <div class="fb-hero">
+    <div class="fb-hero-icon">💬</div>
+    <div>
+      <h2>Feedback & Suggestions</h2>
+      <p>พบปัญหาหรืออยากแนะนำสิ่งที่ควรปรับปรุง? พิมพ์ได้เลยครับ</p>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="fb-body no-list">
+
+    <!-- Form Card -->
+    <div class="fb-card">
+      <div class="fb-card-hd">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <h3>บอกเราได้เลย</h3>
+      </div>
+      <div class="fb-card-body" id="fbFormWrap">
+        <textarea
+          class="fb-textarea"
+          id="fbMessage"
+          maxlength="2000"
+          placeholder="พิมพ์ปัญหา ข้อเสนอแนะ หรือสิ่งที่อยากให้ปรับปรุงได้เลยครับ..."
+        ></textarea>
+        <div class="fb-footer">
+          <span class="fb-char"><span id="fbLen">0</span> / 2000</span>
+          <button class="btn-fb-submit" id="fbSubmit">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            ส่ง Feedback
+          </button>
+        </div>
+      </div>
+      <div class="fb-success" id="fbSuccess">
+        <div class="fb-success-icon">✓</div>
+        <h3>ขอบคุณมากครับ! 🙏</h3>
+        <p>ได้รับ Feedback ของคุณแล้ว<br>ทีมงานจะรับไปพิจารณาและปรับปรุงต่อไปครับ</p>
+        <button class="btn-fb-new" id="fbNew">ส่งอีกครั้ง</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<script>
+  document.getElementById('fbMessage').addEventListener('input', function() {
+    document.getElementById('fbLen').textContent = this.value.length;
+  });
+
+  document.getElementById('fbSubmit').addEventListener('click', async () => {
+    const msg = document.getElementById('fbMessage').value.trim();
+    if (!msg) { document.getElementById('fbMessage').focus(); return; }
+
+    const btn = document.getElementById('fbSubmit');
+    btn.disabled = true;
+
+    const res = await fetch('/feedback/api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg }),
+    });
+
+    btn.disabled = false;
+    if (res.ok) {
+      document.getElementById('fbFormWrap').style.display = 'none';
+      document.getElementById('fbSuccess').style.display  = 'flex';
+    }
+  });
+
+  document.getElementById('fbNew').addEventListener('click', () => {
+    document.getElementById('fbMessage').value = '';
+    document.getElementById('fbLen').textContent = '0';
+    document.getElementById('fbSuccess').style.display  = 'none';
+    document.getElementById('fbFormWrap').style.display = '';
+    document.getElementById('fbMessage').focus();
+  });
+</script>

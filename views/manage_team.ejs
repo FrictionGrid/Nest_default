@@ -25,6 +25,7 @@
   .badge-in_progress { background: rgba(65,121,191,0.12); color: #2a5fa0; }
   .badge-problem     { background: rgba(234,179,8,0.13);  color: #8a6400; }
   .badge-completed   { background: rgba(29,143,86,0.12);  color: #1a7a54; }
+  .badge-replanned   { background: rgba(139,92,246,0.13); color: #6d28d9; }
 
   /* ── Priority badges ────────────────────────── */
   .tl-badge {
@@ -114,6 +115,7 @@
       <option value="in_progress">In Progress</option>
       <option value="problem">Problem</option>
       <option value="completed">Completed</option>
+      <option value="replanned">Replanned</option>
     </select>
     <select id="filterProject" class="filter-box">
       <option value="">All Projects</option>
@@ -166,11 +168,12 @@
     <div class="table-body">
       <table>
         <colgroup>
-          <col style="width:12%;" /><col style="width:11%;" />
-          <col style="width:8%;"  /><col style="width:11%;" />
-          <col style="width:9%;"  /><col style="width:7%;"  />
-          <col style="width:7%;"  /><col style="width:9%;"  />
-          <col style="width:9%;"  /><col style="width:17%;" />
+          <col style="width:11%;" /><col style="width:10%;" />
+          <col style="width:8%;"  /><col style="width:9%;"  />
+          <col style="width:8%;"  /><col style="width:6%;"  />
+          <col style="width:6%;"  /><col style="width:8%;"  />
+          <col style="width:8%;"  /><col style="width:10%;" />
+          <col style="width:16%;" />
         </colgroup>
         <thead>
           <tr>
@@ -178,6 +181,7 @@
             <th>Project</th><th>User</th>
             <th>Team</th><th>Start Date</th><th>End Date</th>
             <th>Priority</th><th>Status</th>
+            <th>Comment</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -186,8 +190,9 @@
             <%
               const statusMap = {
                 in_progress: { label: 'In Progress', cls: 'badge-in_progress' },
-                problem:     { label: 'Problem',       cls: 'badge-problem'     },
-                completed:   { label: 'Completed',       cls: 'badge-completed'   },
+                problem:     { label: 'Problem',     cls: 'badge-problem'     },
+                completed:   { label: 'Completed',   cls: 'badge-completed'   },
+                replanned:   { label: 'Replanned',   cls: 'badge-replanned'   },
               };
               const prMap = {
                 general: { label: 'In Progress', cls: 'tl-general' },
@@ -220,6 +225,7 @@
               <td><%= fmtD(t.end_date) %></td>
               <td><% if (t.status !== 'completed') { %><span class="tl-badge <%= tl.cls %>"><%= tl.label %></span><% } else { %>—<% } %></td>
               <td><span class="badge <%= s.cls %>"><%= s.label %></span></td>
+              <td style="color:var(--muted);font-size:12px;"><%= t.task_comment || '—' %></td>
               <td>
                 <div class="button-spacing">
                   <button class="btn-table btn-edit"
@@ -231,7 +237,8 @@
                     data-start="<%= toInput(t.start_date) %>"
                     data-end="<%= toInput(t.end_date) %>"
                     data-status="<%= t.status %>"
-                    data-task-type="<%= t.task_type || '' %>">Edit</button>
+                    data-task-type="<%= t.task_type || '' %>"
+                    data-task-comment="<%= t.task_comment || '' %>">Edit</button>
                   <button class="btn-table btn-destroy" data-id="<%= t.id %>">Delete</button>
                 </div>
               </td>
@@ -284,6 +291,7 @@
           <option value="in_progress">In Progress</option>
           <option value="problem">Problem</option>
           <option value="completed">Completed</option>
+          <option value="replanned">Replanned</option>
         </select>
       </div>
     </div>
@@ -334,6 +342,12 @@
       <div class="form-group2">
         <label>End Date</label>
         <input type="date" id="fieldTaskEndDate" />
+      </div>
+    </div>
+    <div class="form-bar">
+      <div class="form-group2 form-group1">
+        <label>Comment</label>
+        <textarea id="fieldTaskComment" placeholder="Optional comment..."></textarea>
       </div>
     </div>
     <div class="modal-spacing">
@@ -464,6 +478,7 @@
     document.getElementById('fieldTaskEndDate').value      = '';
     document.getElementById('fieldTaskStatus').value       = 'in_progress';
     document.getElementById('fieldTaskType').value         = '';
+    document.getElementById('fieldTaskComment').value      = '';
     taskModal.classList.add('open');
   });
 
@@ -478,8 +493,9 @@
       document.getElementById('fieldTaskProjectId').value    = btn.dataset.projectId || '';
       document.getElementById('fieldTaskStartDate').value    = btn.dataset.start     || '';
       document.getElementById('fieldTaskEndDate').value      = btn.dataset.end       || '';
-      document.getElementById('fieldTaskStatus').value       = btn.dataset.status    || 'in_progress';
-      document.getElementById('fieldTaskType').value         = btn.dataset.taskType  || '';
+      document.getElementById('fieldTaskStatus').value       = btn.dataset.status      || 'in_progress';
+      document.getElementById('fieldTaskType').value         = btn.dataset.taskType    || '';
+      document.getElementById('fieldTaskComment').value      = btn.dataset.taskComment || '';
       taskModal.classList.add('open');
     }
   });
@@ -508,6 +524,7 @@
       end_date:         document.getElementById('fieldTaskEndDate').value || null,
       status:           document.getElementById('fieldTaskStatus').value,
       task_type:        document.getElementById('fieldTaskType').value || null,
+      task_comment:     document.getElementById('fieldTaskComment').value || null,
     };
     if (!payload.task_name) { alert('Please enter a task name'); return; }
     if (!payload.user_id || !payload.project_id) { alert('Please select a user and project'); return; }

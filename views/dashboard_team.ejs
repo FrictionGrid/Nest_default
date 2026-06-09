@@ -110,6 +110,26 @@
     white-space: nowrap;
   }
 
+  /* ── Replanned task highlight ─────────────────── */
+  .task-item.task-replanned {
+    border-color: #8b5cf6;
+    background: #f5f0ff;
+  }
+  .replanned-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6d28d9;
+    background: rgba(139,92,246,0.15);
+    border-radius: 6px;
+    padding: 2px 7px;
+    margin-left: 6px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
   /* ── Task badges ───────────────────────────────── */
   .task-badge {
     font-size: 11px; font-weight: 700;
@@ -297,12 +317,13 @@
           };
           const pr = prMap[t.priority] || prMap.general;
         %>
-        <div class="task-item <%= t.status === 'problem' ? 'task-problem' : '' %>">
+        <div class="task-item <%= t.status === 'problem' ? 'task-problem' : t.status === 'replanned' ? 'task-replanned' : '' %>">
           <div class="task-dot <%= pr.dotCls %>"></div>
           <div class="task-info" style="flex:1;min-width:0;">
             <div class="task-name">
               <%= t.task_name %>
               <% if (t.status === 'problem') { %><span class="problem-icon">⚠ Problem</span><% } %>
+              <% if (t.status === 'replanned') { %><span class="replanned-icon">↺ Replanned</span><% } %>
             </div>
             <div class="task-meta"><%= t.member_name %> · <%= t.project_name %></div>
             <div class="task-progress-wrap">
@@ -493,7 +514,7 @@
         await fetch('/dashboard-team/api/tasks/' + btn.dataset.id + '/complete', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ description: desc }),
+          body: JSON.stringify({ comment: desc }),
         });
         showToast('Task completed ✓');
         setTimeout(() => location.reload(), 1000);
@@ -509,7 +530,7 @@
         await fetch('/dashboard-team/api/tasks/' + btn.dataset.id + '/problem', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ description: desc }),
+          body: JSON.stringify({ comment: desc }),
         });
         showToast('Problem reported ⚠');
         setTimeout(() => location.reload(), 1000);

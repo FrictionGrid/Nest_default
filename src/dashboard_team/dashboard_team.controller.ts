@@ -27,12 +27,12 @@ export class DashboardTeamController {
   }
 
   @Put('api/tasks/:id/complete')
-  async completeTask(@Param('id') id: string, @Body('description') description?: string) {
-    return this.dashboardTeamService.completeTask(+id, description);
+  async completeTask(@Param('id') id: string, @Body('comment') comment?: string) {
+    return this.dashboardTeamService.completeTask(+id, comment);
   }
 
   @Put('api/tasks/:id/problem')
-  async problemTask(@Param('id') id: string, @Body('description') description?: string) {
-    return this.dashboardTeamService.problemTask(+id, description);
+  async problemTask(@Param('id') id: string, @Body('comment') comment?: string) {
+    return this.dashboardTeamService.problemTask(+id, comment);
   }
 }

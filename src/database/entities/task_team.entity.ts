@@ -14,6 +14,7 @@ export enum TaskStatus {
   IN_PROGRESS = 'in_progress',
   PROBLEM = 'problem',
   COMPLETED = 'completed',
+  REPLANNED = 'replanned',
 }
 
 @Entity('task_team')
@@ -52,6 +53,9 @@ export class TaskTeam {
 
   @Column({ length: 100, nullable: true })
   task_type: string;
+
+  @Column({ type: 'text', nullable: true })
+  task_comment: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
