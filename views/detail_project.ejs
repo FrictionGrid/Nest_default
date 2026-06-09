@@ -727,29 +727,41 @@
 (function() {
   const CHECKLIST = <%- JSON.stringify(checklist) %>;
 
-  document.querySelectorAll('.doc-cat-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.doc-cat-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+  function activateTab(cat) {
+    document.querySelectorAll('.doc-cat-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelector(`.doc-cat-btn[data-cat="${cat}"]`);
+    if (btn) btn.classList.add('active');
 
-      const cat = btn.dataset.cat;
-      const rows = document.querySelectorAll('.doc-row');
-      rows.forEach(row => {
-        row.style.display = (cat === 'all' || row.dataset.cat === cat) ? '' : 'none';
-      });
-
-      // Recalc progress for selected category
-      const items = cat === 'all'
-        ? CHECKLIST
-        : CHECKLIST.filter(d => d.category === cat);
-      const total    = items.filter(d => d.isRequired).length;
-      const uploaded = items.filter(d => d.isRequired && d.status !== 'missing').length;
-      const pct = total > 0 ? Math.round(uploaded / total * 100) : 0;
-      document.getElementById('docProgressFill').style.width = pct + '%';
-      document.getElementById('docProgressText').textContent = uploaded + '/' + total;
+    const rows = document.querySelectorAll('.doc-row');
+    rows.forEach(row => {
+      row.style.display = (cat === 'all' || row.dataset.cat === cat) ? '' : 'none';
     });
+
+    const items = cat === 'all'
+      ? CHECKLIST
+      : CHECKLIST.filter(d => d.category === cat);
+    const total    = items.filter(d => d.isRequired).length;
+    const uploaded = items.filter(d => d.isRequired && d.status !== 'missing').length;
+    const pct = total > 0 ? Math.round(uploaded / total * 100) : 0;
+    document.getElementById('docProgressFill').style.width = pct + '%';
+    document.getElementById('docProgressText').textContent = uploaded + '/' + total;
+  }
+
+  document.querySelectorAll('.doc-cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => activateTab(btn.dataset.cat));
   });
+
+  // Restore tab after reload
+  const hash = location.hash;
+  if (hash && hash.startsWith('#doc-')) {
+    activateTab(hash.slice(5));
+  }
 })();
+
+function getActiveDocTab() {
+  const active = document.querySelector('.doc-cat-btn.active');
+  return active ? active.dataset.cat : 'all';
+}
 
 async function uploadDoc(input) {
   const projectId = input.dataset.projectId;
@@ -757,6 +769,7 @@ async function uploadDoc(input) {
   const files     = input.files;
   if (!files.length) return;
 
+  const tab = getActiveDocTab();
   for (const file of files) {
     const fd = new FormData();
     fd.append('file', file);
@@ -765,14 +778,18 @@ async function uploadDoc(input) {
     });
     if (!res.ok) { alert('Upload failed: ' + file.name); return; }
   }
+  location.href = location.pathname + '#doc-' + tab;
   location.reload();
 }
 
 async function deleteDoc(fileId, btn) {
   if (!confirm('Are you sure you want to delete this file?')) return;
   btn.disabled = true;
+  const tab = getActiveDocTab();
   const res = await fetch(`/detail-project/documents/file/${fileId}`, { method: 'DELETE' });
-  if (res.ok) location.reload();
-  else { alert('Delete failed'); btn.disabled = false; }
+  if (res.ok) {
+    location.href = location.pathname + '#doc-' + tab;
+    location.reload();
+  } else { alert('Delete failed'); btn.disabled = false; }
 }
 </script>
