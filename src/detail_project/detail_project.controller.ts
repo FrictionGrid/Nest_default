@@ -21,8 +21,8 @@ export class DetailProjectController {
   @Get(':id')
   async findOne(@Param('id') id: string, @Res() res: Response) {
     const data = await this.detailProjectService.findById(+id);
-    const { checklist, progress } = await this.documentService.getChecklist(+id);
-    return res.render('detail_project', { ...data, checklist, progress });
+    const { checklist, progress, docCategories } = await this.documentService.getChecklist(+id);
+    return res.render('detail_project', { ...data, checklist, progress, docCategories });
   }
 
   // ── GET documents checklist (API) ─────────────────────────────────────────

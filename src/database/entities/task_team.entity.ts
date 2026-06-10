@@ -57,6 +57,12 @@ export class TaskTeam {
   @Column({ type: 'text', nullable: true })
   task_comment: string;
 
+  @Column({ type: 'date', nullable: true })
+  replanned_start: Date;
+
+  @Column({ type: 'date', nullable: true })
+  replanned_end: Date;
+
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;

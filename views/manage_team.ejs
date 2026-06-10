@@ -25,7 +25,7 @@
   .badge-in_progress { background: rgba(65,121,191,0.12); color: #2a5fa0; }
   .badge-problem     { background: rgba(234,179,8,0.13);  color: #8a6400; }
   .badge-completed   { background: rgba(29,143,86,0.12);  color: #1a7a54; }
-  .badge-replanned   { background: rgba(139,92,246,0.13); color: #6d28d9; }
+  .badge-replanned   { background: rgba(55,65,81,0.12); color: #1f2937; }
 
   /* ── Priority badges ────────────────────────── */
   .tl-badge {
@@ -61,11 +61,13 @@
 
   /* ── modal override สำหรับหน้านี้ ──────────── */
   #taskModal {
-    align-items: flex-start;
-    padding-top: 40px;
+    align-items: center;
+    padding: 20px;
   }
   #taskModal .modal {
-    width: 700px;
+    width: min(700px, 100%);
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
   }
 
   /* Lock toolbar — only table body scrolls */
@@ -221,8 +223,8 @@
               <td><a href="/detail-project/<%= t.project_id %>" style="color:var(--primary);font-weight:600;text-decoration:none;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--primary)'"><%= t.project_name || '—' %></a></td>
               <td><%= t.display_name || t.username || '—' %></td>
               <td><%= t.team_name || '—' %></td>
-              <td><%= fmtD(t.start_date) %></td>
-              <td><%= fmtD(t.end_date) %></td>
+              <td><%= t.status === 'replanned' && t.replanned_start ? fmtD(t.replanned_start) : fmtD(t.start_date) %></td>
+              <td><%= t.status === 'replanned' && t.replanned_end   ? fmtD(t.replanned_end)   : fmtD(t.end_date)   %></td>
               <td><% if (t.status !== 'completed') { %><span class="tl-badge <%= tl.cls %>"><%= tl.label %></span><% } else { %>—<% } %></td>
               <td><span class="badge <%= s.cls %>"><%= s.label %></span></td>
               <td style="color:var(--muted);font-size:12px;"><%= t.task_comment || '—' %></td>
@@ -236,6 +238,8 @@
                     data-task-desc="<%= t.task_description || '' %>"
                     data-start="<%= toInput(t.start_date) %>"
                     data-end="<%= toInput(t.end_date) %>"
+                    data-replan-start="<%= toInput(t.replanned_start) %>"
+                    data-replan-end="<%= toInput(t.replanned_end) %>"
                     data-status="<%= t.status %>"
                     data-task-type="<%= t.task_type || '' %>"
                     data-task-comment="<%= t.task_comment || '' %>">Edit</button>
@@ -343,6 +347,16 @@
       <div class="form-group2">
         <label>End Date</label>
         <input type="date" id="fieldTaskEndDate" />
+      </div>
+    </div>
+    <div class="form-bar" id="replanDateBar" style="display:none;">
+      <div class="form-group2">
+        <label style="color:#374151;font-weight:700;">Replan Start Date</label>
+        <input type="date" id="fieldReplanStart" style="border-color:#374151;" />
+      </div>
+      <div class="form-group2">
+        <label style="color:#374151;font-weight:700;">Replan End Date</label>
+        <input type="date" id="fieldReplanEnd" style="border-color:#374151;" />
       </div>
     </div>
     <div class="form-bar">
@@ -466,6 +480,14 @@
     if (endDate) document.getElementById('fieldTaskEndDate').value = endDate;
   });
 
+  function toggleReplanBar(status) {
+    document.getElementById('replanDateBar').style.display = status === 'replanned' ? '' : 'none';
+  }
+
+  document.getElementById('fieldTaskStatus').addEventListener('change', function() {
+    toggleReplanBar(this.value);
+  });
+
   document.getElementById('addTaskBtn').addEventListener('click', () => {
     document.getElementById('taskModalTitle').textContent  = 'Add Task';
     document.getElementById('taskEditId').value            = '';
@@ -480,6 +502,9 @@
     document.getElementById('fieldTaskStatus').value       = 'in_progress';
     document.getElementById('fieldTaskType').value         = '';
     document.getElementById('fieldTaskComment').value      = '';
+    document.getElementById('fieldReplanStart').value      = '';
+    document.getElementById('fieldReplanEnd').value        = '';
+    toggleReplanBar('in_progress');
     taskModal.classList.add('open');
   });
 
@@ -492,11 +517,14 @@
       document.getElementById('fieldTaskDesc').value         = btn.dataset.taskDesc  || '';
       document.getElementById('fieldTaskUserId').value       = btn.dataset.userId    || '';
       document.getElementById('fieldTaskProjectId').value    = btn.dataset.projectId || '';
-      document.getElementById('fieldTaskStartDate').value    = btn.dataset.start     || '';
-      document.getElementById('fieldTaskEndDate').value      = btn.dataset.end       || '';
+      document.getElementById('fieldTaskStartDate').value    = btn.dataset.start       || '';
+      document.getElementById('fieldTaskEndDate').value      = btn.dataset.end         || '';
       document.getElementById('fieldTaskStatus').value       = btn.dataset.status      || 'in_progress';
       document.getElementById('fieldTaskType').value         = btn.dataset.taskType    || '';
       document.getElementById('fieldTaskComment').value      = btn.dataset.taskComment || '';
+      document.getElementById('fieldReplanStart').value      = btn.dataset.replanStart || '';
+      document.getElementById('fieldReplanEnd').value        = btn.dataset.replanEnd   || '';
+      toggleReplanBar(btn.dataset.status || 'in_progress');
       taskModal.classList.add('open');
     }
   });
@@ -526,6 +554,12 @@
       status:           document.getElementById('fieldTaskStatus').value,
       task_type:        document.getElementById('fieldTaskType').value || null,
       task_comment:     document.getElementById('fieldTaskComment').value || null,
+      replanned_start:  document.getElementById('fieldTaskStatus').value === 'replanned'
+                          ? (document.getElementById('fieldReplanStart').value || null)
+                          : null,
+      replanned_end:    document.getElementById('fieldTaskStatus').value === 'replanned'
+                          ? (document.getElementById('fieldReplanEnd').value || null)
+                          : null,
     };
     if (!payload.task_name) { alert('Please enter a task name'); return; }
     if (!payload.user_id || !payload.project_id) { alert('Please select a user and project'); return; }

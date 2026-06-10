@@ -92,8 +92,10 @@ export class TimelineService {
       .addSelect('t.task_description','desc')
       .addSelect('t.start_date',      'start')
       .addSelect('t.end_date',        'end')
-      .addSelect('t.status',          'dbStatus')
+      .addSelect('t.status',           'dbStatus')
       .addSelect('t.progress',        'progress')
+      .addSelect('t.replanned_start', 'replanned_start')
+      .addSelect('t.replanned_end',   'replanned_end')
       .addSelect('p.project_name',    'project_name')
       .where('t.start_date IS NOT NULL')
       .andWhere('t.end_date IS NOT NULL')
@@ -117,6 +119,8 @@ export class TimelineService {
       let status: string;
       if (t.dbStatus === 'completed') {
         status = 'completed';
+      } else if (t.dbStatus === 'replanned') {
+        status = 'replanned';
       } else if (t.dbStatus === 'problem' || daysLeft < 0) {
         status = 'overdue';
       } else if (daysLeft <= 3) {
@@ -129,14 +133,21 @@ export class TimelineService {
 
       const progress = t.progress ?? 0;
 
+      const replanStart = t.replanned_start ? new Date(t.replanned_start) : null;
+      const replanEnd   = t.replanned_end   ? new Date(t.replanned_end)   : null;
+      if (replanStart) replanStart.setHours(0, 0, 0, 0);
+      if (replanEnd)   replanEnd.setHours(0, 0, 0, 0);
+
       return {
-        id:          t.id,
-        userId:      Number(t.userId),
-        name:        t.name,
-        desc:        t.desc || '',
-        projectName: t.project_name || '',
-        start:       startDate.toISOString().split('T')[0],
-        end:         endDate.toISOString().split('T')[0],
+        id:           t.id,
+        userId:       Number(t.userId),
+        name:         t.name,
+        desc:         t.desc || '',
+        projectName:  t.project_name || '',
+        start:        startDate.toISOString().split('T')[0],
+        end:          endDate.toISOString().split('T')[0],
+        replan_start: replanStart ? replanStart.toISOString().split('T')[0] : null,
+        replan_end:   replanEnd   ? replanEnd.toISOString().split('T')[0]   : null,
         status,
         progress,
       };

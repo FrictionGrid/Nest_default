@@ -13,12 +13,13 @@ import { UsersTeam } from '../database/entities/users_team.entity';
 import { DocumentType } from '../database/entities/document_type.entity';
 import { ProjectDocument } from '../database/entities/project_document.entity';
 import { ProjectDocumentFile } from '../database/entities/project_document_file.entity';
+import { ProjectTypeCategory } from '../database/entities/project_type_category.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       ProjectIncoming, ProjectTeam, TaskTeam, UsersTeam,
-      DocumentType, ProjectDocument, ProjectDocumentFile,
+      DocumentType, ProjectDocument, ProjectDocumentFile, ProjectTypeCategory,
     ]),
     MulterModule.register({
       storage: memoryStorage(),

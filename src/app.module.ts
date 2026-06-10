@@ -32,6 +32,7 @@ import { UserContextMiddleware } from './common/middleware/user-context.middlewa
 import { DocumentType } from './database/entities/document_type.entity';
 import { ProjectDocument } from './database/entities/project_document.entity';
 import { ProjectDocumentFile } from './database/entities/project_document_file.entity';
+import { ProjectTypeCategory } from './database/entities/project_type_category.entity';
 import { Feedback } from './database/entities/feedback.entity';
 
 @Module({
@@ -48,7 +49,7 @@ import { Feedback } from './database/entities/feedback.entity';
         username: config.get('DB_USERNAME'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [ProjectIncoming, ProjectType, Team, ProjectTeam, User, UsersTeam, TaskTeam, DocumentType, ProjectDocument, ProjectDocumentFile, PaymentInstallment, Feedback],
+        entities: [ProjectIncoming, ProjectType, Team, ProjectTeam, User, UsersTeam, TaskTeam, DocumentType, ProjectDocument, ProjectDocumentFile, PaymentInstallment, Feedback, ProjectTypeCategory],
         synchronize: false,
       }),
       inject: [ConfigService],

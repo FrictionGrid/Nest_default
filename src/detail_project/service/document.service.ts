@@ -5,6 +5,7 @@ import { DocumentType } from '../../database/entities/document_type.entity';
 import { ProjectDocument } from '../../database/entities/project_document.entity';
 import { ProjectDocumentFile } from '../../database/entities/project_document_file.entity';
 import { ProjectIncoming } from '../../database/entities/project_incoming.entity';
+import { ProjectTypeCategory } from '../../database/entities/project_type_category.entity';
 import { SynologyService } from './synology.service';
 
 @Injectable()
@@ -18,12 +19,32 @@ export class DocumentService {
     private readonly fileRepo: Repository<ProjectDocumentFile>,
     @InjectRepository(ProjectIncoming)
     private readonly projectRepo: Repository<ProjectIncoming>,
+    @InjectRepository(ProjectTypeCategory)
+    private readonly projectTypeCategoryRepo: Repository<ProjectTypeCategory>,
     private readonly nas: SynologyService,
   ) {}
 
   // ── GET checklist ──────────────────────────────────────────────────────────
   async getChecklist(projectId: number) {
-    const types = await this.docTypeRepo.find({ order: { sort_order: 'ASC' } });
+    const project = await this.projectRepo.findOne({ where: { id: projectId } });
+    const typeIds = project?.types?.map((t) => t.id) ?? [];
+
+    if (typeIds.length === 0) {
+      return { checklist: [], progress: { uploaded: 0, total: 0 }, docCategories: [] };
+    }
+
+    const mappings = await this.projectTypeCategoryRepo.find({
+      where: typeIds.map((id) => ({ project_type_id: id })),
+    });
+
+    const allowedCategories = new Set(mappings.map((m) => m.category));
+
+    if (allowedCategories.size === 0) {
+      return { checklist: [], progress: { uploaded: 0, total: 0 }, docCategories: [] };
+    }
+
+    const allTypes = await this.docTypeRepo.find({ order: { sort_order: 'ASC' } });
+    const types = allTypes.filter((t) => allowedCategories.has(t.category || 'engineer_task'));
 
     const docs = await this.projectDocRepo.find({
       where: { project_id: projectId },
@@ -56,7 +77,17 @@ export class DocumentService {
     const total    = types.filter((t) => t.is_required).length;
     const uploaded = checklist.filter((c) => c.isRequired && c.status !== 'missing').length;
 
-    return { checklist, progress: { uploaded, total } };
+    const CATEGORY_LABEL: Record<string, string> = {
+      engineer_task: 'Engineer',
+      draft:         'Draft',
+    };
+    const uniqueCategories = [...new Set(types.map((t) => t.category || 'engineer_task'))];
+    const docCategories = uniqueCategories.map((key) => ({
+      key,
+      label: CATEGORY_LABEL[key] ?? key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+    }));
+
+    return { checklist, progress: { uploaded, total }, docCategories };
   }
 
   // ── UPLOAD file ───────────────────────────────────────────────────────────

@@ -258,6 +258,13 @@
 .b-od { background:rgba(228,87,87,0.12);   color:#c0392b; }
 .b-cp { background:rgba(53,179,126,0.12);  color:#1a7a54; }
 
+/* Replanned two-part bar */
+.tl-bar-orig   { border-radius: 10px 0 0 10px !important; box-shadow: 2px 0 0 rgba(0,0,0,0.08) !important; }
+.tl-bar-replan { border-radius: 0 10px 10px 0 !important; }
+.tl-bar-orig:hover, .tl-bar-replan:hover { transform: translateY(-3px); z-index: 10; }
+.tl-dot-rp { background: linear-gradient(90deg,#94a3b8 50%,#374151 50%); }
+.b-rp { background: rgba(55,65,81,0.12); color: #1f2937; }
+
 /* Lock toolbar — chart area scrolls */
 .main { overflow: hidden; height: 100vh; }
 .content {
@@ -350,6 +357,8 @@
         <div class="tl-legend-item"><span class="tl-dot tl-dot-od"></span>Overdue</div>
         <div class="tl-legend-sep"></div>
         <div class="tl-legend-item"><span class="tl-dot tl-dot-cp"></span>Completed</div>
+        <div class="tl-legend-sep"></div>
+        <div class="tl-legend-item"><span class="tl-dot tl-dot-rp"></span>Replanned</div>
       </div>
       <div class="tl-header-right">
         <div class="tl-range-group" id="rangeGroup">
@@ -396,7 +405,8 @@
   <div class="tl-tip-title" id="ttName"></div>
   <div class="tl-tip-row"><span>Project</span><span id="ttProject"></span></div>
   <div class="tl-tip-row"><span>Start</span><span id="ttStart"></span></div>
-  <div class="tl-tip-row"><span>End</span><span id="ttEnd"></span></div>
+  <div class="tl-tip-row"><span>Original End</span><span id="ttEnd"></span></div>
+  <div class="tl-tip-row" id="ttReplanRow" style="display:none"><span>Replanned To</span><span id="ttReplan"></span></div>
   <div class="tl-tip-row"><span>Status</span><span id="ttStatus"></span></div>
   <div class="tl-tip-row"><span>Progress</span><span id="ttProg"></span></div>
 </div>
@@ -417,7 +427,8 @@
     <div class="tl-modal-bd">
       <div class="tl-modal-grid">
         <div class="tl-modal-field"><label>Start Date</label><span id="mStart"></span></div>
-        <div class="tl-modal-field"><label>End Date</label><span id="mEnd"></span></div>
+        <div class="tl-modal-field"><label>Original End</label><span id="mEnd"></span></div>
+        <div class="tl-modal-field" id="mReplanWrap" style="display:none"><label>Replanned To</label><span id="mReplanEnd" style="color:#1f2937;font-weight:700;"></span></div>
         <div class="tl-modal-field"><label>Status</label><span id="mStatus"></span></div>
         <div class="tl-modal-field">
           <label>Progress</label>
@@ -466,6 +477,8 @@ const COLORS = {
   critical:    { bg:'linear-gradient(135deg,#F97316,#FDBA74)', border:'#c45c0a', label:'Critical',     badge:'b-cr' },
   overdue:     { bg:'linear-gradient(135deg,#E45757,#F08080)', border:'#cc3a3a', label:'Overdue',      badge:'b-od' },
   completed:   { bg:'linear-gradient(135deg,#35B37E,#5fd4a1)', border:'#1a7a54', label:'Completed',    badge:'b-cp' },
+  replanned:   { bg:'linear-gradient(135deg,#374151,#4b5563)', border:'#1f2937', label:'Replanned',   badge:'b-rp',
+                 origBg:'linear-gradient(135deg,#94a3b8,#b0bec5)', origBorder:'#64748b' },
 };
 
 // ─── State ───────────────────────────────────────────
@@ -494,7 +507,9 @@ function fmts(d) { return d.toLocaleDateString('en-GB',{day:'numeric',month:'sho
 // ─── Lane assignment ─────────────────────────────────
 function effectiveEnd(task) {
   const today = new Date(); today.setHours(0,0,0,0);
-  return task.status === 'overdue' ? today : new Date(task.end);
+  if (task.status === 'overdue') return today;
+  if (task.status === 'replanned' && task.replan_end) return new Date(task.replan_end);
+  return new Date(task.end);
 }
 
 function assignLanes(tasks, vs, ve) {
@@ -603,28 +618,75 @@ function render() {
     });
 
     items.forEach(({task,lane}) => {
-      const ts=new Date(task.start)<vs?vs:new Date(task.start);
-      const te=effectiveEnd(task)>ve?ve:effectiveEnd(task);
-      const offStart=Math.round((ts-vs)/MS_DAY);
-      const dur=Math.max(0.5, Math.round((te-ts)/MS_DAY));
       const top=ROW_PAD+lane*LANE_H+Math.round((LANE_H-BAR_H)/2);
       const col=COLORS[task.status]||COLORS.in_progress;
 
-      const bar=document.createElement('div');
-      bar.className='tl-bar';
-      bar.style.cssText=`left:${pct(offStart,total)};width:${pct(dur,total)};top:${top}px;background:${col.bg};border-left:3px solid ${col.border};`;
-      bar.innerHTML=`
-        <div class="tl-bar-inner">
-          <span class="tl-bar-name">${task.name}</span>
-          <span class="tl-bar-pct">→ ${fmts(new Date(task.end))}</span>
-        </div>
-        <div class="tl-bar-prog" style="width:${task.progress}%"></div>`;
+      if (task.status === 'replanned' && task.replan_end) {
+        // Bar 1: แผนเดิม (เทา) start → end
+        const origEnd = new Date(task.end);
+        const ts1 = new Date(task.start)<vs ? vs : new Date(task.start);
+        const te1 = origEnd>ve ? ve : origEnd;
+        const off1 = Math.round((ts1-vs)/MS_DAY);
+        const dur1 = Math.max(0.5, Math.round((te1-ts1)/MS_DAY));
 
-      bar.addEventListener('mouseenter', e=>showTip(e,task));
-      bar.addEventListener('mousemove',  moveTip);
-      bar.addEventListener('mouseleave', hideTip);
-      bar.addEventListener('click',      ()=>openModal(task,user));
-      row.appendChild(bar);
+        const bar1=document.createElement('div');
+        bar1.className='tl-bar tl-bar-orig';
+        bar1.style.cssText=`left:${pct(off1,total)};width:${pct(dur1,total)};top:${top}px;background:${col.origBg};border-left:3px solid ${col.origBorder};`;
+        bar1.innerHTML=`
+          <div class="tl-bar-inner">
+            <span class="tl-bar-name" style="color:rgba(255,255,255,0.75)">${task.name}</span>
+            <span class="tl-bar-pct" style="color:rgba(255,255,255,0.6)">${fmts(origEnd)}</span>
+          </div>`;
+        bar1.addEventListener('mouseenter', e=>showTip(e,task));
+        bar1.addEventListener('mousemove',  moveTip);
+        bar1.addEventListener('mouseleave', hideTip);
+        bar1.addEventListener('click',      ()=>openModal(task,user));
+        row.appendChild(bar1);
+
+        // Bar 2: แผนใหม่ (ม่วง) end → replan_end
+        const replanEnd = new Date(task.replan_end);
+        const ts2 = origEnd<vs ? vs : origEnd;
+        const te2 = replanEnd>ve ? ve : replanEnd;
+        const off2 = Math.round((ts2-vs)/MS_DAY);
+        const dur2 = Math.max(0.5, Math.round((te2-ts2)/MS_DAY));
+
+        const bar2=document.createElement('div');
+        bar2.className='tl-bar tl-bar-replan';
+        bar2.style.cssText=`left:${pct(off2,total)};width:${pct(dur2,total)};top:${top}px;background:${col.bg};border-right:3px solid ${col.border};`;
+        bar2.innerHTML=`
+          <div class="tl-bar-inner">
+            <span class="tl-bar-name">${task.name}</span>
+            <span class="tl-bar-pct">→ ${fmts(replanEnd)}</span>
+          </div>
+          <div class="tl-bar-prog" style="width:${task.progress}%"></div>`;
+        bar2.addEventListener('mouseenter', e=>showTip(e,task));
+        bar2.addEventListener('mousemove',  moveTip);
+        bar2.addEventListener('mouseleave', hideTip);
+        bar2.addEventListener('click',      ()=>openModal(task,user));
+        row.appendChild(bar2);
+
+      } else {
+        // Bar ปกติ
+        const ts=new Date(task.start)<vs?vs:new Date(task.start);
+        const te=effectiveEnd(task)>ve?ve:effectiveEnd(task);
+        const offStart=Math.round((ts-vs)/MS_DAY);
+        const dur=Math.max(0.5, Math.round((te-ts)/MS_DAY));
+
+        const bar=document.createElement('div');
+        bar.className='tl-bar';
+        bar.style.cssText=`left:${pct(offStart,total)};width:${pct(dur,total)};top:${top}px;background:${col.bg};border-left:3px solid ${col.border};`;
+        bar.innerHTML=`
+          <div class="tl-bar-inner">
+            <span class="tl-bar-name">${task.name}</span>
+            <span class="tl-bar-pct">→ ${fmts(new Date(task.end))}</span>
+          </div>
+          <div class="tl-bar-prog" style="width:${task.progress}%"></div>`;
+        bar.addEventListener('mouseenter', e=>showTip(e,task));
+        bar.addEventListener('mousemove',  moveTip);
+        bar.addEventListener('mouseleave', hideTip);
+        bar.addEventListener('click',      ()=>openModal(task,user));
+        row.appendChild(bar);
+      }
     });
 
     tlRows.appendChild(row);
@@ -647,6 +709,13 @@ function showTip(e,task) {
   document.getElementById('ttEnd').textContent     = fmt(new Date(task.end));
   document.getElementById('ttStatus').textContent  = col.label;
   document.getElementById('ttProg').textContent    = task.progress+'%';
+  const replanRow = document.getElementById('ttReplanRow');
+  if (task.replan_end) {
+    document.getElementById('ttReplan').textContent = fmt(new Date(task.replan_end));
+    replanRow.style.display = '';
+  } else {
+    replanRow.style.display = 'none';
+  }
   tip.style.display='block'; moveTip(e);
 }
 function moveTip(e) {
@@ -672,6 +741,13 @@ function openModal(task,user) {
   document.getElementById('mProgFill').style.width = task.progress+'%';
   const badge=document.getElementById('mStatus');
   badge.textContent=col.label; badge.className=`tl-badge ${col.badge}`;
+  const replanWrap = document.getElementById('mReplanWrap');
+  if (task.replan_end) {
+    document.getElementById('mReplanEnd').textContent = fmt(new Date(task.replan_end));
+    replanWrap.style.display = '';
+  } else {
+    replanWrap.style.display = 'none';
+  }
   modal.classList.add('open');
 }
 

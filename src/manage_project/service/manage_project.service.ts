@@ -8,6 +8,7 @@ import { UsersTeam } from '../../database/entities/users_team.entity';
 import { TaskTeam } from '../../database/entities/task_team.entity';
 import { DocumentType } from '../../database/entities/document_type.entity';
 import { ProjectDocument } from '../../database/entities/project_document.entity';
+import { ProjectTypeCategory } from '../../database/entities/project_type_category.entity';
 import { CreateManageProjectDto } from '../dto/create-manage_project.dto';
 import { UpdateManageProjectDto } from '../dto/update-manage_project.dto';
 
@@ -28,6 +29,8 @@ export class ManageProjectService {
     private readonly docTypeRepo: Repository<DocumentType>,
     @InjectRepository(ProjectDocument)
     private readonly projectDocRepo: Repository<ProjectDocument>,
+    @InjectRepository(ProjectTypeCategory)
+    private readonly projectTypeCategoryRepo: Repository<ProjectTypeCategory>,
   ) {}
 
   private async getTeamIdsByUser(userId: number): Promise<number[]> {
@@ -156,11 +159,27 @@ export class ManageProjectService {
 
     const projectId = row.project_id;
 
-    const [tasks, docTypes, docs] = await Promise.all([
-      this.taskRepo.find({ where: { project_id: projectId } }),
+    const project = await this.projectRepo.findOne({ where: { id: projectId } });
+    const typeIds = project?.types?.map((t) => t.id) ?? [];
+
+    const tasks = await this.taskRepo.find({ where: { project_id: projectId } });
+
+    if (typeIds.length === 0) {
+      return { canComplete: false, incompleteTasks: tasks.filter((t) => t.status !== 'completed').map((t) => t.task_name), missingDocs: [] };
+    }
+
+    const mappings = await this.projectTypeCategoryRepo.find({
+      where: typeIds.map((tid) => ({ project_type_id: tid })),
+    });
+
+    const allowedCategories = new Set(mappings.map((m) => m.category));
+
+    const [allDocTypes, docs] = await Promise.all([
       this.docTypeRepo.find({ where: { is_required: true } }),
       this.projectDocRepo.find({ where: { project_id: projectId } }),
     ]);
+
+    const docTypes = allDocTypes.filter((t) => allowedCategories.has(t.category || 'engineer_task'));
 
     const incompleteTasks = tasks
       .filter((t) => t.status !== 'completed')

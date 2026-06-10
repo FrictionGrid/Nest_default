@@ -96,6 +96,8 @@ export class ManageTeamService {
       .addSelect('t.status', 'status')
       .addSelect('t.task_type', 'task_type')
       .addSelect('t.task_comment', 'task_comment')
+      .addSelect('t.replanned_start', 'replanned_start')
+      .addSelect('t.replanned_end',   'replanned_end')
       .addSelect('u.username', 'username')
       .addSelect('u.display_name', 'display_name')
       .addSelect('p.project_name', 'project_name')
@@ -115,6 +117,8 @@ export class ManageTeamService {
         task_description: r.task_description,
         start_date: r.start_date,
         end_date: r.end_date,
+        replanned_start: r.replanned_start,
+        replanned_end: r.replanned_end,
         status: r.status,
         task_type: r.task_type,
         task_comment: r.task_comment,
@@ -164,6 +168,8 @@ export class ManageTeamService {
       .addSelect('t.status', 'status')
       .addSelect('t.task_type', 'task_type')
       .addSelect('t.task_comment', 'task_comment')
+      .addSelect('t.replanned_start', 'replanned_start')
+      .addSelect('t.replanned_end',   'replanned_end')
       .addSelect('u.username', 'username')
       .addSelect('u.display_name', 'display_name')
       .addSelect('p.project_name', 'project_name')
@@ -185,6 +191,8 @@ export class ManageTeamService {
         task_description: r.task_description,
         start_date:       r.start_date,
         end_date:         r.end_date,
+        replanned_start:  r.replanned_start,
+        replanned_end:    r.replanned_end,
         status:           r.status,
         task_type:        r.task_type,
         task_comment:     r.task_comment,

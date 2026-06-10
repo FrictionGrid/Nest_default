@@ -543,8 +543,9 @@
         </div>
         <div class="doc-cat-tabs">
           <button class="doc-cat-btn active" data-cat="all">All</button>
-          <button class="doc-cat-btn" data-cat="engineer_task">Engineer</button>
-          <button class="doc-cat-btn" data-cat="draft">Draft</button>
+          <% docCategories.forEach(function(cat) { %>
+          <button class="doc-cat-btn" data-cat="<%= cat.key %>"><%= cat.label %></button>
+          <% }) %>
         </div>
         <div class="doc-progress-wrap" style="min-width:120px;">
           <div class="doc-progress-bar">
