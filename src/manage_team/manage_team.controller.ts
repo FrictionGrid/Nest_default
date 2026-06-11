@@ -72,7 +72,7 @@ export class ManageTeamController {
     if (sessionUser?.role === 'head_engineer') {
       await this.manageTeamService.assertProjectInUserTeam(+dto.project_id, sessionUser.id);
     }
-    return this.manageTeamService.createTask(dto);
+    return this.manageTeamService.createTask(dto, sessionUser?.id, sessionUser?.role);
   }
 
   @Put('api/tasks/:id')
@@ -81,7 +81,7 @@ export class ManageTeamController {
     if (sessionUser?.role === 'head_engineer') {
       await this.manageTeamService.assertTaskInUserTeam(+id, sessionUser.id);
     }
-    return this.manageTeamService.updateTask(+id, dto);
+    return this.manageTeamService.updateTask(+id, dto, sessionUser?.id, sessionUser?.role);
   }
 
   @Delete('api/tasks/:id')
@@ -90,6 +90,6 @@ export class ManageTeamController {
     if (sessionUser?.role === 'head_engineer') {
       await this.manageTeamService.assertTaskInUserTeam(+id, sessionUser.id);
     }
-    return this.manageTeamService.removeTask(+id);
+    return this.manageTeamService.removeTask(+id, sessionUser?.id, sessionUser?.role);
   }
 }

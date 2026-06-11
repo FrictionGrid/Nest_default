@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { User, UserRole } from '../../database/entities/user.entity';
 import { Team } from '../../database/entities/team.entity';
 import { UsersTeam } from '../../database/entities/users_team.entity';
+import { ActivityLogService } from '../../activity_log/service/activity_log.service';
 
 @Injectable()
 export class UserManagementService {
@@ -11,6 +12,7 @@ export class UserManagementService {
     @InjectRepository(User)      private userRepo: Repository<User>,
     @InjectRepository(Team)      private teamRepo: Repository<Team>,
     @InjectRepository(UsersTeam) private userTeamRepo: Repository<UsersTeam>,
+    private readonly logService: ActivityLogService,
   ) {}
 
   // ── Users ────────────────────────────────────────────────────────────────
@@ -46,7 +48,7 @@ export class UserManagementService {
     return Array.from(map.values());
   }
 
-  async createUser(dto: { username: string; display_name?: string; email: string; password: string; role: string; status?: string }) {
+  async createUser(dto: { username: string; display_name?: string; email: string; password: string; role: string; status?: string }, actorId?: number, actorRole?: string) {
     const exists = await this.userRepo.findOne({ where: [{ username: dto.username }, { email: dto.email }] });
     if (exists) throw new ConflictException('Username or email already exists');
     const user = this.userRepo.create({
@@ -57,10 +59,12 @@ export class UserManagementService {
       role:         dto.role as UserRole,
       status:       dto.status || 'active',
     });
-    return this.userRepo.save(user);
+    const saved = await this.userRepo.save(user);
+    await this.logService.logUser('create', saved.id, { userId: actorId, userRole: actorRole, username: saved.username });
+    return saved;
   }
 
-  async updateUser(id: number, dto: { display_name?: string; email?: string; password?: string; role?: string; status?: string }) {
+  async updateUser(id: number, dto: { display_name?: string; email?: string; password?: string; role?: string; status?: string }, actorId?: number, actorRole?: string) {
     const user = await this.userRepo.findOneBy({ id });
     if (!user) throw new NotFoundException('User not found');
     if (dto.password === '' || dto.password === null) delete dto.password;
@@ -71,10 +75,13 @@ export class UserManagementService {
       ...(dto.role         !== undefined && { role:         dto.role as UserRole }),
       ...(dto.status       !== undefined && { status:       dto.status }),
     });
+    await this.logService.logUser('update', id, { userId: actorId, userRole: actorRole, username: user.username });
     return this.userRepo.findOneBy({ id });
   }
 
-  async removeUser(id: number) {
+  async removeUser(id: number, actorId?: number, actorRole?: string) {
+    const user = await this.userRepo.findOneBy({ id });
+    await this.logService.logUser('delete', id, { userId: actorId, userRole: actorRole, username: user?.username });
     await this.userRepo.delete(id);
   }
 

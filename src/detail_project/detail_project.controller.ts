@@ -6,6 +6,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import type { Request, Response } from 'express';
 import { DetailProjectService } from './detail_project.service';
 import { DocumentService } from './service/document.service';
+import { ActivityLogService } from '../activity_log/service/activity_log.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 
@@ -15,6 +16,7 @@ export class DetailProjectController {
   constructor(
     private readonly detailProjectService: DetailProjectService,
     private readonly documentService: DocumentService,
+    private readonly logService: ActivityLogService,
   ) {}
 
   // ── Page ──────────────────────────────────────────────────────────────────
@@ -40,30 +42,31 @@ export class DetailProjectController {
     @UploadedFile() file: Express.Multer.File,
     @Req() req: Request,
   ) {
-    const userId = (req.session as any).user?.id;
-    return this.documentService.uploadFile(+id, +typeId, file, userId);
+    const { id: userId, role } = (req.session as any).user ?? {};
+    return this.documentService.uploadFile(+id, +typeId, file, userId, role);
   }
 
   // ── DELETE file ───────────────────────────────────────────────────────────
   @Delete('documents/file/:fileId')
-  async deleteFile(@Param('fileId') fileId: string) {
-    return this.documentService.deleteFile(+fileId);
+  async deleteFile(@Param('fileId') fileId: string, @Req() req: Request) {
+    const { id: userId, role } = (req.session as any).user ?? {};
+    return this.documentService.deleteFile(+fileId, userId, role);
   }
 
   // ── DOWNLOAD file ─────────────────────────────────────────────────────────
   @Get('documents/file/:fileId/download')
-  async downloadFile(@Param('fileId') fileId: string, @Res() res: Response) {
-    const file = await this.documentService.getFileRecord(+fileId);
+  async downloadFile(@Param('fileId') fileId: string, @Req() req: Request, @Res() res: Response) {
+    const { id: userId, role } = (req.session as any).user ?? {};
+    const file   = await this.documentService.getFileRecord(+fileId);
     const nasRes = await this.documentService.getDownloadStream(file.file_path);
 
+    await this.logService.logDocument('download', { userId, userRole: role, fileId: +fileId, fileName: file.filename });
+
     res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(file.filename)}"`);
-
-    const contentType = nasRes.headers['content-type'];
-    if (contentType) res.setHeader('Content-Type', contentType);
-
+    const contentType   = nasRes.headers['content-type'];
     const contentLength = nasRes.headers['content-length'];
+    if (contentType)   res.setHeader('Content-Type', contentType);
     if (contentLength) res.setHeader('Content-Length', contentLength);
-
     nasRes.data.pipe(res);
   }
 }

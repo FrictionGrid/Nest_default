@@ -287,6 +287,10 @@
           <option value="Testing & Commissioning">Testing &amp; Commissioning</option>
           <option value="Handover Doc">Handover Doc</option>
           <option value="Defect list">Defect list</option>
+          <option value="PM Report">PM Report</option>
+          <option value="PM Programming">PM Programming</option>
+          <option value="Site Test Report">Site Test Report</option>
+          <option value="Handover Letter">Handover Letter</option>
           <option value="Other">Other</option>
         </select>
       </div>
@@ -306,7 +310,7 @@
         <select id="fieldTaskUserId">
           <option value="">-- Select User --</option>
           <% userList.forEach(function(u) { %>
-            <option value="<%= u.id %>"><%= u.display_name || u.username %></option>
+            <option value="<%= u.id %>" data-teams="<%= (u.teams || []).join(',') %>"><%= u.display_name || u.username %></option>
           <% }); %>
         </select>
       </div>
@@ -464,6 +468,7 @@
   document.getElementById('filterMonth').addEventListener('change', applyTaskFilters);
 
   const taskModal = document.getElementById('taskModal');
+
 
   function filterTaskProjects() {
     const month = document.getElementById('taskProjectMonth').value;

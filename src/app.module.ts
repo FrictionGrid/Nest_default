@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { IncomingProjectModule } from './incoming_project/incoming_project.module';
+import { ActivityLog } from './database/entities/activity_log.entity';
 import { ProjectIncoming } from './database/entities/project_incoming.entity';
 import { ProjectType } from './database/entities/project_type.entity';
 import { Team } from './database/entities/team.entity';
@@ -49,7 +50,7 @@ import { Feedback } from './database/entities/feedback.entity';
         username: config.get('DB_USERNAME'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [ProjectIncoming, ProjectType, Team, ProjectTeam, User, UsersTeam, TaskTeam, DocumentType, ProjectDocument, ProjectDocumentFile, PaymentInstallment, Feedback, ProjectTypeCategory],
+        entities: [ActivityLog, ProjectIncoming, ProjectType, Team, ProjectTeam, User, UsersTeam, TaskTeam, DocumentType, ProjectDocument, ProjectDocumentFile, PaymentInstallment, Feedback, ProjectTypeCategory],
         synchronize: false,
       }),
       inject: [ConfigService],

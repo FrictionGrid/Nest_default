@@ -11,6 +11,7 @@ import { ProjectDocument } from '../../database/entities/project_document.entity
 import { ProjectTypeCategory } from '../../database/entities/project_type_category.entity';
 import { CreateManageProjectDto } from '../dto/create-manage_project.dto';
 import { UpdateManageProjectDto } from '../dto/update-manage_project.dto';
+import { ActivityLogService } from '../../activity_log/service/activity_log.service';
 
 @Injectable()
 export class ManageProjectService {
@@ -31,6 +32,7 @@ export class ManageProjectService {
     private readonly projectDocRepo: Repository<ProjectDocument>,
     @InjectRepository(ProjectTypeCategory)
     private readonly projectTypeCategoryRepo: Repository<ProjectTypeCategory>,
+    private readonly logService: ActivityLogService,
   ) {}
 
   private async getTeamIdsByUser(userId: number): Promise<number[]> {
@@ -129,17 +131,18 @@ export class ManageProjectService {
     if (!teamIds.includes(row.team_id)) throw new ForbiddenException('Access denied');
   }
 
-  async create(dto: CreateManageProjectDto) {
+  async create(dto: CreateManageProjectDto, userId?: number, userRole?: string) {
     const { start_date, end_date, ...teamData } = dto;
     const row = this.projectTeamRepo.create(teamData);
     const saved = await this.projectTeamRepo.save(row);
     if (start_date !== undefined || end_date !== undefined) {
       await this.projectRepo.update(dto.project_id, { start_date, end_date } as any);
     }
+    await this.logService.logProject('create', saved.id, { userId, userRole });
     return saved;
   }
 
-  async update(id: number, dto: UpdateManageProjectDto) {
+  async update(id: number, dto: UpdateManageProjectDto, userId?: number, userRole?: string) {
     const row = await this.projectTeamRepo.findOne({ where: { id } });
     if (!row) return null;
     const { start_date, end_date, ...teamData } = dto;
@@ -150,6 +153,7 @@ export class ManageProjectService {
     if (start_date !== undefined || end_date !== undefined) {
       await this.projectRepo.update(projectId, { start_date, end_date } as any);
     }
+    await this.logService.logProject('update', id, { userId, userRole });
     return this.projectTeamRepo.findOne({ where: { id }, relations: ['project', 'team'] });
   }
 
@@ -196,13 +200,15 @@ export class ManageProjectService {
     return { canComplete: incompleteTasks.length === 0 && missingDocs.length === 0, incompleteTasks, missingDocs };
   }
 
-  async complete(id: number) {
+  async complete(id: number, userId?: number, userRole?: string) {
     const row = await this.projectTeamRepo.findOne({ where: { id } });
     if (!row) return null;
     await this.projectRepo.update(row.project_id, { status: 'completed' });
+    await this.logService.logProject('complete', id, { userId, userRole });
   }
 
-  async remove(id: number) {
+  async remove(id: number, userId?: number, userRole?: string) {
+    await this.logService.logProject('delete', id, { userId, userRole });
     await this.projectTeamRepo.delete(id);
   }
 }

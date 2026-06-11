@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Render, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Render, UseGuards, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { UserManagementService } from './service/user_management.service';
@@ -24,13 +25,22 @@ export class UserManagementController {
   getUsers() { return this.svc.findAllUsers(); }
 
   @Post('api/users')
-  createUser(@Body() dto: any) { return this.svc.createUser(dto); }
+  createUser(@Req() req: Request, @Body() dto: any) {
+    const { id, role } = (req.session as any).user ?? {};
+    return this.svc.createUser(dto, id, role);
+  }
 
   @Put('api/users/:id')
-  updateUser(@Param('id') id: string, @Body() dto: any) { return this.svc.updateUser(+id, dto); }
+  updateUser(@Req() req: Request, @Param('id') id: string, @Body() dto: any) {
+    const { id: actorId, role } = (req.session as any).user ?? {};
+    return this.svc.updateUser(+id, dto, actorId, role);
+  }
 
   @Delete('api/users/:id')
-  removeUser(@Param('id') id: string) { return this.svc.removeUser(+id); }
+  removeUser(@Req() req: Request, @Param('id') id: string) {
+    const { id: actorId, role } = (req.session as any).user ?? {};
+    return this.svc.removeUser(+id, actorId, role);
+  }
 
   // ── Team API ─────────────────────────────────────────────────────────────
 

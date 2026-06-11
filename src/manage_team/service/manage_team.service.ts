@@ -1,6 +1,7 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
+import { ActivityLogService } from '../../activity_log/service/activity_log.service';
 import { UsersTeam } from '../../database/entities/users_team.entity';
 import { User } from '../../database/entities/user.entity';
 import { Team } from '../../database/entities/team.entity';
@@ -25,6 +26,7 @@ export class ManageTeamService {
     private readonly projectRepo: Repository<ProjectIncoming>,
     @InjectRepository(ProjectTeam)
     private readonly projectTeamRepo: Repository<ProjectTeam>,
+    private readonly logService: ActivityLogService,
   ) {}
 
   private calcPriority(endDate: Date | null): string {
@@ -55,8 +57,30 @@ export class ManageTeamService {
     }));
   }
 
-  findAllUsers() {
-    return this.userRepo.find({ order: { id: 'ASC' } });
+  async findAllUsers() {
+    return this.getUsersWithTeams();
+  }
+
+  private async getUsersWithTeams(userIds?: number[]) {
+    let qb = this.userRepo
+      .createQueryBuilder('u')
+      .leftJoin('user_teams', 'ut', 'ut.user_id = u.id')
+      .leftJoin('team', 'tm', 'tm.id = ut.team_id')
+      .select('u.id', 'uid')
+      .addSelect('u.username', 'username')
+      .addSelect('u.display_name', 'display_name')
+      .addSelect('tm.name', 'team_name')
+      .orderBy('u.id', 'ASC');
+    if (userIds && userIds.length > 0) {
+      qb = qb.where('u.id IN (:...ids)', { ids: userIds });
+    }
+    const rows = await qb.getRawMany();
+    const map = new Map<number, { id: number; username: string; display_name: string; teams: string[] }>();
+    for (const r of rows) {
+      if (!map.has(r.uid)) map.set(r.uid, { id: r.uid, username: r.username, display_name: r.display_name, teams: [] });
+      if (r.team_name) map.get(r.uid)!.teams.push(r.team_name);
+    }
+    return Array.from(map.values());
   }
 
   findAllTeams() {
@@ -216,16 +240,14 @@ export class ManageTeamService {
   async findUsersScoped(userId: number) {
     const teamIds = await this.getTeamIdsByUser(userId);
     if (teamIds.length === 0) return [];
-    const rows = await this.userTeamRepo
+    const scopedRows = await this.userTeamRepo
       .createQueryBuilder('ut')
-      .leftJoin('ut.user', 'u')
-      .select(['ut.user_id', 'u.id', 'u.username', 'u.display_name'])
+      .select('DISTINCT ut.user_id', 'uid')
       .where('ut.team_id IN (:...teamIds)', { teamIds })
       .getRawMany();
-    const seen = new Set<number>();
-    return rows
-      .filter((r) => { if (seen.has(r.u_id)) return false; seen.add(r.u_id); return true; })
-      .map((r) => ({ id: r.u_id, username: r.u_username, display_name: r.u_display_name }));
+    const userIds = scopedRows.map((r) => Number(r.uid));
+    if (userIds.length === 0) return [];
+    return this.getUsersWithTeams(userIds);
   }
 
   async findProjectsScoped(userId: number) {
@@ -262,17 +284,21 @@ export class ManageTeamService {
     return this.projectRepo.find({ order: { item: 'ASC', id: 'ASC' } });
   }
 
-  async createTask(dto: any) {
-    const task = this.taskRepo.create(dto);
-    return this.taskRepo.save(task);
+  async createTask(dto: any, userId?: number, userRole?: string) {
+    const task  = this.taskRepo.create(dto as DeepPartial<TaskTeam>);
+    const saved = await this.taskRepo.save(task);
+    await this.logService.logTask('create', saved.id, { userId, userRole, taskName: dto.task_name, assigneeId: dto.user_id });
+    return saved;
   }
 
-  async updateTask(id: number, dto: any) {
+  async updateTask(id: number, dto: any, userId?: number, userRole?: string) {
     await this.taskRepo.update(id, dto);
+    await this.logService.logTask('update', id, { userId, userRole, taskName: dto.task_name });
     return this.taskRepo.findOneBy({ id });
   }
 
-  async removeTask(id: number) {
+  async removeTask(id: number, userId?: number, userRole?: string) {
+    await this.logService.logTask('delete', id, { userId, userRole });
     await this.taskRepo.delete(id);
   }
 }

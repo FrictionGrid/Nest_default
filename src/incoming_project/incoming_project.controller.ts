@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Param, Delete, Put, Render, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, Render, UseGuards, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { IncomingProjectService } from './service/incoming_project.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -6,7 +7,7 @@ import { CreateIncomingProjectDto } from './dto/create-incoming_project.dto';
 import { UpdateIncomingProjectDto } from './dto/update-incoming_project.dto';
 
 @UseGuards(AuthGuard, RolesGuard)
-@Controller('incoming-project') // ไปตัวขึ้น Route address
+@Controller('incoming-project')
 export class IncomingProjectController {
   constructor(private readonly incomingProjectService: IncomingProjectService) {}
 
@@ -22,18 +23,20 @@ export class IncomingProjectController {
   }
 
   @Post('api/projects')
-  create(@Body() dto: CreateIncomingProjectDto) {
-    return this.incomingProjectService.create(dto);
+  create(@Req() req: Request, @Body() dto: CreateIncomingProjectDto) {
+    const { id, role } = (req.session as any).user ?? {};
+    return this.incomingProjectService.create(dto, id, role);
   }
 
   @Put('api/projects/:id')
-  // ดึงค่า id
-  update(@Param('id') id: string, @Body() dto: UpdateIncomingProjectDto) {
-    return this.incomingProjectService.update(+id, dto);
+  update(@Req() req: Request, @Param('id') id: string, @Body() dto: UpdateIncomingProjectDto) {
+    const { id: userId, role } = (req.session as any).user ?? {};
+    return this.incomingProjectService.update(+id, dto, userId, role);
   }
 
   @Delete('api/projects/:id')
-  remove(@Param('id') id: string) {
-    return this.incomingProjectService.remove(+id);
+  remove(@Req() req: Request, @Param('id') id: string) {
+    const { id: userId, role } = (req.session as any).user ?? {};
+    return this.incomingProjectService.remove(+id, userId, role);
   }
 }

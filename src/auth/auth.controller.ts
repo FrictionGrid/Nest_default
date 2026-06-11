@@ -1,6 +1,8 @@
 import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { AuthService } from './service/auth.service';
+import { ActivityLogService } from '../activity_log/service/activity_log.service';
+import { LogStatus } from '../database/entities/activity_log.entity';
 import { ROLE_DEFAULT_PAGE } from '../common/constants/role-permissions';
 
 class LoginDto {
@@ -10,7 +12,10 @@ class LoginDto {
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly logService: ActivityLogService,
+  ) {}
 
   @Get('login')
   loginPage(@Req() req: Request, @Res() res: Response) {
@@ -24,19 +29,21 @@ export class AuthController {
   @Post('login')
   async login(@Body() body: LoginDto, @Req() req: Request, @Res() res: Response) {
     try {
-      // เข้าไป service เเล้วรับ return ออกมา
       const user = await this.authService.validateUser(body.username, body.password);
       (req.session as any).user = user;
-      // role เลือกหน้าที่เข้าไป
       const redirect = ROLE_DEFAULT_PAGE[user.role] ?? '/overview-project';
+      await this.logService.logAuth('login', { userId: user.id, userRole: user.role, status: LogStatus.SUCCESS });
       return res.json({ success: true, redirect });
     } catch {
+      await this.logService.logAuth('login', { username: body.username, status: LogStatus.FAILED });
       return res.status(401).json({ success: false, message: 'Invalid username or password' });
     }
   }
 
   @Post('logout')
   logout(@Req() req: Request, @Res() res: Response) {
+    const user = (req.session as any)?.user;
+    this.logService.logAuth('logout', { userId: user?.id, userRole: user?.role, status: LogStatus.SUCCESS });
     req.session.destroy(() => {
       res.clearCookie('connect.sid');
       return res.redirect('/auth/login');

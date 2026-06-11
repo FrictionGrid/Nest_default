@@ -7,6 +7,7 @@ import { ProjectDocumentFile } from '../../database/entities/project_document_fi
 import { ProjectIncoming } from '../../database/entities/project_incoming.entity';
 import { ProjectTypeCategory } from '../../database/entities/project_type_category.entity';
 import { SynologyService } from './synology.service';
+import { ActivityLogService } from '../../activity_log/service/activity_log.service';
 
 @Injectable()
 export class DocumentService {
@@ -22,6 +23,7 @@ export class DocumentService {
     @InjectRepository(ProjectTypeCategory)
     private readonly projectTypeCategoryRepo: Repository<ProjectTypeCategory>,
     private readonly nas: SynologyService,
+    private readonly logService: ActivityLogService,
   ) {}
 
   // ── GET checklist ──────────────────────────────────────────────────────────
@@ -96,6 +98,7 @@ export class DocumentService {
     typeId: number,
     file: Express.Multer.File,
     userId: number,
+    userRole?: string,
   ) {
     const sanitize = (s: string) => s.replace(/[/\\:*?"<>|]/g, '_').trim();
 
@@ -136,12 +139,17 @@ export class DocumentService {
       uploaded_by: userId,
     });
     await this.fileRepo.save(newFile);
-
+    await this.logService.logDocument('upload', {
+      userId, userRole,
+      fileId: newFile.id,
+      fileName: file.originalname,
+      projectName: project?.project_name,
+    });
     return { success: true, fileId: newFile.id };
   }
 
   // ── DELETE file ───────────────────────────────────────────────────────────
-  async deleteFile(fileId: number) {
+  async deleteFile(fileId: number, userId?: number, userRole?: string) {
     const file = await this.fileRepo.findOne({
       where: { id: fileId },
       relations: ['projectDocument', 'projectDocument.files'],
@@ -155,7 +163,7 @@ export class DocumentService {
     if (remaining.length === 0) {
       await this.projectDocRepo.update(file.projectDocument.id, { status: 'missing' });
     }
-
+    await this.logService.logDocument('delete', { userId, userRole, fileId, fileName: file.filename });
     return { success: true };
   }
 

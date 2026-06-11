@@ -27,8 +27,9 @@ export class ManageProjectController {
   }
 
   @Post('api')
-  create(@Body() dto: CreateManageProjectDto) {
-    return this.manageProjectService.create(dto);
+  create(@Req() req: Request, @Body() dto: CreateManageProjectDto) {
+    const { id, role } = (req.session as any).user ?? {};
+    return this.manageProjectService.create(dto, id, role);
   }
 
   @Put('api/:id')
@@ -37,7 +38,7 @@ export class ManageProjectController {
     if (sessionUser?.role === 'head_engineer') {
       await this.manageProjectService.assertRowInUserTeam(+id, sessionUser.id);
     }
-    return this.manageProjectService.update(+id, dto);
+    return this.manageProjectService.update(+id, dto, sessionUser?.id, sessionUser?.role);
   }
 
   @Get('api/:id/check-complete')
@@ -55,7 +56,7 @@ export class ManageProjectController {
     if (sessionUser?.role === 'head_engineer') {
       await this.manageProjectService.assertRowInUserTeam(+id, sessionUser.id);
     }
-    return this.manageProjectService.complete(+id);
+    return this.manageProjectService.complete(+id, sessionUser?.id, sessionUser?.role);
   }
 
   @Delete('api/:id')
@@ -64,6 +65,6 @@ export class ManageProjectController {
     if (sessionUser?.role === 'head_engineer') {
       await this.manageProjectService.assertRowInUserTeam(+id, sessionUser.id);
     }
-    return this.manageProjectService.remove(+id);
+    return this.manageProjectService.remove(+id, sessionUser?.id, sessionUser?.role);
   }
 }
