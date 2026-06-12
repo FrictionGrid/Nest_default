@@ -18,7 +18,7 @@ export class ManageTeamController {
     const isScoped    = sessionUser?.role === 'head_engineer';
     const userId      = sessionUser?.id;
 
-    const [members, userList, teamList, tasks, projectList] = await Promise.all([
+    const [members, userList, teamList, tasks, projectList, currentUserTeams] = await Promise.all([
       this.manageTeamService.findAll(),
       isScoped
         ? this.manageTeamService.findUsersScoped(userId)
@@ -32,9 +32,10 @@ export class ManageTeamController {
       isScoped
         ? this.manageTeamService.findProjectsScoped(userId)
         : this.manageTeamService.findAllProjects(),
+      userId ? this.manageTeamService.getCurrentUserTeams(userId) : Promise.resolve([]),
     ]);
 
-    return { pageTitle: 'Manage Task', pageSubtitle: 'Track and update team tasks', members, userList, teamList, tasks, projectList };
+    return { pageTitle: 'Manage Task', pageSubtitle: 'Track and update team tasks', members, userList, teamList, tasks, projectList, currentUserTeams };
   }
 
   // ── User-Team endpoints ──────────────────────────────────────────────────

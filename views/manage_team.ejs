@@ -489,6 +489,52 @@
     document.getElementById('replanDateBar').style.display = status === 'replanned' ? '' : 'none';
   }
 
+  const ALL_TASK_TYPES = [
+    'PO/Quotation', 'Wiring Diagram', 'Schematic', 'Graphic 3D', 'Controller I/O',
+    'FAT & SAT', 'Programming/GUI', 'Testing & Commissioning', 'Handover Doc',
+    'Defect list', 'PM Report', 'PM Programming', 'Site Test Report', 'Handover Letter', 'Other',
+  ];
+
+  const TEAM_TYPE_MAP = {
+    'Team Draft':       ['Wiring Diagram', 'Schematic', 'Graphic 3D', 'Other'],
+    'Team PM_Rayong':   ['PM Report', 'PM Programming', 'Site Test Report', 'Handover Letter', 'Other'],
+    'Team 1':           ['PO/Quotation', 'Wiring Diagram', 'Controller I/O', 'FAT & SAT', 'Programming/GUI', 'Testing & Commissioning', 'Handover Doc', 'Defect list', 'Other'],
+    'Team 2':           ['PO/Quotation', 'Wiring Diagram', 'Controller I/O', 'FAT & SAT', 'Programming/GUI', 'Testing & Commissioning', 'Handover Doc', 'Defect list', 'Other'],
+    'Team 3':           ['PO/Quotation', 'Wiring Diagram', 'Controller I/O', 'FAT & SAT', 'Programming/GUI', 'Testing & Commissioning', 'Handover Doc', 'Defect list', 'Other'],
+    'Team 4':           ['PO/Quotation', 'Wiring Diagram', 'Controller I/O', 'FAT & SAT', 'Programming/GUI', 'Testing & Commissioning', 'Handover Doc', 'Defect list', 'Other'],
+    'Team Application': ['PO/Quotation', 'Wiring Diagram', 'Controller I/O', 'FAT & SAT', 'Programming/GUI', 'Testing & Commissioning', 'Handover Doc', 'Defect list', 'Other'],
+  };
+
+  function updateTaskTypeOptions(keepValue) {
+    const typeSel = document.getElementById('fieldTaskType');
+    const teams   = CURRENT_USER_TEAMS;
+
+    let allowed = null;
+    if (teams.length > 0) {
+      allowed = new Set();
+      teams.forEach(team => {
+        if (TEAM_TYPE_MAP[team]) TEAM_TYPE_MAP[team].forEach(t => allowed.add(t));
+        else allowed = null;
+      });
+    }
+
+    typeSel.innerHTML = '<option value="">-- Select Type --</option>';
+    ALL_TASK_TYPES.forEach(type => {
+      if (!allowed || allowed.has(type)) {
+        const opt = document.createElement('option');
+        opt.value = type;
+        opt.textContent = type;
+        typeSel.appendChild(opt);
+      }
+    });
+
+    if (keepValue && allowed && allowed.has(keepValue)) {
+      typeSel.value = keepValue;
+    }
+  }
+
+  const CURRENT_USER_TEAMS = <%- JSON.stringify(currentUserTeams || []) %>;
+
   document.getElementById('fieldTaskStatus').addEventListener('change', function() {
     toggleReplanBar(this.value);
   });
@@ -510,6 +556,7 @@
     document.getElementById('fieldReplanStart').value      = '';
     document.getElementById('fieldReplanEnd').value        = '';
     toggleReplanBar('in_progress');
+    updateTaskTypeOptions(null);
     taskModal.classList.add('open');
   });
 
@@ -525,11 +572,11 @@
       document.getElementById('fieldTaskStartDate').value    = btn.dataset.start       || '';
       document.getElementById('fieldTaskEndDate').value      = btn.dataset.end         || '';
       document.getElementById('fieldTaskStatus').value       = btn.dataset.status      || 'in_progress';
-      document.getElementById('fieldTaskType').value         = btn.dataset.taskType    || '';
       document.getElementById('fieldTaskComment').value      = btn.dataset.taskComment || '';
       document.getElementById('fieldReplanStart').value      = btn.dataset.replanStart || '';
       document.getElementById('fieldReplanEnd').value        = btn.dataset.replanEnd   || '';
       toggleReplanBar(btn.dataset.status || 'in_progress');
+      updateTaskTypeOptions(btn.dataset.taskType || null);
       taskModal.classList.add('open');
     }
   });

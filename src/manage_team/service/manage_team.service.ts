@@ -87,6 +87,16 @@ export class ManageTeamService {
     return this.teamRepo.find({ order: { id: 'ASC' } });
   }
 
+  async getCurrentUserTeams(userId: number): Promise<string[]> {
+    const rows = await this.userTeamRepo
+      .createQueryBuilder('ut')
+      .leftJoin('team', 'tm', 'tm.id = ut.team_id')
+      .select('tm.name', 'team_name')
+      .where('ut.user_id = :userId', { userId })
+      .getRawMany();
+    return rows.map((r) => r.team_name).filter(Boolean);
+  }
+
   create(dto: CreateManageTeamDto) {
     const row = this.userTeamRepo.create(dto);
     return this.userTeamRepo.save(row);
