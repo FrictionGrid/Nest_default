@@ -35,7 +35,6 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
   head_engineer: [
     'GET:/feedback',
     'POST:/feedback/api',
-    'GET:/chatbot',
     'GET:/overview-project',
     'GET:/overview-project/api/team-stats',
     'GET:/timeline',
@@ -69,7 +68,6 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
   engineer: [
     'GET:/feedback',
     'POST:/feedback/api',
-    'GET:/chatbot',
     'GET:/overview-project',
     'GET:/overview-project/api/team-stats',
     'GET:/dashboard-team',
@@ -87,7 +85,6 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
   sale: [
     'GET:/feedback',
     'POST:/feedback/api',
-    'GET:/chatbot',
     'GET:/overview-project',
     'GET:/overview-project/api/team-stats',
   ],
