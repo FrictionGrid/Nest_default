@@ -302,11 +302,12 @@
   overflow: hidden;
   min-height: 0;
 }
-/* Right: single scroll container (both X and Y) */
+/* Right: scroll Y only, X fills full width */
 .tl-scroll-x {
   flex: 1;
   min-width: 0;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 /* Sticky date header inside scroll area */
 .tl-dates-row {
@@ -463,7 +464,6 @@ const BAR_H     = 40;
 const MS_DAY    = 86400000;
 
 const RDAYS     = { '1w':7, '1m':30, '3m':91, '6m':182 };
-const PX_PER_DAY = { '1w':120, '1m':50, '3m':25, '6m':14 };
 
 function pct(days, total) { return (days / total * 100).toFixed(4) + '%'; }
 
@@ -575,9 +575,7 @@ function render() {
   const total=RDAYS[range];
 
   document.getElementById('rangeLabel').textContent = `${fmt(vs)} — ${fmt(ve)}`;
-  const minW = (PX_PER_DAY[range] * total) + 'px';
-  document.getElementById('tlInner').style.minWidth = minW;
-  document.getElementById('tlDates').style.minWidth = minW;
+  document.getElementById('tlInner').style.width = '100%';
 
   // Date headers
   const tlDates = document.getElementById('tlDates');
