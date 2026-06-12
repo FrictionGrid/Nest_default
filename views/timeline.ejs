@@ -69,7 +69,7 @@
 
 .tl-header-right { display: flex; align-items: center; gap: 8px; }
 
-.tl-outer { display: flex; flex-direction: column; }
+.tl-outer { display: flex; flex-direction: row; }
 
 /* User column */
 .tl-user-col {
@@ -103,7 +103,6 @@
 }
 
 /* Scroll area */
-.tl-right { flex: 1; min-width: 0; position: relative; z-index: 1; }
 .tl-inner { position: relative; width: 100%; }
 
 /* Date header */
@@ -283,39 +282,37 @@
   min-height: 0;
 }
 .tl-card-header { flex-shrink: 0; }
-/* tl-outer: column flex, header on top, scroll body below */
+/* tl-outer: row flex — user-col fixed left, scroll-x fills right */
 .tl-outer {
   flex: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   overflow: hidden;
   min-height: 0;
 }
-/* Header row locked naturally (outside scroll area) */
-.tl-header-row {
+/* Left user column */
+.tl-user-col {
   display: flex;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 5;
+  flex-direction: column;
 }
-.tl-header-row .tl-user-header {
-  width: 250px;
-  flex-shrink: 0;
-  border-right: 1px solid var(--border);
-}
-.tl-header-row .tl-dates-row {
+.tl-user-header { flex-shrink: 0; }
+/* Container for user rows — scrolled via JS to match chart */
+.tl-user-rows-wrap {
   flex: 1;
-  position: relative;
-}
-/* Scroll body: user-col + chart scroll together */
-.tl-body-scroll {
-  flex: 1;
-  display: flex;
-  overflow-y: auto;
+  overflow: hidden;
   min-height: 0;
-  position: relative;
-  z-index: 1;
-  align-items: flex-start;
+}
+/* Right: single scroll container (both X and Y) */
+.tl-scroll-x {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}
+/* Sticky date header inside scroll area */
+.tl-dates-row {
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 </style>
 
@@ -380,19 +377,17 @@
     </div>
 
     <div class="tl-outer">
-      <div class="tl-header-row">
+      <div class="tl-user-col" id="tlUserCol">
         <div class="tl-user-header">Team Members</div>
-        <div class="tl-dates-row" id="tlDates"></div>
-      </div>
-      <div class="tl-body-scroll">
-        <div class="tl-user-col">
+        <div class="tl-user-rows-wrap" id="tlUserRowsWrap">
           <div id="tlUserRows"></div>
         </div>
-        <div class="tl-right" id="tlRight">
-          <div class="tl-inner" id="tlInner">
-            <div class="tl-rows" id="tlRows"></div>
-            <div class="tl-today-line" id="tlToday" style="display:none;"></div>
-          </div>
+      </div>
+      <div class="tl-scroll-x" id="tlScrollX">
+        <div class="tl-dates-row" id="tlDates"></div>
+        <div class="tl-inner" id="tlInner">
+          <div class="tl-rows" id="tlRows"></div>
+          <div class="tl-today-line" id="tlToday" style="display:none;"></div>
         </div>
       </div>
     </div>
@@ -468,6 +463,7 @@ const BAR_H     = 40;
 const MS_DAY    = 86400000;
 
 const RDAYS     = { '1w':7, '1m':30, '3m':91, '6m':182 };
+const PX_PER_DAY = { '1w':120, '1m':50, '3m':25, '6m':14 };
 
 function pct(days, total) { return (days / total * 100).toFixed(4) + '%'; }
 
@@ -579,7 +575,9 @@ function render() {
   const total=RDAYS[range];
 
   document.getElementById('rangeLabel').textContent = `${fmt(vs)} — ${fmt(ve)}`;
-  document.getElementById('tlInner').style.width = '100%';
+  const minW = (PX_PER_DAY[range] * total) + 'px';
+  document.getElementById('tlInner').style.minWidth = minW;
+  document.getElementById('tlDates').style.minWidth = minW;
 
   // Date headers
   const tlDates = document.getElementById('tlDates');
@@ -765,6 +763,10 @@ document.getElementById('todayBtn').addEventListener('click',()=>{ offset=0; ren
 
 document.getElementById('tlSearch').addEventListener('input', applyFilters);
 document.getElementById('tlFilterTeam').addEventListener('change', applyFilters);
+
+document.getElementById('tlScrollX').addEventListener('scroll', function() {
+  document.getElementById('tlUserRowsWrap').scrollTop = this.scrollTop;
+});
 
 render();
 </script>
