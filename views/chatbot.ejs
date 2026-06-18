@@ -19,6 +19,7 @@
     flex-direction: column;
     gap: 18px;
     scroll-behavior: smooth;
+    overscroll-behavior: contain;
   }
   .chat-messages::-webkit-scrollbar { width: 5px; }
   .chat-messages::-webkit-scrollbar-track { background: transparent; }
@@ -138,6 +139,9 @@
     background: var(--card);
     border-top: 1px solid var(--border);
     box-shadow: 0 -4px 16px rgba(30,58,95,0.05);
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
   }
   .chat-input {
     flex: 1;
@@ -191,6 +195,9 @@
       <button class="quick-btn" onclick="sendQuick(this)">วิธีใช้งาน</button>
     </div>
 
+    <!-- scroll anchor — always sits at the very bottom -->
+    <div id="chatBottom"></div>
+
   </div>
 
   <!-- Typing indicator -->
@@ -221,114 +228,18 @@
 </div>
 
 <script>
-const RESPONSES = [
-  {
-    keys: ['โปรเจค', 'project', 'งานทั้งหมด', 'มีกี่โปรเจค'],
-    reply: `ปัจจุบันระบบมีโปรเจคทั้งหมด <strong>12 โปรเจค</strong> แบ่งเป็น:<br>
-• กำลังดำเนินงาน: 7 โปรเจค<br>
-• รอดำเนินการ: 3 โปรเจค<br>
-• เสร็จสิ้นแล้ว: 2 โปรเจค<br><br>
-ดูรายละเอียดได้ที่ <a href="/overview-project" style="color:var(--accent);">Overview Project</a>`,
-    quick: ['โปรเจคที่กำลังทำ', 'โปรเจคค้างอยู่', 'เพิ่มโปรเจคใหม่'],
-  },
-  {
-    keys: ['สถานะงาน', 'task', 'งาน', 'ความคืบหน้า'],
-    reply: `สรุปสถานะงานล่าสุด:<br>
-• งานทั้งหมด: <strong>48 รายการ</strong><br>
-• กำลังทำ: 18 รายการ<br>
-• รอดำเนินการ: 12 รายการ<br>
-• มีปัญหา: <strong style="color:#c0392b;">4 รายการ</strong><br>
-• เสร็จแล้ว: 14 รายการ<br><br>
-ดูได้ที่ <a href="/dashboard-team" style="color:var(--accent);">Dashboard Team</a>`,
-    quick: ['งานที่มีปัญหา', 'งานใกล้ครบกำหนด', 'อัปเดตความคืบหน้า'],
-  },
-  {
-    keys: ['ทีม', 'team', 'สมาชิก', 'engineer'],
-    reply: `ระบบมีทีมทั้งหมด <strong>4 ทีม</strong>:<br>
-• Team Alpha — 5 คน (หัวหน้า: User 4)<br>
-• Team Beta — 4 คน<br>
-• Team Gamma — 6 คน<br>
-• Team Delta — 3 คน<br><br>
-จัดการทีมได้ที่ <a href="/user-management" style="color:var(--accent);">User Management</a>`,
-    quick: ['สมาชิกทีม Alpha', 'ภาระงานแต่ละทีม'],
-  },
-  {
-    keys: ['ชำระเงิน', 'payment', 'การเงิน', 'งวด', 'invoice'],
-    reply: `สรุปการชำระเงิน:<br>
-• รออนุมัติ: <strong>3 รายการ</strong><br>
-• ชำระแล้ว: 9 รายการ<br>
-• ค้างชำระ: <strong style="color:#c0392b;">2 รายการ</strong><br><br>
-ดูรายละเอียดที่ <a href="/payment" style="color:var(--accent);">Payment</a>`,
-    quick: ['รายการค้างชำระ', 'ประวัติการชำระ'],
-  },
-  {
-    keys: ['วิธีใช้', 'ใช้งาน', 'help', 'คู่มือ', 'เริ่มต้น'],
-    reply: `เมนูหลักของระบบมีดังนี้:<br>
-• <strong>Overview Project</strong> — ภาพรวมโปรเจคทั้งหมด<br>
-• <strong>Incoming Project</strong> — รับโปรเจคใหม่<br>
-• <strong>Manage Project</strong> — จัดการโปรเจค<br>
-• <strong>Dashboard Team</strong> — ติดตามงานทีม<br>
-• <strong>Timeline</strong> — ดู Gantt chart<br>
-• <strong>Payment</strong> — จัดการการชำระเงิน<br>
-• <strong>Activity Log</strong> — ประวัติการใช้งาน`,
-    quick: ['โปรเจคทั้งหมด', 'สถานะงาน', 'การชำระเงิน'],
-  },
-  {
-    keys: ['โปรเจคที่กำลังทำ', 'in progress', 'กำลังดำเนิน'],
-    reply: `โปรเจคที่กำลังดำเนินอยู่ 7 โปรเจค:<br>
-1. ปรับปรุงระบบน้ำ อาคาร A — 65%<br>
-2. ซ่อมบำรุงลิฟต์ B — 40%<br>
-3. ติดตั้งแอร์ชั้น 2 — 90%<br>
-4. ปูกระเบื้องห้องน้ำชั้น 4 — 20%<br>
-5. ติดตั้งท่อ B3 — 75%<br>
-6. ตรวจสอบระบบไฟฟ้าชั้น 3 — 55%<br>
-7. งานทาสีอาคาร C — 30%`,
-    quick: ['โปรเจคทั้งหมด', 'สถานะงาน'],
-  },
-  {
-    keys: ['ปัญหา', 'problem', 'ติดปัญหา', 'งานที่มีปัญหา'],
-    reply: `พบงานที่มีปัญหา <strong style="color:#c0392b;">4 รายการ</strong>:<br>
-• task #88 — วัสดุขาด (User 6)<br>
-• task #72 — รอการอนุมัติงบ<br>
-• task #55 — อุปกรณ์ชำรุด<br>
-• task #41 — ติดต่อซัพพลายเออร์ไม่ได้<br><br>
-ตรวจสอบได้ที่ <a href="/dashboard-team" style="color:var(--accent);">Dashboard Team</a>`,
-    quick: ['สถานะงาน', 'ทีมทั้งหมด'],
-  },
-  {
-    keys: ['ค้างชำระ', 'ยังไม่ชำระ', 'overdue'],
-    reply: `รายการค้างชำระ <strong style="color:#c0392b;">2 รายการ</strong>:<br>
-• โปรเจค "ซ่อมบำรุงลิฟต์ B" — งวด 2 — 85,000 บาท<br>
-• โปรเจค "ติดตั้งท่อ B3" — งวด 1 — 120,000 บาท<br><br>
-กรุณาติดต่อฝ่ายการเงินหรือดูที่ <a href="/payment" style="color:var(--accent);">Payment</a>`,
-    quick: ['การชำระเงิน'],
-  },
-  {
-    keys: ['สวัสดี', 'hello', 'hi', 'หวัดดี', 'ดีครับ', 'ดีค่ะ'],
-    reply: 'สวัสดีครับ! มีอะไรให้ช่วยไหมครับ?',
-    quick: ['โปรเจคทั้งหมด', 'สถานะงาน', 'วิธีใช้งาน'],
-  },
-  {
-    keys: ['ขอบคุณ', 'thanks', 'thank you', 'ขอบใจ'],
-    reply: 'ยินดีครับ! มีอะไรให้ช่วยเพิ่มเติมไหมครับ?',
-    quick: ['โปรเจคทั้งหมด', 'สถานะงาน', 'วิธีใช้งาน'],
-  },
-];
-
-const DEFAULT_REPLY = {
-  reply: 'ขออภัยครับ ผมยังไม่เข้าใจคำถามนี้ ลองถามเกี่ยวกับ โปรเจค, งาน, ทีม, การชำระเงิน หรือวิธีใช้งานได้เลยครับ',
-  quick: ['โปรเจคทั้งหมด', 'สถานะงาน', 'ทีมทั้งหมด', 'การชำระเงิน', 'วิธีใช้งาน'],
-};
-
 function getTime() {
   return new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
 }
 
-function appendMsg(text, sender) {
-  const box   = document.getElementById('chatMessages');
-  const row   = document.createElement('div');
-  row.className = `msg-row ${sender}`;
+function scrollToBottom() {
+  document.getElementById('chatBottom').scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
 
+function appendMsg(text, sender) {
+  const box = document.getElementById('chatMessages');
+  const row = document.createElement('div');
+  row.className = `msg-row ${sender}`;
   const initial = sender === 'bot' ? 'R' : (window._userName || 'U');
   row.innerHTML = `
     <div class="msg-avatar">${initial}</div>
@@ -337,8 +248,8 @@ function appendMsg(text, sender) {
       <div class="msg-time">${getTime()}</div>
     </div>
   `;
-  box.appendChild(row);
-  box.scrollTop = box.scrollHeight;
+  box.insertBefore(row, document.getElementById('chatBottom'));
+  scrollToBottom();
 }
 
 function setQuickReplies(items) {
@@ -346,39 +257,40 @@ function setQuickReplies(items) {
   qr.innerHTML = items.map(t =>
     `<button class="quick-btn" onclick="sendQuick(this)">${t}</button>`
   ).join('');
-  document.getElementById('chatMessages').appendChild(qr);
+  document.getElementById('chatMessages').insertBefore(qr, document.getElementById('chatBottom'));
+  scrollToBottom();
 }
 
 function showTyping() {
   document.getElementById('typingRow').classList.add('show');
-  const box = document.getElementById('chatMessages');
-  box.scrollTop = box.scrollHeight;
+  scrollToBottom();
 }
 function hideTyping() {
   document.getElementById('typingRow').classList.remove('show');
 }
 
-function botReply(text) {
-  const q = text.toLowerCase();
-  return RESPONSES.find(r => r.keys.some(k => q.includes(k.toLowerCase()))) || DEFAULT_REPLY;
-}
-
-function send(text) {
+async function send(text) {
   text = text.trim();
   if (!text) return;
 
-  // hide quick replies
   document.getElementById('quickReplies').innerHTML = '';
-
   appendMsg(text, 'user');
-
   showTyping();
-  setTimeout(() => {
+
+  try {
+    const res = await fetch('/chatbot/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text }),
+    });
+    const data = await res.json();
     hideTyping();
-    const res = botReply(text);
-    appendMsg(res.reply, 'bot');
-    if (res.quick?.length) setQuickReplies(res.quick);
-  }, 700 + Math.random() * 400);
+    appendMsg(data.reply || 'ขออภัยครับ เกิดข้อผิดพลาด', 'bot');
+    if (data.quick?.length) setQuickReplies(data.quick);
+  } catch {
+    hideTyping();
+    appendMsg('ขออภัยครับ ไม่สามารถเชื่อมต่อได้ในขณะนี้', 'bot');
+  }
 }
 
 function sendQuick(btn) {
