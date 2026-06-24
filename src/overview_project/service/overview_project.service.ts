@@ -4,6 +4,9 @@ import { Repository } from 'typeorm';
 import { ProjectIncoming } from '../../database/entities/project_incoming.entity';
 import { ProjectTeam } from '../../database/entities/project_team.entity';
 import { Team } from '../../database/entities/team.entity';
+import { ProjectType } from '../../database/entities/project_type.entity';
+import { TaskTeam } from '../../database/entities/task_team.entity';
+import { calcTaskProgress } from '../../common/utils/task-progress.util';
 
 @Injectable()
 export class OverviewProjectService {
@@ -14,6 +17,10 @@ export class OverviewProjectService {
     private readonly projectTeamRepo: Repository<ProjectTeam>,
     @InjectRepository(Team)
     private readonly teamRepo: Repository<Team>,
+    @InjectRepository(ProjectType)
+    private readonly projectTypeRepo: Repository<ProjectType>,
+    @InjectRepository(TaskTeam)
+    private readonly taskTeamRepo: Repository<TaskTeam>,
   ) {}
 
   async getSummary() {
@@ -43,9 +50,9 @@ export class OverviewProjectService {
       .leftJoin('pt.project', 'project')
       .select('team.name', 'team_name')
       .addSelect('COUNT(pt.id)', 'total_projects')
-      .addSelect("COUNT(pt.id) FILTER (WHERE project.status = 'in_progress')", 'in_progress')
-      .addSelect("COUNT(pt.id) FILTER (WHERE project.status = 'completed')", 'completed')
-      .addSelect("COUNT(pt.id) FILTER (WHERE project.status = 'delayed')", 'delayed')
+      .addSelect("COUNT(pt.id) FILTER (WHERE pt.status = 'in_progress')", 'in_progress')
+      .addSelect("COUNT(pt.id) FILTER (WHERE pt.status = 'completed')", 'completed')
+      .addSelect("COUNT(pt.id) FILTER (WHERE pt.status = 'delayed')", 'delayed')
       .groupBy('team.id')
       .addGroupBy('team.name')
       .orderBy('team.id', 'ASC');
@@ -73,19 +80,41 @@ export class OverviewProjectService {
     }));
   }
 
-  async getRecentProjects() {
-    const rows = await this.projectRepo
+  async getTopValueProjects() {
+    const year = new Date().getFullYear();
+    const projects = await this.projectRepo
       .createQueryBuilder('p')
-      .select('p.id', 'id')
-      .addSelect('p.project_name', 'project_name')
-      .addSelect('p.sales_name', 'sales_name')
-      .addSelect('p.status', 'status')
-      .addSelect('p.created_at', 'date_in')
-      .orderBy('p.created_at', 'DESC')
-      .limit(8)
-      .getRawMany();
+      .select(['p.id', 'p.project_name', 'p.status'])
+      .where('EXTRACT(YEAR FROM p.created_at) = :year', { year })
+      .andWhere('p.po_value IS NOT NULL')
+      .orderBy('p.po_value', 'DESC')
+      .limit(12)
+      .getMany();
 
-    return rows;
+    const projectIds = projects.map((p) => p.id);
+    const allTasks = projectIds.length
+      ? await this.taskTeamRepo
+          .createQueryBuilder('t')
+          .select(['t.project_id', 't.task_type', 't.progress', 't.status'])
+          .where('t.project_id IN (:...ids)', { ids: projectIds })
+          .getMany()
+      : [];
+
+    const tasksByProject = new Map<number, typeof allTasks>();
+    for (const t of allTasks) {
+      if (!tasksByProject.has(t.project_id)) tasksByProject.set(t.project_id, []);
+      tasksByProject.get(t.project_id)!.push(t);
+    }
+
+    return {
+      year,
+      projects: projects.map((p) => ({
+        id: p.id,
+        project_name: p.project_name,
+        status: p.status,
+        progress: calcTaskProgress(tasksByProject.get(p.id) ?? []),
+      })),
+    };
   }
 
   async getRegionStats() {
@@ -112,6 +141,20 @@ export class OverviewProjectService {
       label: r.label,
       total: dataMap.get(r.key) ?? 0,
     }));
+  }
+
+  async getTypeStats() {
+    const rows = await this.projectTypeRepo
+      .createQueryBuilder('pt')
+      .innerJoin('project_incoming_type', 'pit', 'pit.type_id = pt.id')
+      .innerJoin('project_incoming', 'p', 'p.id = pit.project_id')
+      .select('pt.name', 'name')
+      .addSelect('COUNT(*)', 'total')
+      .groupBy('pt.name')
+      .orderBy('total', 'DESC')
+      .getRawMany();
+
+    return rows.map((r) => ({ label: r.name, total: Number(r.total) }));
   }
 
   async getMonthlySummary() {

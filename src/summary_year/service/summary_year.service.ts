@@ -5,6 +5,7 @@ import { ProjectIncoming } from '../../database/entities/project_incoming.entity
 import { ProjectTeam } from '../../database/entities/project_team.entity';
 import { ProjectType } from '../../database/entities/project_type.entity';
 import { Team } from '../../database/entities/team.entity';
+import { PaymentInstallment } from '../../database/entities/payment_installment.entity';
 
 @Injectable()
 export class SummaryYearService {
@@ -17,6 +18,8 @@ export class SummaryYearService {
     private readonly projectTypeRepo: Repository<ProjectType>,
     @InjectRepository(Team)
     private readonly teamRepo: Repository<Team>,
+    @InjectRepository(PaymentInstallment)
+    private readonly paymentRepo: Repository<PaymentInstallment>,
   ) {}
 
   async getAvailableYears(): Promise<number[]> {
@@ -33,30 +36,31 @@ export class SummaryYearService {
   }
 
   async getSummary(year: number) {
-    const result = await this.projectRepo
+    const projectResult = await this.projectRepo
       .createQueryBuilder('p')
       .select('COUNT(*)', 'total_projects')
       .addSelect("COUNT(*) FILTER (WHERE p.status = 'completed')", 'completed')
       .addSelect("COUNT(*) FILTER (WHERE p.status != 'completed')", 'not_completed')
       .addSelect('COALESCE(SUM(p.po_value), 0)', 'total_po_value')
-      .addSelect(
-        "COALESCE(SUM(p.po_value) FILTER (WHERE p.status = 'completed'), 0)",
-        'completed_po_value',
-      )
-      .addSelect(
-        "COALESCE(SUM(p.po_value) FILTER (WHERE p.status != 'completed'), 0)",
-        'remaining_po_value',
-      )
       .where('EXTRACT(YEAR FROM p.created_at) = :year', { year })
       .getRawOne();
 
+    const paymentResult = await this.paymentRepo
+      .createQueryBuilder('pi')
+      .innerJoin('pi.project', 'p', 'EXTRACT(YEAR FROM p.created_at) = :year', { year })
+      .select("COALESCE(SUM(pi.amount) FILTER (WHERE pi.status = 'paid'), 0)", 'paid_amount')
+      .getRawOne();
+
+    const totalPO = Number(projectResult.total_po_value);
+    const paidPO  = Number(paymentResult.paid_amount);
+
     return {
-      total_projects: Number(result.total_projects),
-      completed: Number(result.completed),
-      not_completed: Number(result.not_completed),
-      total_po_value: Number(result.total_po_value),
-      completed_po_value: Number(result.completed_po_value),
-      remaining_po_value: Number(result.remaining_po_value),
+      total_projects:    Number(projectResult.total_projects),
+      completed:         Number(projectResult.completed),
+      not_completed:     Number(projectResult.not_completed),
+      total_po_value:    totalPO,
+      completed_po_value: paidPO,
+      remaining_po_value: totalPO - paidPO,
     };
   }
 
@@ -164,11 +168,11 @@ export class SummaryYearService {
       .select('t.name', 'team_name')
       .addSelect('COUNT(p.id)', 'total')
       .addSelect(
-        "COUNT(p.id) FILTER (WHERE p.status = 'completed')",
+        "COUNT(p.id) FILTER (WHERE pt.status = 'completed')",
         'completed',
       )
       .addSelect(
-        "COUNT(p.id) FILTER (WHERE p.status != 'completed')",
+        "COUNT(p.id) FILTER (WHERE pt.status != 'completed')",
         'not_completed',
       )
       .groupBy('t.id')

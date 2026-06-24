@@ -5,8 +5,8 @@ export type Intent = 'project_overview' | 'task_status' | 'team_info' | 'payment
 export interface ClassifyResult {
   type: 'locked' | 'free';
   intent: Intent | null;
-  confidence: number;
-  entities: Record<string, unknown>;
+  confidence: number; // ตอนนี้ยังไม่ได้ใช้ logic
+  entities: Record<string, unknown>; // ตอนนี้ยังไม่ได้ใช้ logic เเต่สำหรับเลือกดึงในตารางอีกที
 } 
 
 const INTENT_KEYWORDS: Record<Intent, string[]> = {

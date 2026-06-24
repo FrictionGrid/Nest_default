@@ -6,9 +6,10 @@ import { ProjectIncoming } from '../database/entities/project_incoming.entity';
 import { ProjectTeam } from '../database/entities/project_team.entity';
 import { ProjectType } from '../database/entities/project_type.entity';
 import { Team } from '../database/entities/team.entity';
+import { PaymentInstallment } from '../database/entities/payment_installment.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ProjectIncoming, ProjectTeam, ProjectType, Team])],
+  imports: [TypeOrmModule.forFeature([ProjectIncoming, ProjectTeam, ProjectType, Team, PaymentInstallment])],
   controllers: [SummaryYearController],
   providers: [SummaryYearService],
 })

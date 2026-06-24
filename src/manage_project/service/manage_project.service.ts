@@ -1,14 +1,10 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ProjectTeam } from '../../database/entities/project_team.entity';
+import { ProjectTeam, ProjectTeamStatus } from '../../database/entities/project_team.entity';
 import { ProjectIncoming } from '../../database/entities/project_incoming.entity';
 import { Team } from '../../database/entities/team.entity';
 import { UsersTeam } from '../../database/entities/users_team.entity';
-import { TaskTeam } from '../../database/entities/task_team.entity';
-import { DocumentType } from '../../database/entities/document_type.entity';
-import { ProjectDocument } from '../../database/entities/project_document.entity';
-import { ProjectTypeCategory } from '../../database/entities/project_type_category.entity';
 import { CreateManageProjectDto } from '../dto/create-manage_project.dto';
 import { UpdateManageProjectDto } from '../dto/update-manage_project.dto';
 import { ActivityLogService } from '../../activity_log/service/activity_log.service';
@@ -24,14 +20,6 @@ export class ManageProjectService {
     private readonly teamRepo: Repository<Team>,
     @InjectRepository(UsersTeam)
     private readonly userTeamRepo: Repository<UsersTeam>,
-    @InjectRepository(TaskTeam)
-    private readonly taskRepo: Repository<TaskTeam>,
-    @InjectRepository(DocumentType)
-    private readonly docTypeRepo: Repository<DocumentType>,
-    @InjectRepository(ProjectDocument)
-    private readonly projectDocRepo: Repository<ProjectDocument>,
-    @InjectRepository(ProjectTypeCategory)
-    private readonly projectTypeCategoryRepo: Repository<ProjectTypeCategory>,
     private readonly logService: ActivityLogService,
   ) {}
 
@@ -47,9 +35,9 @@ export class ManageProjectService {
       team_id: r.team_id,
       project_name: r.project?.project_name,
       team_name: r.team?.name,
-      start_date: r.project?.start_date,
-      end_date: r.project?.end_date,
-      status: r.project?.status,
+      start_date: r.start_date,
+      end_date: r.end_date,
+      status: r.status,
       created_at: r.project?.created_at,
     }));
   }
@@ -58,13 +46,13 @@ export class ManageProjectService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const toDelay = rows.filter((r) => {
-      const end = r.project?.end_date ? new Date(r.project.end_date) : null;
+      const end = r.end_date ? new Date(r.end_date) : null;
       if (end) end.setHours(0, 0, 0, 0);
-      return end && end < today && r.project?.status === 'in_progress';
+      return end && end < today && r.status === ProjectTeamStatus.IN_PROGRESS;
     });
     if (toDelay.length > 0) {
-      await Promise.all(toDelay.map((r) => this.projectRepo.update(r.project_id, { status: 'delayed' })));
-      toDelay.forEach((r) => { r.project.status = 'delayed'; });
+      await Promise.all(toDelay.map((r) => this.projectTeamRepo.update(r.id, { status: ProjectTeamStatus.DELAYED })));
+      toDelay.forEach((r) => { r.status = ProjectTeamStatus.DELAYED; });
     }
   }
 
@@ -132,12 +120,15 @@ export class ManageProjectService {
   }
 
   async create(dto: CreateManageProjectDto, userId?: number, userRole?: string) {
-    const { start_date, end_date, ...teamData } = dto;
-    const row = this.projectTeamRepo.create(teamData);
+    const { start_date, end_date, status, ...teamData } = dto;
+    const row = this.projectTeamRepo.create({
+      project_id: teamData.project_id,
+      team_id: teamData.team_id,
+      start_date: start_date as any,
+      end_date: end_date as any,
+      ...(status ? { status: status as ProjectTeamStatus } : {}),
+    });
     const saved = await this.projectTeamRepo.save(row);
-    if (start_date !== undefined || end_date !== undefined) {
-      await this.projectRepo.update(dto.project_id, { start_date, end_date } as any);
-    }
     await this.logService.logProject('create', saved.id, { userId, userRole });
     return saved;
   }
@@ -145,65 +136,22 @@ export class ManageProjectService {
   async update(id: number, dto: UpdateManageProjectDto, userId?: number, userRole?: string) {
     const row = await this.projectTeamRepo.findOne({ where: { id } });
     if (!row) return null;
-    const { start_date, end_date, ...teamData } = dto;
-    if (teamData.project_id || teamData.team_id) {
-      await this.projectTeamRepo.update(id, teamData);
-    }
-    const projectId = teamData.project_id ?? row.project_id;
-    if (start_date !== undefined || end_date !== undefined) {
-      await this.projectRepo.update(projectId, { start_date, end_date } as any);
-    }
+    const { start_date, end_date, status, ...teamData } = dto;
+    const updateData: Partial<ProjectTeam> = {};
+    if (teamData.project_id !== undefined) updateData.project_id = teamData.project_id;
+    if (teamData.team_id !== undefined) updateData.team_id = teamData.team_id;
+    if (start_date !== undefined) updateData.start_date = start_date as any;
+    if (end_date !== undefined) updateData.end_date = end_date as any;
+    if (status !== undefined) updateData.status = status as ProjectTeamStatus;
+    await this.projectTeamRepo.update(id, updateData);
     await this.logService.logProject('update', id, { userId, userRole });
     return this.projectTeamRepo.findOne({ where: { id }, relations: ['project', 'team'] });
-  }
-
-  async checkComplete(id: number): Promise<{ canComplete: boolean; incompleteTasks: string[]; missingDocs: string[] }> {
-    const row = await this.projectTeamRepo.findOne({ where: { id } });
-    if (!row) return { canComplete: false, incompleteTasks: [], missingDocs: [] };
-
-    const projectId = row.project_id;
-
-    const project = await this.projectRepo.findOne({ where: { id: projectId } });
-    const typeIds = project?.types?.map((t) => t.id) ?? [];
-
-    const tasks = await this.taskRepo.find({ where: { project_id: projectId } });
-
-    if (typeIds.length === 0) {
-      return { canComplete: false, incompleteTasks: tasks.filter((t) => t.status !== 'completed').map((t) => t.task_name), missingDocs: [] };
-    }
-
-    const mappings = await this.projectTypeCategoryRepo.find({
-      where: typeIds.map((tid) => ({ project_type_id: tid })),
-    });
-
-    const allowedCategories = new Set(mappings.map((m) => m.category));
-
-    const [allDocTypes, docs] = await Promise.all([
-      this.docTypeRepo.find({ where: { is_required: true } }),
-      this.projectDocRepo.find({ where: { project_id: projectId } }),
-    ]);
-
-    const docTypes = allDocTypes.filter((t) => allowedCategories.has(t.category || 'engineer_task'));
-
-    const incompleteTasks = tasks
-      .filter((t) => t.status !== 'completed')
-      .map((t) => t.task_name);
-
-    const docMap = new Map(docs.map((d) => [d.document_type_id, d]));
-    const missingDocs = docTypes
-      .filter((t) => {
-        const doc = docMap.get(t.id);
-        return !doc || doc.status === 'missing';
-      })
-      .map((t) => t.name);
-
-    return { canComplete: incompleteTasks.length === 0 && missingDocs.length === 0, incompleteTasks, missingDocs };
   }
 
   async complete(id: number, userId?: number, userRole?: string) {
     const row = await this.projectTeamRepo.findOne({ where: { id } });
     if (!row) return null;
-    await this.projectRepo.update(row.project_id, { status: 'completed' });
+    await this.projectTeamRepo.update(id, { status: ProjectTeamStatus.COMPLETED });
     await this.logService.logProject('complete', id, { userId, userRole });
   }
 

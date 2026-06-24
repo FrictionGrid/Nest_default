@@ -229,27 +229,28 @@
 
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Projects by Region</span>
-        <span class="card-sub">6 regions</span>
+        <span class="card-title">Projects by Type</span>
+        <span class="card-sub"><%= typeStats.length %> types</span>
       </div>
       <div class="card-body">
-        <% const regionColors = ['#4A90E2','#35B37E','#F4A62A','#9B59B6','#E45757','#EC4899']; %>
-        <% const regionColorPairs = [['#4A90E2','#6baef5'],['#35B37E','#5fd4a1'],['#F4A62A','#f7c060'],['#9B59B6','#c090d8'],['#E45757','#f08080'],['#EC4899','#f472b6']]; %>
-        <% const maxRegion = regionStats.reduce((m, r) => Math.max(m, r.total), 1); %>
+        <% const typeColors = ['#4A90E2','#35B37E','#F4A62A','#9B59B6','#E45757','#EC4899','#14B8A6','#F97316']; %>
+        <% const typeColorPairs = [['#4A90E2','#6baef5'],['#35B37E','#5fd4a1'],['#F4A62A','#f7c060'],['#9B59B6','#c090d8'],['#E45757','#f08080'],['#EC4899','#f472b6'],['#14B8A6','#2dd4bf'],['#F97316','#fb923c']]; %>
+        <% const maxType = typeStats.reduce((m, r) => Math.max(m, r.total), 1); %>
         <div class="country-list">
-          <% regionStats.forEach(function(r, i) {
-            const pct = Math.round((r.total / maxRegion) * 100);
+          <% typeStats.forEach(function(r, i) {
+            const pct = Math.round((r.total / maxType) * 100);
+            const ci = i % typeColors.length;
           %>
           <div class="country-item">
             <div class="country-row">
               <div class="country-name">
-                <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:<%= regionColors[i] %>;flex-shrink:0;"></span>
+                <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:<%= typeColors[ci] %>;flex-shrink:0;"></span>
                 <%= r.label %>
               </div>
               <div class="country-value"><%= r.total %> projects</div>
             </div>
             <div class="prog-bar">
-              <div class="prog-fill" data-w="<%= pct %>" style="background:linear-gradient(90deg,<%= regionColorPairs[i][0] %>,<%= regionColorPairs[i][1] %>);"></div>
+              <div class="prog-fill" data-w="<%= pct %>" style="background:linear-gradient(90deg,<%= typeColorPairs[ci][0] %>,<%= typeColorPairs[ci][1] %>);"></div>
             </div>
           </div>
           <% }); %>
@@ -261,48 +262,6 @@
 
   <!-- ===== Bottom Row ===== -->
   <div class="grid-2">
-
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">New Projects</span>
-        <span class="card-sub">Latest 8 entries</span>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Project Name</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% if (!recentProjects || recentProjects.length === 0) { %>
-            <tr><td colspan="3" style="text-align:center;color:var(--muted);padding:24px;">No data available</td></tr>
-            <% } else { %>
-            <% recentProjects.forEach(function(p) {
-              const badgeMap = {
-                completed:   { cls: 'b-completed',  label: 'Completed'   },
-                in_progress: { cls: 'b-processing', label: 'In Progress' },
-                delayed:     { cls: 'b-blocked',    label: 'Delayed'     },
-              };
-              const b = badgeMap[p.status] || { cls: 'b-pending', label: p.status };
-              const dateStr = p.date_in ? new Date(p.date_in).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '—';
-            %>
-            <tr>
-              <td><%= dateStr %></td>
-              <td>
-                <a href="/detail-project/<%= p.id %>" style="font-weight:600;color:var(--primary);text-decoration:none;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--primary)'"><%= p.project_name || '—' %></a>
-                <div class="order-sub"><%= p.sales_name || '' %></div>
-              </td>
-              <td><span class="badge <%= b.cls %>"><%= b.label %></span></td>
-            </tr>
-            <% }); %>
-            <% } %>
-          </tbody>
-        </table>
-      </div>
-    </div>
 
     <div class="card">
       <div class="card-header">
@@ -335,6 +294,38 @@
             <% }); %>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Top Projects by Value</span>
+        <span class="card-sub">Year <%= topValueProjects.year %></span>
+      </div>
+      <div class="card-body">
+        <div class="country-list">
+          <% topValueProjects.projects.forEach(function(p, i) {
+            const badgeMap = { completed: { cls: 'b-completed', label: 'Done' }, in_progress: { cls: 'b-processing', label: 'In Progress' }, delayed: { cls: 'b-blocked', label: 'Delayed' } };
+            const b = badgeMap[p.status] || { cls: 'b-pending', label: p.status };
+          %>
+          <div class="country-item">
+            <div class="country-row" style="gap:8px;">
+              <div class="country-name" style="flex:1;min-width:0;">
+                <span style="display:inline-block;min-width:18px;font-size:11px;font-weight:700;color:var(--muted);">#<%= i+1 %></span>
+                <a href="/detail-project/<%= p.id %>" style="font-weight:600;color:var(--primary);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--primary)'"><%= p.project_name %></a>
+              </div>
+              <span class="badge <%= b.cls %>" style="flex-shrink:0;font-size:10px;"><%= b.label %></span>
+              <div class="country-value" style="flex-shrink:0;"><%= p.progress %>%</div>
+            </div>
+            <div class="prog-bar">
+              <div class="prog-fill" data-w="<%= p.progress %>" style="background:linear-gradient(90deg,#6366F1,#818CF8);"></div>
+            </div>
+          </div>
+          <% }); %>
+          <% if (!topValueProjects.projects.length) { %>
+          <div style="text-align:center;color:var(--muted);padding:24px;">No data available</div>
+          <% } %>
+        </div>
       </div>
     </div>
 

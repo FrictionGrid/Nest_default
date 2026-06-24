@@ -25,6 +25,7 @@ export class ManageTeamService {
     @InjectRepository(ProjectIncoming)
     private readonly projectRepo: Repository<ProjectIncoming>,
     @InjectRepository(ProjectTeam)
+    // อันนี้ที่ต้องเเก้ //
     private readonly projectTeamRepo: Repository<ProjectTeam>,
     private readonly logService: ActivityLogService,
   ) {}

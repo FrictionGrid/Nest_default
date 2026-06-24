@@ -56,6 +56,11 @@ export class IncomingProjectService {
     return saved;
   }
 
+  async complete(id: number, userId?: number, userRole?: string) {
+    await this.repo.update(id, { status: 'completed' });
+    await this.logService.logIncomingProject('complete', id, { userId, userRole });
+  }
+
   async remove(id: number, userId?: number, userRole?: string) {
     const project = await this.repo.findOne({ where: { id } });
     await this.logService.logIncomingProject('delete', id, { userId, userRole, projectName: project?.project_name });

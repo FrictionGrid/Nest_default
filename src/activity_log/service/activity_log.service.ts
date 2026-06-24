@@ -70,19 +70,20 @@ export class ActivityLogService {
   // ── Incoming Project ─────────────────────────────────────────────────────
 
   async logIncomingProject(
-    action: 'create' | 'update' | 'delete',
+    action: 'create' | 'update' | 'delete' | 'complete',
     projectId: number,
     opts: { userId?: number; userRole?: string; projectName?: string },
   ) {
     const name = opts.projectName ?? (await this.projectRepo.findOne({ where: { id: projectId } }))?.project_name ?? `#${projectId}`;
     const desc: Record<string, string> = {
-      create: `สร้างโปรเจค ${name}`,
-      update: `แก้ไขโปรเจค ${name}`,
-      delete: `ลบโปรเจค ${name}`,
+      create:   `สร้างโปรเจค ${name}`,
+      update:   `แก้ไขโปรเจค ${name}`,
+      delete:   `ลบโปรเจค ${name}`,
+      complete: `ปิดโปรเจค ${name}`,
     };
     await this.log({
       userId: opts.userId, userRole: opts.userRole,
-      action: LogAction[action.toUpperCase() as keyof typeof LogAction],
+      action: action === 'complete' ? LogAction.UPDATE : LogAction[action.toUpperCase() as keyof typeof LogAction],
       module: 'Incoming Project',
       targetId: projectId,
       description: desc[action],

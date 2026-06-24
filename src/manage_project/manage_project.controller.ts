@@ -41,15 +41,6 @@ export class ManageProjectController {
     return this.manageProjectService.update(+id, dto, sessionUser?.id, sessionUser?.role);
   }
 
-  @Get('api/:id/check-complete')
-  async checkComplete(@Req() req: Request, @Param('id') id: string) {
-    const sessionUser = (req.session as any).user;
-    if (sessionUser?.role === 'head_engineer') {
-      await this.manageProjectService.assertRowInUserTeam(+id, sessionUser.id);
-    }
-    return this.manageProjectService.checkComplete(+id);
-  }
-
   @Put('api/:id/complete')
   async complete(@Req() req: Request, @Param('id') id: string) {
     const sessionUser = (req.session as any).user;

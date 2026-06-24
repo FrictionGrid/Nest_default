@@ -34,6 +34,12 @@ export class IncomingProjectController {
     return this.incomingProjectService.update(+id, dto, userId, role);
   }
 
+  @Put('api/projects/:id/complete')
+  complete(@Req() req: Request, @Param('id') id: string) {
+    const { id: userId, role } = (req.session as any).user ?? {};
+    return this.incomingProjectService.complete(+id, userId, role);
+  }
+
   @Delete('api/projects/:id')
   remove(@Req() req: Request, @Param('id') id: string) {
     const { id: userId, role } = (req.session as any).user ?? {};

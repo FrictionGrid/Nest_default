@@ -53,33 +53,64 @@
     gap: 18px;
     margin-bottom: 24px;
   }
-  @media (max-width: 1100px) { .stats-grid { grid-template-columns: repeat(2,1fr); } }
-  @media (max-width: 600px)  { .stats-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .stats-grid { grid-template-columns: 1fr; } }
 
   .stat-card {
-    background: var(--card); border-radius: var(--radius);
-    box-shadow: var(--shadow); padding: 20px 18px;
-    display: flex; align-items: center; gap: 14px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 12px rgba(30,58,95,0.08);
+    padding: 0;
+    display: flex; flex-direction: column;
     transition: transform 0.2s, box-shadow 0.2s;
     animation: fadeUp 0.4s ease both;
+    overflow: hidden;
+    border: 1px solid #dce8f4;
   }
-  .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(30,58,95,0.12); }
-  .stat-card:nth-child(1){ animation-delay:.05s } .stat-card:nth-child(2){ animation-delay:.09s }
-  .stat-card:nth-child(3){ animation-delay:.13s } .stat-card:nth-child(4){ animation-delay:.17s }
-  .stat-card:nth-child(5){ animation-delay:.21s } .stat-card:nth-child(6){ animation-delay:.25s }
+  .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(30,58,95,0.13); }
+  .stat-card:nth-child(1){ animation-delay:.05s; }
+  .stat-card:nth-child(2){ animation-delay:.10s; }
+  .stat-card:nth-child(3){ animation-delay:.15s; }
 
-  .stat-icon { width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .si-blue   { background:rgba(74,144,226,0.14); color:#4A90E2; }
-  .si-green  { background:rgba(53,179,126,0.14); color:#35B37E; }
-  .si-orange { background:rgba(244,166,42,0.14); color:#F4A62A; }
-  .si-purple { background:rgba(155,89,182,0.14); color:#9B59B6; }
-  .si-red    { background:rgba(228,87,87,0.14);  color:#E45757; }
-  .si-teal   { background:rgba(20,184,166,0.14); color:#14B8A6; }
+  .stat-card-accent {
+    height: 4px; width: 100%;
+  }
+  .acc-blue   { background: #2a5fa0; }
+  .acc-green  { background: #1a6b47; }
+  .acc-amber  { background: #b45309; }
 
-  .stat-body { flex:1; min-width:0; }
-  .stat-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; }
-  .stat-value { font-size:26px; font-weight:800; color:var(--primary); line-height:1.1; }
-  .stat-sub   { font-size:11px; color:#8faac4; margin-top:3px; }
+  .stat-card-body { padding: 24px 26px 22px; display:flex; flex-direction:column; gap:0; }
+
+  .stat-eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: #7a97b8;
+    margin-bottom: 12px;
+  }
+  .stat-value {
+    font-size: 36px; font-weight: 900; line-height: 1;
+    letter-spacing: -1px; margin-bottom: 5px;
+  }
+  .val-blue  { color: #1e3a5f; }
+  .val-green { color: #1a4a32; }
+  .val-amber { color: #7c3d0c; }
+
+  .stat-value-sub {
+    font-size: 12px; color: #8faac4; margin-bottom: 18px;
+  }
+  .stat-bar-track {
+    height: 5px; background: #e8f0f8; border-radius: 999px; overflow: hidden;
+  }
+  .stat-bar-fill {
+    height: 100%; border-radius: 999px;
+    transition: width 1.2s cubic-bezier(.4,0,.2,1) .3s;
+  }
+  .fill-blue  { background: #2a5fa0; }
+  .fill-green { background: #1a6b47; }
+  .fill-amber { background: #b45309; }
+
+  .stat-pct {
+    font-size: 11px; font-weight: 700; color: #8faac4;
+    margin-top: 6px; text-align: right;
+  }
 
   /* ── cards layout ── */
   .card {
@@ -194,84 +225,53 @@
     </div>
   </div>
 
-  <!-- ===== 6 Stat Cards ===== -->
+  <!-- ===== 3 PO Stat Cards ===== -->
+  <%
+    const totalPO     = Number(summary.total_po_value);
+    const completedPO = Number(summary.completed_po_value);
+    const pendingPO   = Number(summary.remaining_po_value);
+    const pctDone     = totalPO > 0 ? Math.round((completedPO / totalPO) * 100) : 0;
+    const pctPending  = totalPO > 0 ? Math.round((pendingPO   / totalPO) * 100) : 0;
+    function fmtM(v) {
+      const m = v / 1000000;
+      return m >= 1 ? '฿' + m.toFixed(2) + 'M' : '฿' + (v/1000).toFixed(1) + 'K';
+    }
+    function fmtFull(v) {
+      return '฿' + Number(v).toLocaleString('en-US') + ' THB';
+    }
+  %>
   <div class="stats-grid">
 
     <div class="stat-card">
-      <div class="stat-icon si-blue">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-        </svg>
-      </div>
-      <div class="stat-body">
-        <div class="stat-label">Total Projects</div>
-        <div class="stat-value"><%= summary.total_projects %></div>
-        <div class="stat-sub">Year <%= year %></div>
+      <div class="stat-card-accent acc-blue"></div>
+      <div class="stat-card-body">
+        <div class="stat-eyebrow">Total PO Value — Year <%= year %></div>
+        <div class="stat-value val-blue"><%= fmtM(totalPO) %></div>
+        <div class="stat-value-sub"><%= fmtFull(totalPO) %></div>
+        <div class="stat-bar-track"><div class="stat-bar-fill fill-blue" style="width:100%;"></div></div>
+        <div class="stat-pct"><%= summary.total_projects %> projects</div>
       </div>
     </div>
 
     <div class="stat-card">
-      <div class="stat-icon si-green">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
-        </svg>
-      </div>
-      <div class="stat-body">
-        <div class="stat-label">Completed</div>
-        <div class="stat-value"><%= summary.completed %></div>
-        <div class="stat-sub">Projects closed</div>
+      <div class="stat-card-accent acc-green"></div>
+      <div class="stat-card-body">
+        <div class="stat-eyebrow">Completed PO — Received</div>
+        <div class="stat-value val-green"><%= fmtM(completedPO) %></div>
+        <div class="stat-value-sub"><%= fmtFull(completedPO) %></div>
+        <div class="stat-bar-track"><div class="stat-bar-fill fill-green" style="width:<%= pctDone %>%;"></div></div>
+        <div class="stat-pct"><%= pctDone %>% of total</div>
       </div>
     </div>
 
     <div class="stat-card">
-      <div class="stat-icon si-orange">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-      </div>
-      <div class="stat-body">
-        <div class="stat-label">Incomplete</div>
-        <div class="stat-value"><%= summary.not_completed %></div>
-        <div class="stat-sub">In Progress + Delayed</div>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon si-purple">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-        </svg>
-      </div>
-      <div class="stat-body">
-        <div class="stat-label">Total PO Value</div>
-        <div class="stat-value">฿<%= (Number(summary.total_po_value)/1000000).toFixed(2) %>M</div>
-        <div class="stat-sub"><%= Number(summary.total_po_value).toLocaleString('en-US',{minimumFractionDigits:0}) %> THB</div>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon si-teal">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
-        </svg>
-      </div>
-      <div class="stat-body">
-        <div class="stat-label">Completed PO</div>
-        <div class="stat-value">฿<%= (Number(summary.completed_po_value)/1000000).toFixed(2) %>M</div>
-        <div class="stat-sub"><%= Number(summary.completed_po_value).toLocaleString('en-US',{minimumFractionDigits:0}) %> THB</div>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon si-red">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/>
-        </svg>
-      </div>
-      <div class="stat-body">
-        <div class="stat-label">Pending PO</div>
-        <div class="stat-value">฿<%= (Number(summary.remaining_po_value)/1000000).toFixed(2) %>M</div>
-        <div class="stat-sub"><%= Number(summary.remaining_po_value).toLocaleString('en-US',{minimumFractionDigits:0}) %> THB</div>
+      <div class="stat-card-accent acc-amber"></div>
+      <div class="stat-card-body">
+        <div class="stat-eyebrow">Pending PO — Outstanding</div>
+        <div class="stat-value val-amber"><%= fmtM(pendingPO) %></div>
+        <div class="stat-value-sub"><%= fmtFull(pendingPO) %></div>
+        <div class="stat-bar-track"><div class="stat-bar-fill fill-amber" style="width:<%= pctPending %>%;"></div></div>
+        <div class="stat-pct"><%= pctPending %>% of total</div>
       </div>
     </div>
 
@@ -310,18 +310,18 @@
       </div>
     </div>
 
-    <!-- Pie 3: Region / Province -->
+    <!-- Pie 3: Team Projects -->
     <div class="card">
       <div class="card-header">
-        <span class="card-title">Region / Province</span>
-        <span class="card-sub"><%= regionStats.length %> areas</span>
+        <span class="card-title">Projects by Team</span>
+        <span class="card-sub">% of total projects received</span>
       </div>
       <div class="card-body">
         <div class="pie-wrap">
-          <canvas id="regionChart"></canvas>
-          <div class="pie-center"><div class="pie-center-val" id="regionTotalVal">—</div><div class="pie-center-lbl">Total</div></div>
+          <canvas id="teamPieChart"></canvas>
+          <div class="pie-center"><div class="pie-center-val" id="teamPieTotalVal">—</div><div class="pie-center-lbl">Total</div></div>
         </div>
-        <div class="pie-legend" id="regionLegend"></div>
+        <div class="pie-legend" id="teamPieLegend"></div>
       </div>
     </div>
 
@@ -343,8 +343,147 @@
     </div>
   </div>
 
-  <!-- ===== Row 4: Team Summary Table ===== -->
-  <div class="card" style="animation-delay:.40s;">
+  <!-- ===== Row 4: Project Performance Summary ===== -->
+  <%
+    const perfTotal     = summary.total_projects;
+    const perfCompleted = summary.completed;
+    const perfPct       = perfTotal > 0 ? Math.round((perfCompleted / perfTotal) * 100) : 0;
+    const perfColor     = perfPct >= 70 ? '#1a6b47' : perfPct >= 50 ? '#7c5a00' : '#8b1a1a';
+    const perfAccent    = perfPct >= 70 ? 'acc-green' : perfPct >= 50 ? 'acc-amber' : 'acc-red';
+    const perfFill      = perfPct >= 70 ? '#1a6b47' : perfPct >= 50 ? '#b45309' : '#b91c1c';
+  %>
+  <style>
+    .acc-red { background: #b91c1c; }
+    .perf-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 18px; margin-bottom: 24px;
+    }
+    @media (max-width: 900px) { .perf-grid { grid-template-columns: 1fr; } }
+
+    .perf-card {
+      background: var(--card); border-radius: var(--radius);
+      border: 1px solid #dce8f4;
+      box-shadow: 0 2px 12px rgba(30,58,95,0.07);
+      overflow: hidden; animation: fadeUp 0.4s ease both;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .perf-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(30,58,95,0.12); }
+    .perf-card:nth-child(1){ animation-delay:.32s; }
+    .perf-card:nth-child(2){ animation-delay:.36s; }
+    .perf-card:nth-child(3){ animation-delay:.40s; }
+
+    .perf-body { padding: 28px 28px 24px; display: flex; align-items: center; gap: 20px; }
+
+    .perf-icon {
+      width: 56px; height: 56px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .pi-blue   { background: rgba(42,95,160,0.10); }
+    .pi-green  { background: rgba(26,107,71,0.10); }
+
+    .perf-text { flex: 1; min-width: 0; }
+    .perf-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: #7a97b8; margin-bottom: 6px;
+    }
+    .perf-value {
+      font-size: 42px; font-weight: 900; line-height: 1; letter-spacing: -2px;
+    }
+    .perf-sub { font-size: 12px; color: #8faac4; margin-top: 4px; }
+
+    /* Ring card */
+    .perf-ring-card { display: flex; align-items: center; justify-content: center; gap: 24px; padding: 24px 28px; }
+    .ring-wrap { position: relative; width: 100px; height: 100px; flex-shrink: 0; }
+    .ring-wrap svg { transform: rotate(-90deg); }
+    .ring-bg   { fill: none; stroke: #e8f0f8; stroke-width: 9; }
+    .ring-fill { fill: none; stroke-width: 9; stroke-linecap: round; transition: stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1) .4s; }
+    .ring-label {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      text-align: center;
+    }
+    .ring-pct  { font-size: 20px; font-weight: 900; line-height: 1; }
+    .ring-sub  { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: #8faac4; text-transform: uppercase; }
+    .ring-info { display: flex; flex-direction: column; gap: 8px; }
+    .ring-info-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #2e4a6a; }
+    .ring-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .ring-info-val { font-weight: 800; font-size: 15px; min-width: 32px; }
+  </style>
+
+  <div class="perf-grid">
+
+    <!-- Box 1: Total Projects -->
+    <div class="perf-card">
+      <div class="stat-card-accent acc-blue"></div>
+      <div class="perf-body">
+        <div class="perf-icon pi-blue">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2a5fa0" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div class="perf-text">
+          <div class="perf-label">Total Projects</div>
+          <div class="perf-value" style="color:#1e3a5f;"><%= perfTotal %></div>
+          <div class="perf-sub">Year <%= year %></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Box 2: Completed -->
+    <div class="perf-card">
+      <div class="stat-card-accent acc-green"></div>
+      <div class="perf-body">
+        <div class="perf-icon pi-green">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1a6b47" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <div class="perf-text">
+          <div class="perf-label">Completed</div>
+          <div class="perf-value" style="color:#1a4a32;"><%= perfCompleted %></div>
+          <div class="perf-sub"><%= perfTotal - perfCompleted %> remaining</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Box 3: Performance % with ring -->
+    <div class="perf-card">
+      <div class="stat-card-accent <%= perfAccent %>"></div>
+      <div class="perf-ring-card">
+        <div class="ring-wrap">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <circle class="ring-bg"   cx="50" cy="50" r="42"/>
+            <circle class="ring-fill" cx="50" cy="50" r="42"
+              stroke="<%= perfFill %>"
+              stroke-dasharray="<%= Math.PI * 2 * 42 %>"
+              stroke-dashoffset="<%= Math.PI * 2 * 42 * (1 - perfPct / 100) %>"
+              id="ringFill"
+            />
+          </svg>
+          <div class="ring-label">
+            <div class="ring-pct" style="color:<%= perfColor %>;"><%= perfPct %>%</div>
+            <div class="ring-sub">Done</div>
+          </div>
+        </div>
+        <div class="ring-info">
+          <div class="perf-label" style="margin-bottom:12px;">Performance</div>
+          <div class="ring-info-row">
+            <div class="ring-dot" style="background:#2a5fa0;"></div>
+            <span style="color:#7a97b8;">Total</span>
+            <span class="ring-info-val" style="color:#1e3a5f;"><%= perfTotal %></span>
+          </div>
+          <div class="ring-info-row">
+            <div class="ring-dot" style="background:<%= perfFill %>;"></div>
+            <span style="color:#7a97b8;">Done</span>
+            <span class="ring-info-val" style="color:<%= perfColor %>;"><%= perfCompleted %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== Row 5: Team Summary Table ===== -->
+  <div class="card" style="animation-delay:.44s;">
     <div class="card-header">
       <span class="card-title">Team Performance Summary</span>
       <span class="card-sub">Year <%= year %></span>
@@ -458,13 +597,13 @@
   makePie('typeChart', 'typeTotalVal', typeLabels, typeData, typeColors);
   buildLegend('typeLegend', typeLabels, typeData, typeColors);
 
-  /* ── Pie 2: Region ── */
-  const _regionStats  = <%- JSON.stringify(regionStats) %>;
-  const regionLabels  = _regionStats.length ? _regionStats.map(r => r.region) : ['No data'];
-  const regionData    = _regionStats.length ? _regionStats.map(r => r.count)  : [1];
-  const regionColors  = _regionStats.length ? PIE_COLORS.slice(3) : ['#d1d5db'];
-  makePie('regionChart', 'regionTotalVal', regionLabels, regionData, regionColors);
-  buildLegend('regionLegend', regionLabels, regionData, regionColors);
+  /* ── Pie 3: Team Projects ── */
+  const _teamPie     = <%- JSON.stringify(teamSummary) %>.filter(t => t.total > 0);
+  const teamPieLabels = _teamPie.length ? _teamPie.map(t => t.team_name) : ['No data'];
+  const teamPieData   = _teamPie.length ? _teamPie.map(t => t.total)     : [1];
+  const teamPieColors = _teamPie.length ? PIE_COLORS.slice(4) : ['#d1d5db'];
+  makePie('teamPieChart', 'teamPieTotalVal', teamPieLabels, teamPieData, teamPieColors);
+  buildLegend('teamPieLegend', teamPieLabels, teamPieData, teamPieColors);
 
   /* ── Pie 3: Value Range ── */
   const _valueStats  = <%- JSON.stringify(valueRangeStats) %>;
