@@ -1,6 +1,7 @@
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { User, UserRole } from '../../database/entities/user.entity';
 import { Team } from '../../database/entities/team.entity';
 import { UsersTeam } from '../../database/entities/users_team.entity';
@@ -55,7 +56,7 @@ export class UserManagementService {
       username:     dto.username,
       display_name: dto.display_name,
       email:        dto.email,
-      password:     dto.password,
+      password:     await bcrypt.hash(dto.password, 10),
       role:         dto.role as UserRole,
       status:       dto.status || 'active',
     });
@@ -68,10 +69,11 @@ export class UserManagementService {
     const user = await this.userRepo.findOneBy({ id });
     if (!user) throw new NotFoundException('User not found');
     if (dto.password === '' || dto.password === null) delete dto.password;
+    const hashedPassword = dto.password ? await bcrypt.hash(dto.password, 10) : undefined;
     await this.userRepo.update(id, {
       ...(dto.display_name !== undefined && { display_name: dto.display_name }),
       ...(dto.email        !== undefined && { email:        dto.email }),
-      ...(dto.password     !== undefined && { password:     dto.password }),
+      ...(hashedPassword   !== undefined && { password:     hashedPassword }),
       ...(dto.role         !== undefined && { role:         dto.role as UserRole }),
       ...(dto.status       !== undefined && { status:       dto.status }),
     });

@@ -1,28 +1,31 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { User } from '../../database/entities/user.entity';
 
-@Injectable() // คำสั่งเพื่อประกาศให้สามารถเอาคลาสนี้ไปใช้ต่อได้
-export class AuthService { 
+@Injectable()
+export class AuthService {
   constructor(
-    @InjectRepository(User) // ดึง table db มาใช้
-    private readonly userRepo: Repository<User>, // ดึง qurrey db มาเก็บใน userRepo
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
   ) {}
-// type script ต้องประกาศทั้งตัวเเปรขาเข้าเเล้วออก
+
   async validateUser(username: string, password: string): Promise<{ id: number; username: string; display_name: string; role: string }> {
-//  เจอที่เหมือนส่งค่ามา ไม่มีคืน null
-  const user = await this.userRepo.findOne({ where: { username } });
-    // user = null
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+    const user = await this.userRepo.findOne({ where: { username } });
+    if (!user) throw new UnauthorizedException('Invalid credentials');
+
+    if (user.password.startsWith('$2b$')) {
+      // hash แล้ว → ใช้ bcrypt.compare
+      const ok = await bcrypt.compare(password, user.password);
+      if (!ok) throw new UnauthorizedException('Invalid credentials');
+    } else {
+      // ยัง plaintext → เช็คตรงๆ แล้ว hash ทับอัตโนมัติ
+      if (user.password !== password) throw new UnauthorizedException('Invalid credentials');
+      user.password = await bcrypt.hash(password, 10);
+      await this.userRepo.save(user);
     }
 
-    // ไม่ตรง password ส่ง erro
-    if (user.password !== password) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-    // ตรงหมดเอาค่าที่ต้องการไปใช้ต่อ
     return { id: user.id, username: user.username, display_name: user.display_name, role: user.role };
   }
 }

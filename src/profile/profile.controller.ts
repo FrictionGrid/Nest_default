@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Req, Res, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import type { Request, Response } from 'express';
 import { User } from '../database/entities/user.entity';
 import { AuthGuard } from '../auth/guards/auth.guard';
@@ -57,7 +58,7 @@ export class ProfileController {
     if (body.display_name !== undefined) update.display_name = body.display_name;
     if (body.username)                   update.username     = body.username;
     if (body.email)                      update.email        = body.email;
-    if (body.password)                   update.password     = body.password;
+    if (body.password)                   update.password     = await bcrypt.hash(body.password, 10);
 
     await this.userRepo.update(userId, update);
 
