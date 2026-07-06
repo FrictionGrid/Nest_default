@@ -8,9 +8,10 @@ import { Team } from '../database/entities/team.entity';
 import { TaskTeam } from '../database/entities/task_team.entity';
 import { ProjectIncoming } from '../database/entities/project_incoming.entity';
 import { ProjectTeam } from '../database/entities/project_team.entity';
+import { ActivityLogModule } from '../activity_log/activity_log.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UsersTeam, User, Team, TaskTeam, ProjectIncoming, ProjectTeam])],
+  imports: [TypeOrmModule.forFeature([UsersTeam, User, Team, TaskTeam, ProjectIncoming, ProjectTeam]), ActivityLogModule],
   controllers: [ManageTeamController],
   providers: [ManageTeamService],
 })

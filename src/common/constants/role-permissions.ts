@@ -5,6 +5,8 @@ export const ROLE_DEFAULT_PAGE: Record<string, string> = {
   head_engineer: '/overview-project',
   engineer:      '/dashboard-team',
   sale:          '/overview-project',
+  executive:        '/overview-project',
+  sales_assistant:  '/overview-project',
 };
 
 export const ROLE_PERMISSIONS: Record<string, string[]> = {
@@ -83,6 +85,25 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
 
   // ── overview only ────────────────────────────────────────────────────────
   sale: [
+    'GET:/feedback',
+    'POST:/feedback/api',
+    'GET:/overview-project',
+    'GET:/overview-project/api/team-stats',
+  ],
+
+  // ── executive: read-only overview + timeline + summary + chatbot ─────────
+  executive: [
+    'GET:/overview-project',
+    'GET:/overview-project/api/team-stats',
+    'GET:/timeline',
+    'GET:/timeline-project',
+    'GET:/summary-year',
+    'GET:/chatbot',
+    'POST:/chatbot/chat',
+  ],
+
+  // ── sales_assistant: same as sale ────────────────────────────────────────
+  sales_assistant: [
     'GET:/feedback',
     'POST:/feedback/api',
     'GET:/overview-project',

@@ -7,6 +7,8 @@ export enum UserRole {
   HEAD_ENGINEER = 'head_engineer',
   ENGINEER = 'engineer',
   SALE = 'sale',
+  EXECUTIVE = 'executive',
+  SALES_ASSISTANT = 'sales_assistant',
 }
 
 @Entity('users')
