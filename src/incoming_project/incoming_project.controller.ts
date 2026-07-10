@@ -6,7 +6,7 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { CreateIncomingProjectDto } from './dto/create-incoming_project.dto';
 import { UpdateIncomingProjectDto } from './dto/update-incoming_project.dto';
 
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(AuthGuard, RolesGuard) // สำหรับ logic permission
 @Controller('incoming-project')
 export class IncomingProjectController {
   constructor(private readonly incomingProjectService: IncomingProjectService) {}

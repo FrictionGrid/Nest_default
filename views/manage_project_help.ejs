@@ -1,0 +1,134 @@
+<link rel="stylesheet" href="/css/tools/table.css" />
+<style>
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .badge-progress { background: rgba(65,121,191,0.12); color: #2a5fa0; }
+  .badge-late     { background: rgba(220,53,69,0.12);  color: #b91c1c; }
+  .badge-done     { background: rgba(53,179,126,0.12); color: #1a7a54; }
+
+  .rate-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 16px 22px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .rate-box .rate-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .rate-box .rate-current {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .rate-box input[type="number"] {
+    height: 38px;
+    width: 160px;
+    border: 1px solid #cdd9e8;
+    border-radius: 10px;
+    padding: 0 12px;
+    font-size: 14px;
+    outline: none;
+  }
+  .rate-box button {
+    height: 38px;
+    padding: 0 18px;
+    border-radius: 10px;
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .rate-box button:hover { background: var(--accent); }
+  .rate-box .rate-hint { font-size: 12px; color: var(--muted); width: 100%; }
+</style>
+
+<section class="content">
+
+  <div class="rate-box">
+    <span class="rate-label">อัตรามาตรฐาน (บาท/วัน):</span>
+    <span class="rate-current" id="currentRate">฿<%= Number(dayRate).toLocaleString('en-US') %></span>
+    <input type="number" id="dayRateInput" min="1" step="1" placeholder="เช่น 5000" />
+    <button id="saveRateBtn">บันทึกอัตรา</button>
+    <span class="rate-hint">ใช้คำนวณ "จำนวนวันที่ควรใช้" ของทุกโปรเจค (จำนวนวัน = PO value / อัตรานี้) — ค่านี้เป็นค่ากลาง ปรับแล้วมีผลกับทุกโปรเจค</span>
+  </div>
+
+  <div class="card1">
+    <div class="table-header">
+      <h3>Manage Project Help — เลือกโปรเจคเพื่อวางแผนวัน/งบประมาณ</h3>
+      <div class="table-count">Showing <%= projects.length %> items</div>
+    </div>
+    <div class="table-body">
+      <table>
+        <colgroup>
+          <col style="width:70px;" />
+          <col style="width:26%;" />
+          <col style="width:16%;" />
+          <col style="width:16%;" />
+          <col style="width:12%;" />
+          <col style="width:120px;" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Project Name</th>
+            <th>PO Value</th>
+            <th>Sales Name</th>
+            <th>Region</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% const statusMap = {
+               in_progress: { label: 'In Progress', cls: 'badge-progress' },
+               delayed:     { label: 'Delayed',     cls: 'badge-late'     },
+               completed:   { label: 'Completed',   cls: 'badge-done'     },
+             };
+          %>
+          <% projects.forEach(function(p) { %>
+            <% const s = statusMap[p.status] || { label: p.status, cls: '' }; %>
+            <tr>
+              <td><%= p.item %></td>
+              <td>
+                <a href="/manage-project-help/<%= p.id %>" style="color:var(--primary);font-weight:700;text-decoration:none;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--primary)'"><%= p.project_name %></a>
+              </td>
+              <td><%= p.poValueFormatted %></td>
+              <td><%= p.sales_name %></td>
+              <td><%= p.region %></td>
+              <td><span class="badge <%= s.cls %>"><%= s.label %></span></td>
+            </tr>
+          <% }); %>
+          <% if (projects.length === 0) { %>
+            <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:28px 0;">No projects found</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.getElementById('saveRateBtn').addEventListener('click', async () => {
+    const val = parseFloat(document.getElementById('dayRateInput').value);
+    if (!val || val <= 0) { alert('กรุณากรอกอัตราที่มากกว่า 0'); return; }
+    await fetch('/manage-project-help/api/day-rate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ day_rate: val }),
+    });
+    location.reload();
+  });
+</script>

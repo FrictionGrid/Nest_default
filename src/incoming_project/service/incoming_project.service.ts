@@ -22,17 +22,18 @@ export class IncomingProjectService {
   }
 
   async create(dto: CreateIncomingProjectDto, userId?: number, userRole?: string) {
-    const { type_ids, item: _item, ...data } = dto;
-    if (data.po_no) {
-      data.project_name = `${data.project_name}_${data.po_no}`;
+    const { type_ids, item: _item, ...data } = dto; // ตั้งชื่อตัวเเปรตาม dto เเละ สร้างตัวเเปรชื่อ dto , type id ต้องหน้าบ้านจะวิ่ง id มา
+    if (data.po_no) { // อันนี้คือการเอามารวมชื่อกันตอนสร้าง
+      data.project_name = `${data.project_name}_${data.po_no}`; 
     }
-    const project = this.repo.create({ ...data, item: 0 });
-    if (type_ids && type_ids.length > 0) {
-      project.types = await this.typeRepo.findBy({ id: In(type_ids) });
-    }
-    await this.repo.save(project);
-    await this.renumberItems();
-    await this.logService.logIncomingProject('create', project.id, { userId, userRole, projectName: project.project_name });
+    const project = this.repo.create({ ...data, item: 0 }); // item ให้เป็น 0 ไว้ก่อน
+    if (type_ids && type_ids.length > 0) { // เอา type มาเก็บ 
+      project.types = await this.typeRepo.findBy({ id: In(type_ids) }); //เอาทุก id ที่ส่งมาไปหา type_id
+    } 
+    await this.repo.save(project); 
+    await this.renumberItems(); // เรียกฟังชั่นนี้มาใช้
+    // ฟังชั่น log ยังไม่ต้องดู
+    await this.logService.logIncomingProject('create', project.id, { userId, userRole, projectName: project.project_name }); 
     return project;
   }
 
@@ -42,10 +43,10 @@ export class IncomingProjectService {
 
   async update(id: number, dto: UpdateIncomingProjectDto, userId?: number, userRole?: string) {
     const { type_ids, ...data } = dto;
-    const project = await this.repo.findOne({ where: { id }, relations: ['types'] });
+    const project = await this.repo.findOne({ where: { id }, relations: ['types'] }); // วิ่งหาไอดี  project พร้อมวิ่งหาตาราง type
     if (!project) return null;
-    Object.assign(project, data);
-    if (type_ids !== undefined) {
+    Object.assign(project, data); // คำสั่งเอาไปเเทนที่
+    if (type_ids !== undefined) { // 3 กรณี 1 ไม่เเตะ 2 ลบหมด 3 เปลี่ยน
       project.types = type_ids.length > 0
         ? await this.typeRepo.findBy({ id: In(type_ids) })
         : [];

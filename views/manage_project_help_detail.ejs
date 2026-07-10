@@ -1,0 +1,292 @@
+<style>
+  .profile-header {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    padding: 24px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+    border-left: 5px solid var(--accent);
+  }
+  .profile-name { font-size: 22px; font-weight: 800; color: var(--primary); margin-bottom: 6px; }
+  .profile-sub  { font-size: 13px; color: var(--muted); }
+  .profile-actions { display: flex; align-items: center; gap: 10px; }
+
+  .btn { display: flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; text-decoration: none; }
+  .btn-back { background: rgba(30,58,95,0.07); color: var(--primary); border: none; }
+  .btn-back:hover { background: rgba(30,58,95,0.13); }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 12px; border-radius: 999px;
+    font-size: 12px; font-weight: 700;
+  }
+  .b-completed  { background: rgba(53,179,126,0.13); color: #1a7a54; }
+  .b-in_progress{ background: rgba(74,144,226,0.14); color: #1d5fa8; }
+  .b-delayed    { background: rgba(228,87,87,0.12);  color: #c0392b; }
+
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 1100px) { .detail-grid { grid-template-columns: 1fr; } }
+
+  .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .card-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 14px; border-bottom: 1px solid #edf2f7; }
+  .card-title { font-size: 15px; font-weight: 700; color: var(--primary); }
+  .card-body { padding: 18px 20px; }
+
+  .stat-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+  .stat-box { flex: 1; min-width: 130px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); background: #fafcff; }
+  .stat-box .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
+  .stat-box .value { font-size: 17px; font-weight: 800; color: var(--primary); }
+
+  .summary-box {
+    padding: 14px 16px; border-radius: 12px;
+    background: linear-gradient(135deg, #eef4ff 0%, #f3edff 100%);
+    border-left: 4px solid var(--accent);
+    margin-bottom: 16px;
+    font-size: 13px; color: var(--text); line-height: 1.7;
+  }
+  .summary-box .headline { font-weight: 800; color: var(--primary); font-size: 15px; margin-bottom: 4px; }
+
+  .risk-factor-block {
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #fafcff;
+    margin-bottom: 10px;
+  }
+  .risk-factor-title { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .risk-factor-line { font-size: 13px; color: var(--text); line-height: 1.6; }
+  .risk-factor-line.strong { font-weight: 700; color: #b91c1c; }
+
+  .adj-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 14px; }
+  .adj-table th { text-align: left; padding: 8px 10px; background: #f4f8fc; color: var(--muted); font-size: 11px; text-transform: uppercase; border-bottom: 1px solid #edf2f7; }
+  .adj-table td { padding: 10px; border-bottom: 1px solid #f0f4f9; color: var(--text); vertical-align: top; }
+  .adj-days-pos { color: #b91c1c; font-weight: 700; }
+  .adj-days-neg { color: #1a7a54; font-weight: 700; }
+  .btn-del { border: none; background: #ffeaea; color: #c0392b; padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .btn-del:hover { background: #ffd0d0; }
+
+  .form-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+  .form-field { display: flex; flex-direction: column; gap: 4px; }
+  .form-field label { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+  .form-field select, .form-field input {
+    height: 38px; border: 1px solid #cdd9e8; border-radius: 10px; padding: 0 12px; font-size: 13px; outline: none;
+  }
+  .form-field.grow { flex: 1; min-width: 160px; }
+  .btn-add { height: 38px; padding: 0 18px; border-radius: 10px; border: none; background: var(--primary); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .btn-add:hover { background: var(--accent); }
+
+  .budget-row { display: grid; grid-template-columns: 1.6fr 100px 1fr; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f4f9; }
+  .budget-row .cat-label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .budget-row input[type="number"] { height: 36px; width: 90px; border: 1px solid #cdd9e8; border-radius: 8px; padding: 0 8px; font-size: 13px; text-align: right; }
+  .budget-row .cat-amount { font-size: 13px; font-weight: 700; color: var(--primary); text-align: right; }
+
+  .budget-total { display: flex; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 2px solid #edf2f7; font-size: 13px; font-weight: 700; }
+  .budget-total.warn { color: #b91c1c; }
+  .budget-total.ok   { color: #1a7a54; }
+  .btn-save { margin-top: 16px; width: 100%; height: 42px; border: none; border-radius: 10px; background: var(--primary); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn-save:hover { background: var(--accent); }
+</style>
+
+<section class="content">
+
+  <div class="profile-header">
+    <div>
+      <div class="profile-name"><%= project.project_name %></div>
+      <div class="profile-sub">PO Value: <strong><%= project.poValueFormatted %></strong></div>
+    </div>
+    <div class="profile-actions">
+      <span class="badge b-<%= project.status %>"><%= project.status %></span>
+      <a href="/manage-project-help" class="btn btn-back">← Back to list</a>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+
+    <!-- Card A: Day Estimate -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">ประเมินจำนวนวัน (Day Estimate)</div></div>
+      <div class="card-body">
+
+        <div class="stat-row">
+          <div class="stat-box">
+            <div class="label">PO Value</div>
+            <div class="value"><%= project.poValueFormatted %></div>
+          </div>
+          <div class="stat-box">
+            <div class="label">อัตรา (บาท/วัน)</div>
+            <div class="value">฿<%= Number(dayRate).toLocaleString('en-US') %></div>
+          </div>
+          <div class="stat-box">
+            <div class="label">วันฐาน (PO / อัตรา)</div>
+            <div class="value" id="baseDaysVal"><%= baseDays %> วัน</div>
+          </div>
+        </div>
+
+        <div class="summary-box" id="summaryBox">
+          <div class="headline">สรุป: โปรเจคนี้ควรใช้เวลา <span id="totalDaysText"><%= totalDays %></span> วัน</div>
+          <div>(ฐานคำนวณจาก PO value <%= baseDays %> วัน <span id="adjSignText"><%= adjustmentsTotal >= 0 ? '+' : '-' %></span> ปัจจัยปรับรวม <span id="adjAbsText"><%= Math.abs(adjustmentsTotal) %></span> วัน)</div>
+        </div>
+
+        <div id="riskFactorList">
+          <% adjustments.forEach(function(a) { %>
+            <% const resultDays = baseDays + a.days_delta; %>
+            <div class="risk-factor-block">
+              <div class="risk-factor-title"><%= a.factorLabel %><% if (a.note) { %> — <%= a.note %><% } %></div>
+              <div class="risk-factor-line">จากวันที่คิด <%= baseDays %> วัน <%= a.days_delta >= 0 ? 'บวกไป ' + a.days_delta : 'ลดไป ' + Math.abs(a.days_delta) %> วัน</div>
+              <div class="risk-factor-line strong">ถ้าเป็นปัจจัยนี้ จะกลายเป็น <%= resultDays %> วัน</div>
+            </div>
+          <% }); %>
+          <% if (adjustments.length === 0) { %>
+            <div style="color:var(--muted);font-size:13px;padding:8px 0;">ยังไม่มีปัจจัยเสี่ยง</div>
+          <% } %>
+        </div>
+
+        <table class="adj-table" id="adjTable">
+          <thead>
+            <tr><th>ปัจจัย</th><th>หมายเหตุ</th><th>วัน (+/-)</th><th></th></tr>
+          </thead>
+          <tbody id="adjTableBody">
+            <% adjustments.forEach(function(a) { %>
+              <tr data-id="<%= a.id %>">
+                <td><%= a.factorLabel %></td>
+                <td><%= a.note || '—' %></td>
+                <td class="<%= a.days_delta >= 0 ? 'adj-days-pos' : 'adj-days-neg' %>"><%= a.days_delta >= 0 ? '+' : '' %><%= a.days_delta %></td>
+                <td><button class="btn-del" data-id="<%= a.id %>">ลบ</button></td>
+              </tr>
+            <% }); %>
+            <% if (adjustments.length === 0) { %>
+              <tr id="noAdjRow"><td colspan="4" style="text-align:center;color:var(--muted);">ยังไม่มีปัจจัยปรับ</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+
+        <div class="form-row">
+          <div class="form-field grow">
+            <label>ปัจจัย</label>
+            <select id="factorType">
+              <% factorOptions.forEach(function(f) { %>
+                <option value="<%= f.value %>"><%= f.label %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div class="form-field grow">
+            <label>หมายเหตุ</label>
+            <input type="text" id="factorNote" placeholder="เช่น รอทีม outsource เริ่มงาน" />
+          </div>
+          <div class="form-field">
+            <label>วัน (+/-)</label>
+            <input type="number" id="factorDays" step="1" placeholder="เช่น 6" />
+          </div>
+          <button class="btn-add" id="addAdjBtn">+ เพิ่มปัจจัย</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Card B: Budget Allocation -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">จัดสรรงบประมาณ (Budget Allocation)</div></div>
+      <div class="card-body">
+
+        <div id="budgetRows">
+          <% budget.forEach(function(c) { %>
+            <div class="budget-row" data-key="<%= c.key %>" data-percent="<%= c.percent %>">
+              <div class="cat-label"><%= c.label %></div>
+              <input type="number" class="budget-percent-input" min="0" max="100" step="0.1" value="<%= c.percent %>" />
+              <div class="cat-amount" data-amount><%= c.amountFormatted %></div>
+            </div>
+          <% }); %>
+        </div>
+
+        <div class="budget-total <%= percentSum === 100 ? 'ok' : 'warn' %>" id="budgetTotalRow">
+          <span>รวมเปอร์เซ็นต์: <span id="percentSumText"><%= percentSum %></span>% <span id="percentWarnText"><%= percentSum === 100 ? '(ครบ 100%)' : '(ควรรวมให้ครบ 100%)' %></span></span>
+          <span>รวมเงิน: <span id="amountSumText"><%= amountSumFormatted %></span></span>
+        </div>
+
+        <button class="btn-save" id="saveBudgetBtn">บันทึกการจัดสรรงบประมาณ</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  const PROJECT_ID = <%= project.id %>;
+  const PO_VALUE = <%= project.po_value %>;
+  const BASE_DAYS = <%= baseDays %>;
+
+  function fmtMoney(n) {
+    return '฿' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2 });
+  }
+
+  // ── Add adjustment ──────────────────────────────────────────
+  document.getElementById('addAdjBtn').addEventListener('click', async () => {
+    const factor_type = document.getElementById('factorType').value;
+    const note = document.getElementById('factorNote').value.trim();
+    const days_delta = parseInt(document.getElementById('factorDays').value, 10);
+    if (!days_delta && days_delta !== 0) { alert('กรุณากรอกจำนวนวัน'); return; }
+
+    await fetch('/manage-project-help/api/' + PROJECT_ID + '/adjustments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ factor_type, note, days_delta }),
+    });
+    location.reload();
+  });
+
+  // ── Delete adjustment ───────────────────────────────────────
+  document.getElementById('adjTableBody').addEventListener('click', async (e) => {
+    if (!e.target.classList.contains('btn-del')) return;
+    const id = e.target.dataset.id;
+    if (!confirm('ลบปัจจัยนี้?')) return;
+    await fetch('/manage-project-help/api/adjustments/' + id, { method: 'DELETE' });
+    location.reload();
+  });
+
+  // ── Budget allocation live compute + save ────────────────────
+  function recomputeBudget() {
+    let sum = 0;
+    let amountSum = 0;
+    document.querySelectorAll('.budget-row').forEach((row) => {
+      const input = row.querySelector('.budget-percent-input');
+      const pct = parseFloat(input.value) || 0;
+      const amount = PO_VALUE * pct / 100;
+      row.querySelector('[data-amount]').textContent = fmtMoney(amount);
+      sum += pct;
+      amountSum += amount;
+    });
+    document.getElementById('percentSumText').textContent = sum.toFixed(1).replace(/\.0$/, '');
+    document.getElementById('amountSumText').textContent = fmtMoney(amountSum);
+    const totalRow = document.getElementById('budgetTotalRow');
+    const warnText = document.getElementById('percentWarnText');
+    const isOk = Math.abs(sum - 100) < 0.01;
+    totalRow.classList.toggle('ok', isOk);
+    totalRow.classList.toggle('warn', !isOk);
+    warnText.textContent = isOk ? '(ครบ 100%)' : '(ควรรวมให้ครบ 100%)';
+  }
+
+  document.querySelectorAll('.budget-percent-input').forEach((input) => {
+    input.addEventListener('input', recomputeBudget);
+  });
+
+  document.getElementById('saveBudgetBtn').addEventListener('click', async () => {
+    const payload = {};
+    const keyToField = { labor: 'labor_percent', material: 'material_percent', operating: 'operating_percent', profit: 'profit_percent' };
+    document.querySelectorAll('.budget-row').forEach((row) => {
+      const key = row.dataset.key;
+      const field = keyToField[key];
+      if (field) payload[field] = parseFloat(row.querySelector('.budget-percent-input').value) || 0;
+    });
+    await fetch('/manage-project-help/api/' + PROJECT_ID + '/budget-allocation', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    location.reload();
+  });
+</script>
