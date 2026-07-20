@@ -10,7 +10,6 @@ import { ProjectType } from './database/entities/project_type.entity';
 import { Team } from './database/entities/team.entity';
 import { ProjectTeam } from './database/entities/project_team.entity';
 import { ManageProjectModule } from './manage_project/manage_project.module';
-import { ManageProjectHelpModule } from './manage_project_help/manage_project_help.module';
 import { ManageTeamModule } from './manage_team/manage_team.module';
 import { User } from './database/entities/user.entity';
 import { UsersTeam } from './database/entities/users_team.entity';
@@ -59,7 +58,6 @@ import { Feedback } from './database/entities/feedback.entity';
     AuthModule,
     IncomingProjectModule,
     ManageProjectModule,
-    ManageProjectHelpModule,
     ManageTeamModule,
     OverviewProjectModule,
     DetailProjectModule,

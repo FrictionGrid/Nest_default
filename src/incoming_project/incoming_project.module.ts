@@ -6,6 +6,7 @@ import { ProjectIncoming } from '../database/entities/project_incoming.entity';
 import { ProjectType } from '../database/entities/project_type.entity';
 
 @Module({
+  // ส่ง DB ไปใช้ต่อข้างใน //
   imports: [TypeOrmModule.forFeature([ProjectIncoming, ProjectType])],
   controllers: [IncomingProjectController],
   providers: [IncomingProjectService],
