@@ -1,0 +1,208 @@
+<link rel="stylesheet" href="/css/tools/table.css" />
+<style>
+  .cycle-banner {
+    display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff; border-radius: var(--radius); padding: 22px 28px; margin-bottom: 20px; box-shadow: var(--shadow);
+  }
+  .cycle-banner .cycle-item { display: flex; flex-direction: column; gap: 4px; }
+  .cycle-banner .cycle-label { font-size: 12px; opacity: 0.75; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .cycle-banner .cycle-value { font-size: 20px; font-weight: 800; }
+  .cycle-banner .countdown { margin-left: auto; text-align: right; }
+  .cycle-banner .countdown .cycle-value { font-size: 26px; color: #ffd479; }
+
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; }
+  .badge-done { background: rgba(53,179,126,0.12); color: #1a7a54; }
+</style>
+
+<section class="content">
+  <div class="cycle-banner" id="cycleBanner"></div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M21 21L16.65 16.65M10.5 18C14.6421 18 18 14.6421 18 10.5C18 6.35786 14.6421 3 10.5 3C6.35786 3 3 6.35786 3 10.5C3 14.6421 6.35786 18 10.5 18Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      <input type="text" id="searchInput" placeholder="Search Employee, Team, Project..." />
+    </div>
+    <select id="filterYear" class="filter-box"><option value="">All Years</option></select>
+    <select id="filterMonth" class="filter-box">
+      <option value="">All Months</option>
+      <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+      <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+      <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+      <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+    </select>
+  </div>
+
+  <div class="card1">
+    <div class="table-header">
+      <h3>รายการ OT ที่อนุมัติครบแล้ว</h3>
+      <div class="table-count" id="rowCount">Loading...</div>
+    </div>
+    <div class="table-body">
+      <table>
+        <colgroup>
+          <col style="width:14%;" /><col style="width:12%;" /><col style="width:20%;" />
+          <col style="width:10%;" /><col style="width:8%;" /><col style="width:12%;" /><col style="width:8%;" /><col style="width:12%;" />
+        </colgroup>
+        <thead>
+          <tr><th>พนักงาน</th><th>หน่วยงาน</th><th>โปรเจค</th><th>วันที่</th><th>ชั่วโมง</th><th>ประเภท</th><th>รอบ</th><th>การดำเนินการ</th></tr>
+        </thead>
+        <tbody id="tableBody"><tr><td colspan="8" class="loading-state">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<script>
+  // ผู้ใช้/ทีม/โปรเจคด้านล่างดึงมาจากข้อมูลจริงในระบบ (users/team/project_incoming) ไม่ใช่ชื่อสมมติ
+  // Approval chain ตอนนี้เหลือ 2 ขั้น (ตัดขั้น 3 ออก)
+  const OT_SEED = {
+    users: [
+      { id: 1, name: 'adminsystem', roleLabel: 'Admin System', teamId: null, approverLevel1Id: null, approverLevel2Id: null },
+      { id: 2, name: 'Manager', roleLabel: 'ผู้จัดการ (ผู้อนุมัติขั้น 2)', teamId: null, approverLevel1Id: null, approverLevel2Id: null },
+      { id: 3, name: 'head_engineer1', roleLabel: 'หัวหน้าทีม Team 1 (ผู้อนุมัติขั้น 1)', teamId: 1, approverLevel1Id: null, approverLevel2Id: null },
+      { id: 4, name: 'engineer1', roleLabel: 'วิศวกร Team 1 (พนักงาน)', teamId: 1, approverLevel1Id: 3, approverLevel2Id: 2 },
+      { id: 5, name: 'head_engineer2', roleLabel: 'หัวหน้าทีม Team 2 (ผู้อนุมัติขั้น 1)', teamId: 2, approverLevel1Id: null, approverLevel2Id: null },
+      { id: 6, name: 'engineer2.1', roleLabel: 'วิศวกร Team 2 (พนักงาน)', teamId: 2, approverLevel1Id: 5, approverLevel2Id: 2 },
+    ],
+    teams: [
+      { id: 1, name: 'Team 1' },
+      { id: 2, name: 'Team 2' },
+    ],
+    projects: [
+      { id: 20, name: 'TRUE_PO14414' },
+      { id: 22, name: 'Terra_PO14415' },
+      { id: 23, name: 'DAMAC1' },
+    ],
+    cycles: [
+      { id: 0, year: 2026, month: 6, cutoffDate: '2026-06-20', status: 'locked' },
+      { id: 1, year: 2026, month: 7, cutoffDate: '2026-07-20', status: 'open' },
+    ],
+    requests: [
+      { id: 101, userId: 4, projectId: 20, otDate: '2026-07-10', startTime: '18:00', endTime: '20:30', hours: 2.5, otType: 'weekday', reason: 'เร่งติดตั้งระบบให้ทันกำหนดส่งมอบลูกค้า', status: 'pending_l2', currentLevel: 2, cycleId: 1, resubmissionCount: 0 },
+      { id: 102, userId: 4, projectId: 22, otDate: '2026-07-05', startTime: '19:00', endTime: '22:00', hours: 3, otType: 'weekday', reason: 'ตรวจสอบระบบหลังติดตั้งเสร็จ', status: 'approved', currentLevel: 2, cycleId: 1, resubmissionCount: 0 },
+      { id: 103, userId: 6, projectId: 23, otDate: '2026-07-12', startTime: '08:00', endTime: '17:00', hours: 9, otType: 'holiday', reason: 'เข้าไซต์งานวันหยุดตามนัดหมายลูกค้า', status: 'pending_l1', currentLevel: 1, cycleId: 1, resubmissionCount: 0 },
+      { id: 104, userId: 4, projectId: 20, otDate: '2026-06-28', startTime: '18:00', endTime: '20:00', hours: 2, otType: 'weekday', reason: 'ทำเอกสารสรุปโครงการ', status: 'rejected', currentLevel: 1, cycleId: 1, resubmissionCount: 0 },
+      { id: 105, userId: 6, projectId: 23, otDate: '2026-07-01', startTime: '18:00', endTime: '21:00', hours: 3, otType: 'weekday', reason: 'สรุปงานประจำเดือนให้ทันปิดรอบ', status: 'approved', currentLevel: 2, cycleId: 1, resubmissionCount: 0 },
+      { id: 106, userId: 4, projectId: 22, otDate: '2026-07-15', startTime: '18:00', endTime: '19:30', hours: 1.5, otType: 'weekday', reason: 'แก้ไขข้อบกพร่องระบบหลังส่งมอบ', status: 'pending_l1', currentLevel: 1, cycleId: 1, resubmissionCount: 0 },
+    ],
+    approvals: [
+      { id: 1001, requestId: 101, level: 1, approverId: 3, status: 'approved', comment: 'เร่งงานจริง อนุมัติ', decidedAt: '2026-07-11T09:00:00' },
+      { id: 1002, requestId: 101, level: 2, approverId: 2, status: 'pending', comment: null, decidedAt: null },
+      { id: 1004, requestId: 102, level: 1, approverId: 3, status: 'approved', comment: 'ตรวจสอบแล้ว', decidedAt: '2026-07-06T09:00:00' },
+      { id: 1005, requestId: 102, level: 2, approverId: 2, status: 'approved', comment: 'อนุมัติ', decidedAt: '2026-07-06T14:00:00' },
+      { id: 1007, requestId: 103, level: 1, approverId: 5, status: 'pending', comment: null, decidedAt: null },
+      { id: 1008, requestId: 103, level: 2, approverId: 2, status: 'pending', comment: null, decidedAt: null },
+      { id: 1010, requestId: 104, level: 1, approverId: 3, status: 'rejected', comment: 'เหตุผลไม่ชัดเจน กรุณาระบุรายละเอียดงานเพิ่มเติม', decidedAt: '2026-06-29T08:30:00' },
+      { id: 1011, requestId: 104, level: 2, approverId: 2, status: 'superseded', comment: null, decidedAt: null },
+      { id: 1013, requestId: 105, level: 1, approverId: 5, status: 'approved', comment: 'อนุมัติ', decidedAt: '2026-07-02T09:00:00' },
+      { id: 1014, requestId: 105, level: 2, approverId: 2, status: 'approved', comment: 'อนุมัติ', decidedAt: '2026-07-02T14:00:00' },
+      { id: 1016, requestId: 106, level: 1, approverId: 3, status: 'pending', comment: null, decidedAt: null },
+      { id: 1017, requestId: 106, level: 2, approverId: 2, status: 'pending', comment: null, decidedAt: null },
+    ],
+    nextRequestId: 200,
+    nextApprovalId: 2000,
+    seedVersion: 5,
+  };
+
+  const SEED_VERSION = 5; // เพิ่มเลขนี้ทุกครั้งที่แก้ mock data เพื่อบังคับ reseed localStorage เก่า
+
+  function loadDb() {
+    const raw = localStorage.getItem('ot_mock_db');
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed.seedVersion === SEED_VERSION) return parsed;
+      } catch { /* fall through to reseed */ }
+    }
+    const fresh = JSON.parse(JSON.stringify(OT_SEED));
+    localStorage.setItem('ot_mock_db', JSON.stringify(fresh));
+    return fresh;
+  }
+  function esc(str) { if (str == null) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  const TYPE_LABEL = { weekday: 'OT วันทำงานปกติ', holiday: 'OT วันหยุด' };
+  // "วันนี้" จำลองไว้กลางรอบเดือน ก.ค. 2026 เพื่อให้ตัวนับถอยหลังสาธิตได้สมจริง โดยไม่ผูกกับนาฬิกาเครื่องจริง
+  const MOCK_NOW = new Date('2026-07-14T10:00:00');
+
+  let db = loadDb();
+  let allRows = [];
+
+  function renderCycleBanner() {
+    const cycle = db.cycles.find(c => c.status === 'open');
+    const cutoff = new Date(cycle.cutoffDate + 'T23:59:00');
+    const days = Math.max(0, Math.ceil((cutoff - MOCK_NOW) / (1000 * 60 * 60 * 24)));
+    document.getElementById('cycleBanner').innerHTML = `
+      <div class="cycle-item"><div class="cycle-label">รอบปัจจุบัน</div><div class="cycle-value">${cycle.month}/${cycle.year}</div></div>
+      <div class="cycle-item"><div class="cycle-label">วันตัดรอบ</div><div class="cycle-value">${cycle.cutoffDate}</div></div>
+      <div class="cycle-item countdown"><div class="cycle-label">เหลืออีก</div><div class="cycle-value">${days} วัน</div></div>
+    `;
+  }
+
+  function populateYears(rows) {
+    const years = [...new Set(rows.map(r => Number(r.otDate.slice(0, 4))))].sort((a, b) => b - a);
+    const sel = document.getElementById('filterYear');
+    sel.innerHTML = '<option value="">All Years</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+  }
+
+  function loadRows() {
+    db = loadDb();
+    allRows = db.requests.filter(r => r.status === 'approved').sort((a, b) => b.otDate.localeCompare(a.otDate));
+    populateYears(allRows);
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const year = document.getElementById('filterYear').value;
+    const month = document.getElementById('filterMonth').value;
+
+    const filtered = allRows.filter(r => {
+      const user = db.users.find(u => u.id === r.userId);
+      const team = db.teams.find(t => t.id === user.teamId);
+      const proj = db.projects.find(p => p.id === r.projectId);
+      const matchSearch = !q ||
+        user.name.toLowerCase().includes(q) ||
+        (team && team.name.toLowerCase().includes(q)) ||
+        proj.name.toLowerCase().includes(q);
+      const matchYear = !year || Number(r.otDate.slice(0, 4)) === Number(year);
+      const matchMonth = !month || Number(r.otDate.slice(5, 7)) === Number(month);
+      return matchSearch && matchYear && matchMonth;
+    });
+
+    renderTable(filtered);
+  }
+
+  function renderTable(rows) {
+    document.getElementById('rowCount').textContent = rows.length + ' รายการ';
+    const tbody = document.getElementById('tableBody');
+    if (rows.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">ไม่พบรายการ</td></tr>'; return; }
+
+    tbody.innerHTML = rows.map(r => {
+      const user = db.users.find(u => u.id === r.userId);
+      const team = db.teams.find(t => t.id === user.teamId);
+      const proj = db.projects.find(p => p.id === r.projectId);
+      const cycle = db.cycles.find(c => c.id === r.cycleId);
+      return `
+        <tr>
+          <td>${esc(user.name)}</td>
+          <td>${esc(team ? team.name : '-')}</td>
+          <td>${esc(proj.name)}</td>
+          <td>${r.otDate}</td>
+          <td>${r.hours} ชม.</td>
+          <td>${TYPE_LABEL[r.otType]}</td>
+          <td><span class="badge badge-done">${cycle.month}/${cycle.year}</span></td>
+          <td><button class="btn-table btn-detail" onclick="location.href='/ot-document?requestId=${r.id}'">ดูเอกสาร</button></td>
+        </tr>`;
+    }).join('');
+  }
+
+  document.getElementById('searchInput').addEventListener('input', applyFilters);
+  document.getElementById('filterYear').addEventListener('change', applyFilters);
+  document.getElementById('filterMonth').addEventListener('change', applyFilters);
+
+  renderCycleBanner();
+  loadRows();
+</script>

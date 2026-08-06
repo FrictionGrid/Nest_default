@@ -29,6 +29,7 @@ import { ProfileModule } from './profile/profile.module';
 import { ActivityLogModule } from './activity_log/activity_log.module';
 import { ChatbotModule } from './chatbot/chatbot.module';
 import { FeedbackModule } from './feedback/feedback.module';
+import { OtModule } from './ot/ot.module';
 import { UserContextMiddleware } from './common/middleware/user-context.middleware';
 import { DocumentType } from './database/entities/document_type.entity';
 import { ProjectDocument } from './database/entities/project_document.entity';
@@ -72,6 +73,7 @@ import { Feedback } from './database/entities/feedback.entity';
     ActivityLogModule,
     ChatbotModule,
     FeedbackModule,
+    OtModule,
   ],
   providers: [
     // ── 5. Rate Limiting Guard (global) ──────────────────────────────────────

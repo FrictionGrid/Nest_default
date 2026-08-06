@@ -18,6 +18,9 @@ const PAGE_ROUTES: Record<string, string> = {
   'chatbot':          'GET:/chatbot',
   'feedback':         'GET:/feedback',
   'feedback-inbox':   'GET:/feedback/inbox',
+  'ot':                     'GET:/ot',
+  'ot-approval':            'GET:/ot-approval',
+  'ot-summary':             'GET:/ot-summary',
 };
 
 @Injectable()

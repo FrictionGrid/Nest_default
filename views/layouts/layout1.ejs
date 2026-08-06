@@ -69,6 +69,15 @@
         <% if (locals.visibleMenus?.['feedback-inbox']) { %>
           <a href="/feedback/inbox" class="<%= pageTitle === 'Feedback Inbox' ? 'active' : '' %>">Feedback Inbox</a>
         <% } %>
+        <% if (locals.visibleMenus?.['ot']) { %>
+          <a href="/ot" class="<%= pageTitle === 'My OT' ? 'active' : '' %>">My OT</a>
+        <% } %>
+        <% if (locals.visibleMenus?.['ot-approval']) { %>
+          <a href="/ot-approval" class="<%= pageTitle === 'Approve OT' ? 'active' : '' %>">Approve OT</a>
+        <% } %>
+        <% if (locals.visibleMenus?.['ot-summary']) { %>
+          <a href="/ot-summary" class="<%= pageTitle === 'OT Summary' ? 'active' : '' %>">OT Summary</a>
+        <% } %>
       </nav>
     </aside>
 
@@ -106,6 +115,11 @@
       _hamburger.addEventListener('click', () => _sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
       _sidebarOverlay.addEventListener('click', closeSidebar);
       document.querySelectorAll('.sidebar .menu a').forEach(a => a.addEventListener('click', closeSidebar));
+
+      // แต่ละคลิกเมนูคือการโหลดหน้าใหม่ทั้งหน้า (ไม่ใช่ SPA) ทำให้ scroll ของ .sidebar
+      // รีเซ็ตกลับไปบนสุดทุกครั้ง ทั้งที่เมนูที่ active อยู่ลึกลงไปด้านล่าง — เลื่อนให้เห็นเมนูที่ active แทน
+      const _activeLink = _sidebar.querySelector('.menu a.active');
+      if (_activeLink) _activeLink.scrollIntoView({ block: 'center' });
     })();
   </script>
 </body>

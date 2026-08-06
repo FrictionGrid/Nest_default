@@ -1,0 +1,369 @@
+<link rel="stylesheet" href="/css/tools/table.css" />
+<style>
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; }
+  .badge-progress { background: rgba(65,121,191,0.12); color: #2a5fa0; }
+  .badge-late     { background: rgba(220,53,69,0.12);  color: #b91c1c; }
+  .badge-done     { background: rgba(53,179,126,0.12); color: #1a7a54; }
+
+  .form-group2 { display: flex; flex-direction: column; gap: 6px; }
+  .form-group2 label { font-size: 14px; font-weight: 700; color: #4a6483; }
+  .form-group2 input, .form-group2 select, .form-group2 textarea {
+    height: 40px; border: 1px solid #cdd9e8; border-radius: 10px; padding: 0 14px;
+    font-size: 15px; color: var(--text); outline: none; transition: border 0.2s; background: #fff; font-family: inherit;
+  }
+  .form-group2 textarea { height: auto; padding: 10px 14px; resize: vertical; min-height: 70px; }
+  .form-group2 input:focus, .form-group2 select:focus, .form-group2 textarea:focus { border-color: #4179bf; }
+  .form-group1 { grid-column: span 2; }
+  .hours-preview { grid-column: span 2; font-size: 13px; font-weight: 700; color: var(--accent); margin-top: -10px; }
+
+  .trail-step { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid #eef3f8; }
+  .trail-step:last-child { border-bottom: none; }
+  .trail-dot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+  .trail-dot.approved { background: var(--success); color: var(--success-text); }
+  .trail-dot.rejected { background: var(--danger); color: var(--danger-text); }
+  .trail-dot.superseded { background: #eef1f6; color: #9aa8ba; }
+  .trail-dot.pending { background: var(--info); color: var(--info-text); }
+  .trail-body { flex: 1; }
+  .trail-title { font-weight: 700; color: var(--text); font-size: 14px; }
+  .trail-meta { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .trail-comment { font-size: 13px; color: var(--text); margin-top: 6px; background: #f7fafd; border-radius: 8px; padding: 8px 10px; }
+</style>
+
+<section class="content">
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M21 21L16.65 16.65M10.5 18C14.6421 18 18 14.6421 18 10.5C18 6.35786 14.6421 3 10.5 3C6.35786 3 3 6.35786 3 10.5C3 14.6421 6.35786 18 10.5 18Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      <input type="text" id="searchInput" placeholder="Search Project, Reason..." />
+    </div>
+    <select id="filterYear" class="filter-box"><option value="">All Years</option></select>
+    <select id="filterMonth" class="filter-box">
+      <option value="">All Months</option>
+      <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+      <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+      <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+      <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+    </select>
+    <button class="add-table-box" id="addBtn"><span style="font-size:20px;line-height:1;">+</span> ยื่นคำขอ OT ใหม่</button>
+  </div>
+
+  <div class="card1">
+    <div class="table-header">
+      <h3>ประวัติคำขอ OT ของฉัน</h3>
+      <div class="table-count" id="reqCount">Loading...</div>
+    </div>
+    <div class="table-body">
+      <table>
+        <colgroup>
+          <col style="width: 12%;" /><col style="width: 22%;" /><col style="width: 14%;" />
+          <col style="width: 10%;" /><col style="width: 14%;" /><col style="width: 12%;" /><col style="width: 16%;" />
+        </colgroup>
+        <thead>
+          <tr><th>วันที่</th><th>โปรเจค</th><th>เวลา</th><th>ชั่วโมง</th><th>ประเภท</th><th>สถานะ</th><th>การดำเนินการ</th></tr>
+        </thead>
+        <tbody id="tableBody"><tr><td colspan="7" class="loading-state">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Modal: Add -->
+<div class="modal-content" id="modalOverlay">
+  <div class="modal">
+    <h2>ยื่นคำขอ OT ใหม่</h2>
+    <div class="form-bar">
+      <div class="form-group2 form-group1">
+        <label>โปรเจค</label>
+        <select id="fieldProject"></select>
+      </div>
+    </div>
+    <div class="form-bar">
+      <div class="form-group2">
+        <label>วันที่ทำ OT</label>
+        <input type="date" id="fieldDate" />
+      </div>
+      <div class="form-group2">
+        <label>ประเภท OT</label>
+        <select id="fieldType">
+          <option value="weekday">OT วันทำงานปกติ</option>
+          <option value="holiday">OT วันหยุด</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-bar">
+      <div class="form-group2">
+        <label>เวลาเริ่ม</label>
+        <input type="time" id="fieldStart" />
+      </div>
+      <div class="form-group2">
+        <label>เวลาสิ้นสุด</label>
+        <input type="time" id="fieldEnd" />
+      </div>
+      <div class="hours-preview" id="hoursPreview">ชั่วโมงรวม: -</div>
+    </div>
+    <div class="form-bar">
+      <div class="form-group2 form-group1">
+        <label>เหตุผล</label>
+        <textarea id="fieldReason" placeholder="ระบุเหตุผลที่ต้องทำ OT"></textarea>
+      </div>
+    </div>
+    <div class="modal-spacing">
+      <button class="btn-cancel" id="cancelBtn">Cancel</button>
+      <button class="btn-save" id="saveBtn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: approval trail -->
+<div class="modal-content" id="trailModal">
+  <div class="modal">
+    <h2>รายละเอียดการอนุมัติ</h2>
+    <div id="trailBody"></div>
+    <div class="modal-spacing"><button class="btn-cancel" onclick="closeTrail()">ปิด</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ==========================================================================
+  // Mock data ฝั่ง frontend ล้วน ๆ — ยังไม่มี backend/DB จริง เก็บ state ไว้ที่
+  // localStorage (key: ot_mock_db) เพื่อให้การยื่น/อนุมัติเห็นผลข้ามหน้าได้
+  // ตอนต่อ backend จริง ให้ลบ seed + localStorage ทั้งหมดนี้ แล้วเปลี่ยนเป็น fetch('/ot/api/...')
+  // ==========================================================================
+  const CURRENT_USER_ID = 4; // engineer1 (Team 1) — mock ผู้ใช้ปัจจุบัน (ของจริงจะมาจาก session)
+
+  // ผู้ใช้/ทีม/โปรเจคด้านล่างดึงมาจากข้อมูลจริงในระบบ (users/team/project_incoming) ไม่ใช่ชื่อสมมติ
+  // Approval chain ตอนนี้เหลือ 2 ขั้น (ตัดขั้น 3 ออก)
+  const OT_SEED = {
+    users: [
+      { id: 1, name: 'adminsystem', roleLabel: 'Admin System', teamId: null, approverLevel1Id: null, approverLevel2Id: null },
+      { id: 2, name: 'Manager', roleLabel: 'ผู้จัดการ (ผู้อนุมัติขั้น 2)', teamId: null, approverLevel1Id: null, approverLevel2Id: null },
+      { id: 3, name: 'head_engineer1', roleLabel: 'หัวหน้าทีม Team 1 (ผู้อนุมัติขั้น 1)', teamId: 1, approverLevel1Id: null, approverLevel2Id: null },
+      { id: 4, name: 'engineer1', roleLabel: 'วิศวกร Team 1 (พนักงาน)', teamId: 1, approverLevel1Id: 3, approverLevel2Id: 2 },
+      { id: 5, name: 'head_engineer2', roleLabel: 'หัวหน้าทีม Team 2 (ผู้อนุมัติขั้น 1)', teamId: 2, approverLevel1Id: null, approverLevel2Id: null },
+      { id: 6, name: 'engineer2.1', roleLabel: 'วิศวกร Team 2 (พนักงาน)', teamId: 2, approverLevel1Id: 5, approverLevel2Id: 2 },
+    ],
+    teams: [
+      { id: 1, name: 'Team 1' },
+      { id: 2, name: 'Team 2' },
+    ],
+    projects: [
+      { id: 20, name: 'TRUE_PO14414' },
+      { id: 22, name: 'Terra_PO14415' },
+      { id: 23, name: 'DAMAC1' },
+    ],
+    cycles: [
+      { id: 0, year: 2026, month: 6, cutoffDate: '2026-06-20', status: 'locked' },
+      { id: 1, year: 2026, month: 7, cutoffDate: '2026-07-20', status: 'open' },
+    ],
+    requests: [
+      { id: 101, userId: 4, projectId: 20, otDate: '2026-07-10', startTime: '18:00', endTime: '20:30', hours: 2.5, otType: 'weekday', reason: 'เร่งติดตั้งระบบให้ทันกำหนดส่งมอบลูกค้า', status: 'pending_l2', currentLevel: 2, cycleId: 1, resubmissionCount: 0 },
+      { id: 102, userId: 4, projectId: 22, otDate: '2026-07-05', startTime: '19:00', endTime: '22:00', hours: 3, otType: 'weekday', reason: 'ตรวจสอบระบบหลังติดตั้งเสร็จ', status: 'approved', currentLevel: 2, cycleId: 1, resubmissionCount: 0 },
+      { id: 103, userId: 6, projectId: 23, otDate: '2026-07-12', startTime: '08:00', endTime: '17:00', hours: 9, otType: 'holiday', reason: 'เข้าไซต์งานวันหยุดตามนัดหมายลูกค้า', status: 'pending_l1', currentLevel: 1, cycleId: 1, resubmissionCount: 0 },
+      { id: 104, userId: 4, projectId: 20, otDate: '2026-06-28', startTime: '18:00', endTime: '20:00', hours: 2, otType: 'weekday', reason: 'ทำเอกสารสรุปโครงการ', status: 'rejected', currentLevel: 1, cycleId: 1, resubmissionCount: 0 },
+      { id: 105, userId: 6, projectId: 23, otDate: '2026-07-01', startTime: '18:00', endTime: '21:00', hours: 3, otType: 'weekday', reason: 'สรุปงานประจำเดือนให้ทันปิดรอบ', status: 'approved', currentLevel: 2, cycleId: 1, resubmissionCount: 0 },
+      { id: 106, userId: 4, projectId: 22, otDate: '2026-07-15', startTime: '18:00', endTime: '19:30', hours: 1.5, otType: 'weekday', reason: 'แก้ไขข้อบกพร่องระบบหลังส่งมอบ', status: 'pending_l1', currentLevel: 1, cycleId: 1, resubmissionCount: 0 },
+    ],
+    approvals: [
+      { id: 1001, requestId: 101, level: 1, approverId: 3, status: 'approved', comment: 'เร่งงานจริง อนุมัติ', decidedAt: '2026-07-11T09:00:00' },
+      { id: 1002, requestId: 101, level: 2, approverId: 2, status: 'pending', comment: null, decidedAt: null },
+      { id: 1004, requestId: 102, level: 1, approverId: 3, status: 'approved', comment: 'ตรวจสอบแล้ว', decidedAt: '2026-07-06T09:00:00' },
+      { id: 1005, requestId: 102, level: 2, approverId: 2, status: 'approved', comment: 'อนุมัติ', decidedAt: '2026-07-06T14:00:00' },
+      { id: 1007, requestId: 103, level: 1, approverId: 5, status: 'pending', comment: null, decidedAt: null },
+      { id: 1008, requestId: 103, level: 2, approverId: 2, status: 'pending', comment: null, decidedAt: null },
+      { id: 1010, requestId: 104, level: 1, approverId: 3, status: 'rejected', comment: 'เหตุผลไม่ชัดเจน กรุณาระบุรายละเอียดงานเพิ่มเติม', decidedAt: '2026-06-29T08:30:00' },
+      { id: 1011, requestId: 104, level: 2, approverId: 2, status: 'superseded', comment: null, decidedAt: null },
+      { id: 1013, requestId: 105, level: 1, approverId: 5, status: 'approved', comment: 'อนุมัติ', decidedAt: '2026-07-02T09:00:00' },
+      { id: 1014, requestId: 105, level: 2, approverId: 2, status: 'approved', comment: 'อนุมัติ', decidedAt: '2026-07-02T14:00:00' },
+      { id: 1016, requestId: 106, level: 1, approverId: 3, status: 'pending', comment: null, decidedAt: null },
+      { id: 1017, requestId: 106, level: 2, approverId: 2, status: 'pending', comment: null, decidedAt: null },
+    ],
+    nextRequestId: 200,
+    nextApprovalId: 2000,
+    seedVersion: 5,
+  };
+
+  const SEED_VERSION = 5; // เพิ่มเลขนี้ทุกครั้งที่แก้ mock data เพื่อบังคับ reseed localStorage เก่า
+
+  function loadDb() {
+    const raw = localStorage.getItem('ot_mock_db');
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed.seedVersion === SEED_VERSION) return parsed;
+      } catch { /* fall through to reseed */ }
+    }
+    const fresh = JSON.parse(JSON.stringify(OT_SEED));
+    localStorage.setItem('ot_mock_db', JSON.stringify(fresh));
+    return fresh;
+  }
+  function saveDb(db) { localStorage.setItem('ot_mock_db', JSON.stringify(db)); }
+
+  const STATUS_LABEL = {
+    pending_l1: { label: 'รออนุมัติ ขั้น 1', cls: 'badge-progress' },
+    pending_l2: { label: 'รออนุมัติ ขั้น 2', cls: 'badge-progress' },
+    pending_l3: { label: 'รออนุมัติ ขั้น 3', cls: 'badge-progress' },
+    approved:   { label: 'อนุมัติครบแล้ว', cls: 'badge-done' },
+    rejected:   { label: 'ไม่อนุมัติ', cls: 'badge-late' },
+  };
+  const TYPE_LABEL = { weekday: 'OT วันทำงานปกติ', holiday: 'OT วันหยุด' };
+
+  function esc(str) { if (str == null) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function computeHours(start, end) {
+    const [sh, sm] = start.split(':').map(Number);
+    const [eh, em] = end.split(':').map(Number);
+    let minutes = (eh * 60 + em) - (sh * 60 + sm);
+    if (minutes <= 0) minutes += 24 * 60;
+    return Math.round((minutes / 60) * 100) / 100;
+  }
+
+  let db = loadDb();
+  let allRows = [];
+
+  function initProjectSelect() {
+    document.getElementById('fieldProject').innerHTML = db.projects.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  }
+
+  function updateHoursPreview() {
+    const s = document.getElementById('fieldStart').value;
+    const e = document.getElementById('fieldEnd').value;
+    const el = document.getElementById('hoursPreview');
+    el.textContent = (s && e) ? 'ชั่วโมงรวม: ' + computeHours(s, e) + ' ชม.' : 'ชั่วโมงรวม: -';
+  }
+  document.getElementById('fieldStart').addEventListener('input', updateHoursPreview);
+  document.getElementById('fieldEnd').addEventListener('input', updateHoursPreview);
+
+  function populateYears(rows) {
+    const years = [...new Set(rows.map(r => Number(r.otDate.slice(0, 4))))].sort((a, b) => b - a);
+    const sel = document.getElementById('filterYear');
+    sel.innerHTML = '<option value="">All Years</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+  }
+
+  function loadRequests() {
+    db = loadDb();
+    allRows = db.requests.filter(r => r.userId === CURRENT_USER_ID).sort((a, b) => b.otDate.localeCompare(a.otDate));
+    populateYears(allRows);
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const year = document.getElementById('filterYear').value;
+    const month = document.getElementById('filterMonth').value;
+
+    const filtered = allRows.filter(r => {
+      const proj = db.projects.find(p => p.id === r.projectId);
+      const matchSearch = !q || (proj && proj.name.toLowerCase().includes(q)) || r.reason.toLowerCase().includes(q);
+      const matchYear = !year || Number(r.otDate.slice(0, 4)) === Number(year);
+      const matchMonth = !month || Number(r.otDate.slice(5, 7)) === Number(month);
+      return matchSearch && matchYear && matchMonth;
+    });
+
+    renderTable(filtered);
+  }
+
+  function renderTable(rows) {
+    document.getElementById('reqCount').textContent = rows.length + ' รายการ';
+
+    const tbody = document.getElementById('tableBody');
+    if (rows.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">ไม่พบข้อมูล</td></tr>'; return; }
+
+    tbody.innerHTML = rows.map(r => {
+      const s = STATUS_LABEL[r.status];
+      const proj = db.projects.find(p => p.id === r.projectId);
+      const actions = [`<button class="btn-table btn-detail" onclick="openTrail(${r.id})">รายละเอียด</button>`];
+      return `
+        <tr>
+          <td>${r.otDate}</td>
+          <td>${esc(proj ? proj.name : '-')}</td>
+          <td>${r.startTime}-${r.endTime}</td>
+          <td>${r.hours} ชม.</td>
+          <td>${TYPE_LABEL[r.otType]}</td>
+          <td><span class="badge ${s.cls}">${s.label}</span></td>
+          <td><div class="button-spacing">${actions.join('')}</div></td>
+        </tr>`;
+    }).join('');
+  }
+
+  document.getElementById('searchInput').addEventListener('input', applyFilters);
+  document.getElementById('filterYear').addEventListener('change', applyFilters);
+  document.getElementById('filterMonth').addEventListener('change', applyFilters);
+
+  function openTrail(requestId) {
+    const req = db.requests.find(r => r.id === requestId);
+    const trail = db.approvals.filter(a => a.requestId === requestId).sort((a,b)=>a.level-b.level);
+    const html = trail.map(a => {
+      const approver = db.users.find(u => u.id === a.approverId);
+      const dotLabel = { approved: 'อนุมัติ', rejected: 'ไม่อนุมัติ', pending: 'รอ', superseded: 'ยกเลิก' }[a.status];
+      return `
+        <div class="trail-step">
+          <div class="trail-dot ${a.status}">${a.level}</div>
+          <div class="trail-body">
+            <div class="trail-title">ขั้นที่ ${a.level} — ${esc(approver ? approver.name : '-')} <span style="font-weight:400;color:var(--muted);">(${dotLabel})</span></div>
+            <div class="trail-meta">${a.decidedAt ? 'ตัดสินใจเมื่อ ' + a.decidedAt.replace('T',' ') : 'ยังไม่ดำเนินการ'}</div>
+            ${a.comment ? `<div class="trail-comment">${esc(a.comment)}</div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+    document.getElementById('trailBody').innerHTML = `<div style="margin-bottom:12px;font-size:14px;color:var(--muted);">คำขอวันที่ ${req.otDate} — เหตุผล: ${esc(req.reason)}</div>` + html;
+    document.getElementById('trailModal').classList.add('open');
+  }
+  function closeTrail() { document.getElementById('trailModal').classList.remove('open'); }
+
+  const overlay = document.getElementById('modalOverlay');
+
+  function openAdd() {
+    clearFields();
+    overlay.classList.add('open');
+  }
+
+  function clearFields() {
+    ['fieldDate','fieldStart','fieldEnd','fieldReason'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fieldType').value = 'weekday';
+    updateHoursPreview();
+  }
+
+  document.getElementById('cancelBtn').addEventListener('click', () => overlay.classList.remove('open'));
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('open'); });
+  document.getElementById('addBtn').addEventListener('click', openAdd);
+
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    const user = db.users.find(u => u.id === CURRENT_USER_ID);
+    if (!user.approverLevel1Id) { showToast('ผู้ใช้นี้ยังไม่ได้ตั้งค่าผู้อนุมัติขั้น 1 — กรุณาติดต่อแอดมิน'); return; }
+
+    const projectId = Number(document.getElementById('fieldProject').value);
+    const otDate = document.getElementById('fieldDate').value;
+    const startTime = document.getElementById('fieldStart').value;
+    const endTime = document.getElementById('fieldEnd').value;
+    const otType = document.getElementById('fieldType').value;
+    const reason = document.getElementById('fieldReason').value.trim();
+    if (!otDate || !startTime || !endTime || !reason) { showToast('กรุณากรอกข้อมูลให้ครบ'); return; }
+
+    const hours = computeHours(startTime, endTime);
+    const cycle = db.cycles.find(c => c.status === 'open');
+    const chain = [[1, user.approverLevel1Id], [2, user.approverLevel2Id]];
+
+    const newId = db.nextRequestId++;
+    db.requests.push({ id: newId, userId: CURRENT_USER_ID, projectId, otDate, startTime, endTime, hours, otType, reason, status: 'pending_l1', currentLevel: 1, cycleId: cycle.id, resubmissionCount: 0 });
+    chain.forEach(([level, approverId]) => {
+      db.approvals.push({ id: db.nextApprovalId++, requestId: newId, level, approverId, status: 'pending', comment: null, decidedAt: null });
+    });
+    showToast('ยื่นคำขอ OT เรียบร้อย ส่งเข้าคิวผู้อนุมัติขั้น 1 แล้ว');
+
+    saveDb(db);
+    overlay.classList.remove('open');
+    loadRequests();
+  });
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  initProjectSelect();
+  loadRequests();
+</script>

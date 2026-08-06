@@ -183,15 +183,14 @@ export class ManageTeamService {
   }
 
   async findTasksScoped(userId: number) {
-    const teamIds    = await this.getTeamIdsByUser(userId);
-    const projectIds = await this.getProjectIdsByTeams(teamIds);
-    if (projectIds.length === 0) return [];
+    const teamIds = await this.getTeamIdsByUser(userId);
+    if (teamIds.length === 0) return [];
 
     const rows = await this.taskRepo
       .createQueryBuilder('t')
       .leftJoin('t.user', 'u')
       .leftJoin('t.project', 'p')
-      .leftJoin('user_teams', 'ut', 'ut.user_id = t.user_id')
+      .innerJoin('user_teams', 'ut', 'ut.user_id = t.user_id AND ut.team_id IN (:...teamIds)', { teamIds })
       .leftJoin('team', 'tm', 'tm.id = ut.team_id')
       .select('t.id', 'id')
       .addSelect('t.user_id', 'user_id')
@@ -210,7 +209,6 @@ export class ManageTeamService {
       .addSelect('p.project_name', 'project_name')
       .addSelect('tm.id', 'team_id')
       .addSelect('tm.name', 'team_name')
-      .where('t.project_id IN (:...projectIds)', { projectIds })
       .orderBy('t.id', 'ASC')
       .getRawMany();
 
@@ -276,8 +274,10 @@ export class ManageTeamService {
   async assertTaskInUserTeam(taskId: number, userId: number): Promise<void> {
     const task = await this.taskRepo.findOneBy({ id: taskId });
     if (!task) throw new ForbiddenException('Task not found');
-    const projectIds = await this.getProjectIdsByTeams(await this.getTeamIdsByUser(userId));
-    if (!projectIds.includes(task.project_id)) {
+    const teamIds = await this.getTeamIdsByUser(userId);
+    const assigneeTeamIds = await this.getTeamIdsByUser(task.user_id);
+    const sharesTeam = assigneeTeamIds.some((id) => teamIds.includes(id));
+    if (!sharesTeam) {
       throw new ForbiddenException('Access denied: task not in your team');
     }
   }

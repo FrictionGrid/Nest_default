@@ -80,10 +80,12 @@
   .tl-c-paid    { background:#35B37E; border-color:#35B37E; box-shadow:0 0 0 4px rgba(53,179,126,.18); }
   .tl-c-pending { background:#F4A62A; border-color:#F4A62A; box-shadow:0 0 0 4px rgba(244,166,42,.18); }
   .tl-c-upcoming { background:var(--card); border-color:#CBD5E1; }
+  .tl-c-delayed { background:#E45757; border-color:#E45757; box-shadow:0 0 0 4px rgba(228,87,87,.18); }
 
   .tl-line { flex:1; height:2px; min-width:40px; background:#e2e8f0; margin-top:9px; flex-shrink:0; }
   .tl-line-paid { background:#35B37E; }
   .tl-line-pending { background:#F4A62A; }
+  .tl-line-delayed { background:#E45757; }
 
   .tl-info { margin-top:6px; text-align:center; }
   .tl-date { font-size:10px; color:var(--muted); white-space:nowrap; }
@@ -92,6 +94,7 @@
   .tl-dot-paid    { color:#1a7a54; }
   .tl-dot-pending { color:#9a6000; }
   .tl-dot-upcoming{ color:#94A3B8; }
+  .tl-dot-delayed { color:#b91c1c; }
 
   /* No installments */
   .no-inst-state {
@@ -183,6 +186,15 @@
   };
   const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
+  function isOverdue(inst) {
+    if (inst.status === 'paid' || !inst.due_date) return false;
+    const due = new Date(inst.due_date);
+    const today = new Date();
+    due.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return due < today;
+  }
+
   const ICON_CHECK = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`;
   const ICON_WARN  = `<svg width="9"  height="9"  viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
 
@@ -220,20 +232,21 @@
 
     let html = `<div class="tl-wrap"><div class="tl-track">`;
     items.forEach((inst, idx) => {
+      const status = isOverdue(inst) ? 'delayed' : inst.status;
       const isLast = idx === items.length - 1 && extra <= 0;
-      const icon   = inst.status === 'paid' ? ICON_CHECK : inst.status === 'pending' ? ICON_WARN : '';
-      const dotLbl = inst.status === 'paid' ? 'Paid' : inst.status === 'pending' ? 'Pending' : 'Upcoming';
+      const icon   = status === 'paid' ? ICON_CHECK : (status === 'pending' || status === 'delayed') ? ICON_WARN : '';
+      const dotLbl = status === 'paid' ? 'Paid' : status === 'pending' ? 'Pending' : status === 'delayed' ? 'Delayed' : 'Upcoming';
       html += `
         <div class="tl-node">
-          <div class="tl-circle tl-c-${inst.status}">${icon}</div>
+          <div class="tl-circle tl-c-${status}">${icon}</div>
           <div class="tl-info">
             <div class="tl-date">${fmtDate(inst.due_date)}</div>
             <div class="tl-amt">฿${fmtShort(inst.amount)}</div>
-            <div class="tl-status-dot tl-dot-${inst.status}">${dotLbl}</div>
+            <div class="tl-status-dot tl-dot-${status}">${dotLbl}</div>
           </div>
         </div>`;
       if (!isLast) {
-        const lineClass = inst.status === 'paid' ? ' tl-line-paid' : inst.status === 'pending' ? ' tl-line-pending' : '';
+        const lineClass = status === 'paid' ? ' tl-line-paid' : status === 'pending' ? ' tl-line-pending' : status === 'delayed' ? ' tl-line-delayed' : '';
         html += `<div class="tl-line${lineClass}"></div>`;
       }
     });
