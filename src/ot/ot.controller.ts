@@ -11,19 +11,19 @@ export class OtController {
   @Get('ot')
   @Render('ot')
   myOt() {
-    return { pageTitle: 'My OT', pageSubtitle: 'ยื่นคำขอ OT และดูสถานะของฉัน' };
+    return { pageTitle: 'My OT', pageSubtitle: 'ยื่นคำขอ OT และดูสถานะของฉัน (ยังไม่พร้อมใช้งาน)' };
   }
 
   @Get('ot-approval')
   @Render('ot_approval')
   approveOt() {
-    return { pageTitle: 'Approve OT', pageSubtitle: 'คิวรออนุมัติ OT ของฉัน' };
+    return { pageTitle: 'Approve OT', pageSubtitle: 'คิวรออนุมัติ OT ของฉัน (ยังไม่พร้อมใช้งาน)' };
   }
 
   @Get('ot-summary')
   @Render('ot_summary')
   otSummary() {
-    return { pageTitle: 'OT Summary', pageSubtitle: 'ภาพรวม OT ที่อนุมัติครบแล้วในรอบปัจจุบัน' };
+    return { pageTitle: 'OT Summary', pageSubtitle: 'ภาพรวม OT ที่อนุมัติครบแล้วในรอบปัจจุบัน (ยังไม่พร้อมใช้งาน)' };
   }
 
   @Get('ot-document')
