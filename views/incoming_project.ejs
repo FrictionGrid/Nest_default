@@ -533,7 +533,11 @@
   async function completeRow(id) {
     if (!confirm('Mark this project as completed?')) return;
     try {
-      await fetch(`${BASE}/${id}/complete`, { method: 'PUT' });
+      const res = await fetch(`${BASE}/${id}/complete`, { method: 'PUT' });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP ${res.status}`);
+      }
       showToast('Project marked as completed');
       await loadProjects();
     } catch (err) {

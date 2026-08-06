@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { ProjectIncoming } from '../../database/entities/project_incoming.entity';
 import { ProjectType } from '../../database/entities/project_type.entity';
+import { ProjectTeam, ProjectTeamStatus } from '../../database/entities/project_team.entity';
 import { CreateIncomingProjectDto } from '../dto/create-incoming_project.dto';
 import { UpdateIncomingProjectDto } from '../dto/update-incoming_project.dto';
 import { ActivityLogService } from '../../activity_log/service/activity_log.service';
@@ -14,6 +15,8 @@ export class IncomingProjectService {
     private readonly repo: Repository<ProjectIncoming>,
     @InjectRepository(ProjectType)
     private readonly typeRepo: Repository<ProjectType>,
+    @InjectRepository(ProjectTeam)
+    private readonly projectTeamRepo: Repository<ProjectTeam>,
     private readonly logService: ActivityLogService,
   ) {}
 // ดึงจาก DB ที่ประกาศมาใช้
@@ -58,6 +61,15 @@ export class IncomingProjectService {
   }
 
   async complete(id: number, userId?: number, userRole?: string) {
+    const teams = await this.projectTeamRepo.find({
+      where: { project_id: id },
+      relations: ['team'],
+    });
+    const notDone = teams.filter((t) => t.status !== ProjectTeamStatus.COMPLETED);
+    if (notDone.length > 0) {
+      const names = notDone.map((t) => t.team?.name ?? `Team #${t.team_id}`).join(', ');
+      throw new BadRequestException(`ยังปิดโปรเจกต์ไม่ได้ เนื่องจากทีม "${names}" ยังไม่เสร็จ`);
+    }
     await this.repo.update(id, { status: 'completed' });
     await this.logService.logIncomingProject('complete', id, { userId, userRole });
   }
