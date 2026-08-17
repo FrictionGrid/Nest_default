@@ -24,11 +24,11 @@ export class OtSummaryService {
   ) {}
 
   getSummaryPageMeta() {
-    return { pageTitle: 'OT Summary', pageSubtitle: 'ภาพรวม OT ที่อนุมัติครบแล้วในรอบปัจจุบัน' };
+    return { pageTitle: 'OT Summary', pageSubtitle: 'Overtime fully approved for the current cycle' };
   }
 
   getDocumentPageMeta() {
-    return { pageTitle: 'OT Document', pageSubtitle: 'เอกสาร OT ของคำขอนี้' };
+    return { pageTitle: 'OT Document', pageSubtitle: 'OT Documents' };
   }
 
   private formatDate(d: Date | string): string {

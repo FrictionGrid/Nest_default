@@ -13,7 +13,7 @@ export class MyOtController {
   @Get('ot')
   @Render('ot')
   myOt() {
-    return { pageTitle: 'My OT', pageSubtitle: 'ยื่นคำขอ OT และดูสถานะของฉัน' };
+    return { pageTitle: 'OT Request', pageSubtitle: 'Submit OT request and view my status' };
   }
 
   @Get('ot/api/projects')
