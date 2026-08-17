@@ -37,7 +37,7 @@
 
   <div class="card1">
     <div class="table-header">
-      <h3>คิวรออนุมัติ OT</h3>
+      <h3>OT Approval Queue</h3>
       <div class="table-count" id="queueCount">Loading...</div>
     </div>
     <div class="table-body">
@@ -47,7 +47,7 @@
           <col style="width:10%;" /><col style="width:8%;" /><col style="width:20%;" /><col style="width:16%;" />
         </colgroup>
         <thead>
-          <tr><th>พนักงาน</th><th>โปรเจค</th><th>วันที่</th><th>ชั่วโมง</th><th>ขั้น</th><th>เหตุผล</th><th>การดำเนินการ</th></tr>
+          <tr><th>Employee</th><th>Project</th><th>Date</th><th>Hours</th><th>Level</th><th>Reason</th><th>Action</th></tr>
         </thead>
         <tbody id="tableBody">
           <tr><td colspan="7" class="loading-state">Loading...</td></tr>
@@ -59,11 +59,11 @@
 
 <div class="modal-content" id="rejectModal">
   <div class="modal">
-    <h2>ไม่อนุมัติคำขอ</h2>
-    <p>ยืนยันไม่อนุมัติคำขอ OT นี้ — คำขอจะถูกปิดเป็นสถานะ "ไม่อนุมัติ" และพนักงานต้องยื่นคำขอใหม่</p>
+    <h2>Reject Request</h2>
+    <p>Confirm rejection of this OT request — the request will be closed with status "Rejected" and the employee will need to submit a new request.</p>
     <div class="modal-spacing">
-      <button class="btn-cancel" onclick="closeRejectModal()">ยกเลิก</button>
-      <button class="btn-save" style="background:#d14343;" onclick="confirmReject()">ยืนยันไม่อนุมัติ</button>
+      <button class="btn-cancel" onclick="closeRejectModal()">Cancel</button>
+      <button class="btn-save" style="background:#d14343;" onclick="confirmReject()">Confirm Reject</button>
     </div>
   </div>
 </div>
@@ -76,7 +76,7 @@
   function fmtDate(v) { return v ? String(v).slice(0, 10) : ''; }
 
   const LEVEL_CLS = { pending_level1: 'badge-level1', pending_level2: 'badge-level2' };
-  const LEVEL_TEXT = { pending_level1: 'ขั้น 1', pending_level2: 'ขั้น 2' };
+  const LEVEL_TEXT = { pending_level1: 'Level 1', pending_level2: 'Level 2' };
 
   let allRows = [];
   let rejectTargetId = null;
@@ -84,7 +84,7 @@
   async function fetchJson(url, options) {
     const res = await fetch(url, options);
     const body = await res.json().catch(() => null);
-    if (!res.ok) throw new Error((body && body.message) || 'เกิดข้อผิดพลาด');
+    if (!res.ok) throw new Error((body && body.message) || 'An error occurred');
     return body;
   }
 
@@ -125,23 +125,23 @@
   }
 
   function renderTable(rows) {
-    document.getElementById('queueCount').textContent = rows.length + ' รายการ';
+    document.getElementById('queueCount').textContent = rows.length + ' items';
     const tbody = document.getElementById('tableBody');
 
-    if (rows.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">ไม่มีรายการรออนุมัติของคุณ</td></tr>'; return; }
+    if (rows.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No pending requests for you</td></tr>'; return; }
 
     tbody.innerHTML = rows.map(row => `
       <tr>
         <td>${esc(row.userName || '-')}</td>
         <td>${esc(row.projectName || '-')}</td>
         <td>${fmtDate(row.otDate)}</td>
-        <td>${row.hours} ชม.</td>
+        <td>${row.hours} hrs</td>
         <td><span class="badge ${LEVEL_CLS[row.status]}">${LEVEL_TEXT[row.status]}</span></td>
         <td class="reason-cell" title="${esc(row.reason)}">${esc(row.reason)}</td>
         <td>
           <div class="button-spacing">
-            <button class="btn-table btn-approve" onclick="approveOne(${row.id})">อนุมัติ</button>
-            <button class="btn-table btn-reject" onclick="openRejectModal(${row.id})">ไม่อนุมัติ</button>
+            <button class="btn-table btn-approve" onclick="approveOne(${row.id})">Approve</button>
+            <button class="btn-table btn-reject" onclick="openRejectModal(${row.id})">Reject</button>
           </div>
         </td>
       </tr>`).join('');
@@ -154,7 +154,7 @@
   async function approveOne(id) {
     try {
       await fetchJson(`/ot-approval/api/requests/${id}/approve`, { method: 'POST' });
-      showToast('อนุมัติเรียบร้อย ส่งต่อขั้นถัดไปแล้ว');
+      showToast('Approved successfully. Forwarded to the next level.');
       loadQueue();
     } catch (err) {
       showToast(err.message);
@@ -170,7 +170,7 @@
     try {
       await fetchJson(`/ot-approval/api/requests/${rejectTargetId}/reject`, { method: 'POST' });
       closeRejectModal();
-      showToast('ไม่อนุมัติเรียบร้อย');
+      showToast('Rejected successfully');
       loadQueue();
     } catch (err) {
       showToast(err.message);

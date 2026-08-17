@@ -37,7 +37,7 @@
 
   <div class="card1">
     <div class="table-header">
-      <h3>รายการ OT ที่อนุมัติครบแล้ว</h3>
+      <h3>Fully Approved OT Requests</h3>
       <div class="table-count" id="rowCount">Loading...</div>
     </div>
     <div class="table-body">
@@ -47,7 +47,7 @@
           <col style="width:10%;" /><col style="width:8%;" /><col style="width:12%;" /><col style="width:8%;" /><col style="width:12%;" />
         </colgroup>
         <thead>
-          <tr><th>พนักงาน</th><th>หน่วยงาน</th><th>โปรเจค</th><th>วันที่</th><th>ชั่วโมง</th><th>ประเภท</th><th>รอบ</th><th>การดำเนินการ</th></tr>
+          <tr><th>Employee</th><th>Team</th><th>Project</th><th>Date</th><th>Hours</th><th>Type</th><th>Cycle</th><th>Action</th></tr>
         </thead>
         <tbody id="tableBody"><tr><td colspan="8" class="loading-state">Loading...</td></tr></tbody>
       </table>
@@ -57,13 +57,13 @@
 
 <script>
   // ==========================================================================
-  // ต่อ backend จริงแล้ว — ข้อมูลมาจาก /ot-summary/api/rows
-  // (OT ที่อนุมัติครบแล้วของทุกคน กรองตามรอบตัดวันที่ 20 ของเดือน)
+  // Connected to the real backend — data comes from /ot-summary/api/rows
+  // (fully approved OT for everyone, filtered by the monthly cutoff cycle on the 20th)
   // ==========================================================================
   function esc(str) { if (str == null) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function fmtDate(v) { return v ? String(v).slice(0, 10) : ''; }
 
-  const TYPE_LABEL = { weekday: 'OT วันทำงานปกติ', holiday: 'OT วันหยุด' };
+  const TYPE_LABEL = { weekday: 'Regular Weekday OT', holiday: 'Holiday OT' };
 
   let allRows = [];
   let currentCycle = null;
@@ -71,7 +71,7 @@
   async function fetchJson(url) {
     const res = await fetch(url);
     const body = await res.json().catch(() => null);
-    if (!res.ok) throw new Error((body && body.message) || 'เกิดข้อผิดพลาด');
+    if (!res.ok) throw new Error((body && body.message) || 'An error occurred');
     return body;
   }
 
@@ -79,9 +79,9 @@
     const cutoff = new Date(currentCycle.cutoffDate + 'T23:59:00');
     const days = Math.max(0, Math.ceil((cutoff - new Date()) / (1000 * 60 * 60 * 24)));
     document.getElementById('cycleBanner').innerHTML = `
-      <div class="cycle-item"><div class="cycle-label">รอบปัจจุบัน</div><div class="cycle-value">${currentCycle.month}/${currentCycle.year}</div></div>
-      <div class="cycle-item"><div class="cycle-label">วันตัดรอบ</div><div class="cycle-value">${currentCycle.cutoffDate}</div></div>
-      <div class="cycle-item countdown"><div class="cycle-label">เหลืออีก</div><div class="cycle-value">${days} วัน</div></div>
+      <div class="cycle-item"><div class="cycle-label">Current Cycle</div><div class="cycle-value">${currentCycle.month}/${currentCycle.year}</div></div>
+      <div class="cycle-item"><div class="cycle-label">Cutoff Date</div><div class="cycle-value">${currentCycle.cutoffDate}</div></div>
+      <div class="cycle-item countdown"><div class="cycle-label">Remaining</div><div class="cycle-value">${days} days</div></div>
     `;
   }
 
@@ -120,9 +120,9 @@
   }
 
   function renderTable(rows) {
-    document.getElementById('rowCount').textContent = rows.length + ' รายการ';
+    document.getElementById('rowCount').textContent = rows.length + ' items';
     const tbody = document.getElementById('tableBody');
-    if (rows.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">ไม่พบรายการ</td></tr>'; return; }
+    if (rows.length === 0) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No records found</td></tr>'; return; }
 
     tbody.innerHTML = rows.map(r => `
         <tr>
@@ -130,10 +130,10 @@
           <td>${esc(r.teamName || '-')}</td>
           <td>${esc(r.projectName || '-')}</td>
           <td>${fmtDate(r.otDate)}</td>
-          <td>${r.hours} ชม.</td>
+          <td>${r.hours} hrs</td>
           <td>${TYPE_LABEL[r.otType]}</td>
           <td><span class="badge badge-done">${currentCycle.month}/${currentCycle.year}</span></td>
-          <td><button class="btn-table btn-detail" onclick="location.href='/ot-document?requestId=${r.id}'">ดูเอกสาร</button></td>
+          <td><button class="btn-table btn-detail" onclick="location.href='/ot-document?requestId=${r.id}'">View Document</button></td>
         </tr>`).join('');
   }
 
