@@ -32,6 +32,22 @@
         <label>รหัสผ่านใหม่</label>
         <input type="password" name="password" placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน" />
       </div>
+      <div class="profile-field">
+        <label>ชื่อจริง</label>
+        <input type="text" name="first_name" value="<%= employeeProfile ? (employeeProfile.first_name || '') : '' %>" placeholder="ชื่อจริง" />
+      </div>
+      <div class="profile-field">
+        <label>นามสกุล</label>
+        <input type="text" name="last_name" value="<%= employeeProfile ? (employeeProfile.last_name || '') : '' %>" placeholder="นามสกุล" />
+      </div>
+      <div class="profile-field">
+        <label>ตำแหน่ง (Employee Title)</label>
+        <input type="text" name="employee_title" value="<%= employeeProfile ? (employeeProfile.employee_title || '') : '' %>" placeholder="ตำแหน่ง" />
+      </div>
+      <div class="profile-field">
+        <label>แผนก (Employee Department)</label>
+        <input type="text" name="employee_department" value="<%= employeeProfile ? (employeeProfile.employee_department || '') : '' %>" placeholder="แผนก" />
+      </div>
       <button type="submit" class="profile-save-btn">บันทึก</button>
     </form>
   </div>
@@ -41,8 +57,10 @@
   .profile-page {
     display: flex;
     justify-content: center;
+    align-items: flex-start;
     padding: 40px 24px;
-    min-height: calc(100vh - 76px);
+    height: calc(100vh - 76px);
+    overflow-y: auto;
   }
 
   .profile-card {

@@ -60,8 +60,7 @@
 <div class="modal-content" id="rejectModal">
   <div class="modal">
     <h2>ไม่อนุมัติคำขอ</h2>
-    <p>กรุณาระบุเหตุผลที่ไม่อนุมัติ (บังคับกรอก) — คำขอจะถูกส่งกลับให้พนักงานแก้ไขและยื่นใหม่</p>
-    <textarea id="rejectComment" placeholder="ระบุเหตุผล..."></textarea>
+    <p>ยืนยันไม่อนุมัติคำขอ OT นี้ — คำขอจะถูกปิดเป็นสถานะ "ไม่อนุมัติ" และพนักงานต้องยื่นคำขอใหม่</p>
     <div class="modal-spacing">
       <button class="btn-cancel" onclick="closeRejectModal()">ยกเลิก</button>
       <button class="btn-save" style="background:#d14343;" onclick="confirmReject()">ยืนยันไม่อนุมัติ</button>
@@ -72,104 +71,36 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const CURRENT_APPROVER_ID = 3; // head_engineer1 (Team 1) — mock ผู้อนุมัติปัจจุบัน (ของจริงจะมาจาก session)
 
-  // ผู้ใช้/ทีม/โปรเจคด้านล่างดึงมาจากข้อมูลจริงในระบบ (users/team/project_incoming) ไม่ใช่ชื่อสมมติ
-  // Approval chain ตอนนี้เหลือ 2 ขั้น (ตัดขั้น 3 ออก)
-  const OT_SEED = {
-    users: [
-      { id: 1, name: 'adminsystem', roleLabel: 'Admin System', teamId: null, approverLevel1Id: null, approverLevel2Id: null },
-      { id: 2, name: 'Manager', roleLabel: 'ผู้จัดการ (ผู้อนุมัติขั้น 2)', teamId: null, approverLevel1Id: null, approverLevel2Id: null },
-      { id: 3, name: 'head_engineer1', roleLabel: 'หัวหน้าทีม Team 1 (ผู้อนุมัติขั้น 1)', teamId: 1, approverLevel1Id: null, approverLevel2Id: null },
-      { id: 4, name: 'engineer1', roleLabel: 'วิศวกร Team 1 (พนักงาน)', teamId: 1, approverLevel1Id: 3, approverLevel2Id: 2 },
-      { id: 5, name: 'head_engineer2', roleLabel: 'หัวหน้าทีม Team 2 (ผู้อนุมัติขั้น 1)', teamId: 2, approverLevel1Id: null, approverLevel2Id: null },
-      { id: 6, name: 'engineer2.1', roleLabel: 'วิศวกร Team 2 (พนักงาน)', teamId: 2, approverLevel1Id: 5, approverLevel2Id: 2 },
-    ],
-    teams: [
-      { id: 1, name: 'Team 1' },
-      { id: 2, name: 'Team 2' },
-    ],
-    projects: [
-      { id: 20, name: 'TRUE_PO14414' },
-      { id: 22, name: 'Terra_PO14415' },
-      { id: 23, name: 'DAMAC1' },
-    ],
-    cycles: [
-      { id: 0, year: 2026, month: 6, cutoffDate: '2026-06-20', status: 'locked' },
-      { id: 1, year: 2026, month: 7, cutoffDate: '2026-07-20', status: 'open' },
-    ],
-    requests: [
-      { id: 101, userId: 4, projectId: 20, otDate: '2026-07-10', startTime: '18:00', endTime: '20:30', hours: 2.5, otType: 'weekday', reason: 'เร่งติดตั้งระบบให้ทันกำหนดส่งมอบลูกค้า', status: 'pending_l2', currentLevel: 2, cycleId: 1, resubmissionCount: 0 },
-      { id: 102, userId: 4, projectId: 22, otDate: '2026-07-05', startTime: '19:00', endTime: '22:00', hours: 3, otType: 'weekday', reason: 'ตรวจสอบระบบหลังติดตั้งเสร็จ', status: 'approved', currentLevel: 2, cycleId: 1, resubmissionCount: 0 },
-      { id: 103, userId: 6, projectId: 23, otDate: '2026-07-12', startTime: '08:00', endTime: '17:00', hours: 9, otType: 'holiday', reason: 'เข้าไซต์งานวันหยุดตามนัดหมายลูกค้า', status: 'pending_l1', currentLevel: 1, cycleId: 1, resubmissionCount: 0 },
-      { id: 104, userId: 4, projectId: 20, otDate: '2026-06-28', startTime: '18:00', endTime: '20:00', hours: 2, otType: 'weekday', reason: 'ทำเอกสารสรุปโครงการ', status: 'rejected', currentLevel: 1, cycleId: 1, resubmissionCount: 0 },
-      { id: 105, userId: 6, projectId: 23, otDate: '2026-07-01', startTime: '18:00', endTime: '21:00', hours: 3, otType: 'weekday', reason: 'สรุปงานประจำเดือนให้ทันปิดรอบ', status: 'approved', currentLevel: 2, cycleId: 1, resubmissionCount: 0 },
-      { id: 106, userId: 4, projectId: 22, otDate: '2026-07-15', startTime: '18:00', endTime: '19:30', hours: 1.5, otType: 'weekday', reason: 'แก้ไขข้อบกพร่องระบบหลังส่งมอบ', status: 'pending_l1', currentLevel: 1, cycleId: 1, resubmissionCount: 0 },
-    ],
-    approvals: [
-      { id: 1001, requestId: 101, level: 1, approverId: 3, status: 'approved', comment: 'เร่งงานจริง อนุมัติ', decidedAt: '2026-07-11T09:00:00' },
-      { id: 1002, requestId: 101, level: 2, approverId: 2, status: 'pending', comment: null, decidedAt: null },
-      { id: 1004, requestId: 102, level: 1, approverId: 3, status: 'approved', comment: 'ตรวจสอบแล้ว', decidedAt: '2026-07-06T09:00:00' },
-      { id: 1005, requestId: 102, level: 2, approverId: 2, status: 'approved', comment: 'อนุมัติ', decidedAt: '2026-07-06T14:00:00' },
-      { id: 1007, requestId: 103, level: 1, approverId: 5, status: 'pending', comment: null, decidedAt: null },
-      { id: 1008, requestId: 103, level: 2, approverId: 2, status: 'pending', comment: null, decidedAt: null },
-      { id: 1010, requestId: 104, level: 1, approverId: 3, status: 'rejected', comment: 'เหตุผลไม่ชัดเจน กรุณาระบุรายละเอียดงานเพิ่มเติม', decidedAt: '2026-06-29T08:30:00' },
-      { id: 1011, requestId: 104, level: 2, approverId: 2, status: 'superseded', comment: null, decidedAt: null },
-      { id: 1013, requestId: 105, level: 1, approverId: 5, status: 'approved', comment: 'อนุมัติ', decidedAt: '2026-07-02T09:00:00' },
-      { id: 1014, requestId: 105, level: 2, approverId: 2, status: 'approved', comment: 'อนุมัติ', decidedAt: '2026-07-02T14:00:00' },
-      { id: 1016, requestId: 106, level: 1, approverId: 3, status: 'pending', comment: null, decidedAt: null },
-      { id: 1017, requestId: 106, level: 2, approverId: 2, status: 'pending', comment: null, decidedAt: null },
-    ],
-    nextRequestId: 200,
-    nextApprovalId: 2000,
-    seedVersion: 5,
-  };
-
-  const SEED_VERSION = 5; // เพิ่มเลขนี้ทุกครั้งที่แก้ mock data เพื่อบังคับ reseed localStorage เก่า
-
-  function loadDb() {
-    const raw = localStorage.getItem('ot_mock_db');
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw);
-        if (parsed.seedVersion === SEED_VERSION) return parsed;
-      } catch { /* fall through to reseed */ }
-    }
-    const fresh = JSON.parse(JSON.stringify(OT_SEED));
-    localStorage.setItem('ot_mock_db', JSON.stringify(fresh));
-    return fresh;
-  }
-  function saveDb(db) { localStorage.setItem('ot_mock_db', JSON.stringify(db)); }
   function esc(str) { if (str == null) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function fmtDate(v) { return v ? String(v).slice(0, 10) : ''; }
 
-  const LEVEL_CLS = { 1: 'badge-level1', 2: 'badge-level2' };
+  const LEVEL_CLS = { pending_level1: 'badge-level1', pending_level2: 'badge-level2' };
+  const LEVEL_TEXT = { pending_level1: 'ขั้น 1', pending_level2: 'ขั้น 2' };
 
-  let db = loadDb();
   let allRows = [];
   let rejectTargetId = null;
 
-  function myQueue() {
-    return db.approvals.filter(a => {
-      if (a.approverId !== CURRENT_APPROVER_ID || a.status !== 'pending') return false;
-      const req = db.requests.find(r => r.id === a.requestId);
-      return req && req.currentLevel === a.level;
-    }).map(a => {
-      const req = db.requests.find(r => r.id === a.requestId);
-      const user = db.users.find(u => u.id === req.userId);
-      const proj = db.projects.find(p => p.id === req.projectId);
-      return { approvalId: a.id, level: a.level, req, user, proj };
-    });
+  async function fetchJson(url, options) {
+    const res = await fetch(url, options);
+    const body = await res.json().catch(() => null);
+    if (!res.ok) throw new Error((body && body.message) || 'เกิดข้อผิดพลาด');
+    return body;
   }
 
   function populateYears(rows) {
-    const years = [...new Set(rows.map(r => Number(r.req.otDate.slice(0, 4))))].sort((a, b) => b - a);
+    const years = [...new Set(rows.map(r => Number(fmtDate(r.otDate).slice(0, 4))))].sort((a, b) => b - a);
     const sel = document.getElementById('filterYear');
     sel.innerHTML = '<option value="">All Years</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
   }
 
-  function loadQueue() {
-    db = loadDb();
-    allRows = myQueue();
+  async function loadQueue() {
+    try {
+      allRows = await fetchJson('/ot-approval/api/queue');
+    } catch (err) {
+      showToast(err.message);
+      allRows = [];
+    }
     populateYears(allRows);
     applyFilters();
   }
@@ -180,12 +111,13 @@
     const month = document.getElementById('filterMonth').value;
 
     const filtered = allRows.filter(row => {
+      const date = fmtDate(row.otDate);
       const matchSearch = !q ||
-        row.user.name.toLowerCase().includes(q) ||
-        row.proj.name.toLowerCase().includes(q) ||
-        row.req.reason.toLowerCase().includes(q);
-      const matchYear = !year || Number(row.req.otDate.slice(0, 4)) === Number(year);
-      const matchMonth = !month || Number(row.req.otDate.slice(5, 7)) === Number(month);
+        (row.userName && row.userName.toLowerCase().includes(q)) ||
+        (row.projectName && row.projectName.toLowerCase().includes(q)) ||
+        (row.reason && row.reason.toLowerCase().includes(q));
+      const matchYear = !year || Number(date.slice(0, 4)) === Number(year);
+      const matchMonth = !month || Number(date.slice(5, 7)) === Number(month);
       return matchSearch && matchYear && matchMonth;
     });
 
@@ -200,16 +132,16 @@
 
     tbody.innerHTML = rows.map(row => `
       <tr>
-        <td>${esc(row.user.name)}</td>
-        <td>${esc(row.proj.name)}</td>
-        <td>${row.req.otDate}</td>
-        <td>${row.req.hours} ชม.</td>
-        <td><span class="badge ${LEVEL_CLS[row.level]}">ขั้น ${row.level}</span></td>
-        <td class="reason-cell" title="${esc(row.req.reason)}">${esc(row.req.reason)}</td>
+        <td>${esc(row.userName || '-')}</td>
+        <td>${esc(row.projectName || '-')}</td>
+        <td>${fmtDate(row.otDate)}</td>
+        <td>${row.hours} ชม.</td>
+        <td><span class="badge ${LEVEL_CLS[row.status]}">${LEVEL_TEXT[row.status]}</span></td>
+        <td class="reason-cell" title="${esc(row.reason)}">${esc(row.reason)}</td>
         <td>
           <div class="button-spacing">
-            <button class="btn-table btn-approve" onclick="approveOne(${row.approvalId})">อนุมัติ</button>
-            <button class="btn-table btn-reject" onclick="openRejectModal(${row.approvalId})">ไม่อนุมัติ</button>
+            <button class="btn-table btn-approve" onclick="approveOne(${row.id})">อนุมัติ</button>
+            <button class="btn-table btn-reject" onclick="openRejectModal(${row.id})">ไม่อนุมัติ</button>
           </div>
         </td>
       </tr>`).join('');
@@ -219,43 +151,30 @@
   document.getElementById('filterYear').addEventListener('change', applyFilters);
   document.getElementById('filterMonth').addEventListener('change', applyFilters);
 
-  function decide(approvalId, action, comment) {
-    const approval = db.approvals.find(a => a.id === approvalId);
-    const req = db.requests.find(r => r.id === approval.requestId);
-    approval.decidedAt = new Date().toISOString();
-    approval.comment = comment || null;
-    if (action === 'approve') {
-      approval.status = 'approved';
-      if (approval.level < 2) { req.currentLevel = approval.level + 1; req.status = 'pending_l' + (approval.level + 1); }
-      else { req.status = 'approved'; }
-    } else {
-      approval.status = 'rejected';
-      req.status = 'rejected';
-      db.approvals.filter(a => a.requestId === req.id && a.status === 'pending').forEach(a => { a.status = 'superseded'; });
+  async function approveOne(id) {
+    try {
+      await fetchJson(`/ot-approval/api/requests/${id}/approve`, { method: 'POST' });
+      showToast('อนุมัติเรียบร้อย ส่งต่อขั้นถัดไปแล้ว');
+      loadQueue();
+    } catch (err) {
+      showToast(err.message);
     }
   }
 
-  function approveOne(approvalId) {
-    decide(approvalId, 'approve', null);
-    saveDb(db);
-    showToast('อนุมัติเรียบร้อย ส่งต่อขั้นถัดไปแล้ว');
-    loadQueue();
-  }
-
-  function openRejectModal(approvalId) {
-    rejectTargetId = approvalId;
-    document.getElementById('rejectComment').value = '';
+  function openRejectModal(id) {
+    rejectTargetId = id;
     document.getElementById('rejectModal').classList.add('open');
   }
   function closeRejectModal() { document.getElementById('rejectModal').classList.remove('open'); }
-  function confirmReject() {
-    const comment = document.getElementById('rejectComment').value.trim();
-    if (!comment) { showToast('กรุณาระบุเหตุผลที่ไม่อนุมัติ'); return; }
-    decide(rejectTargetId, 'reject', comment);
-    saveDb(db);
-    closeRejectModal();
-    showToast('ไม่อนุมัติเรียบร้อย ส่งกลับให้พนักงานแก้ไขแล้ว');
-    loadQueue();
+  async function confirmReject() {
+    try {
+      await fetchJson(`/ot-approval/api/requests/${rejectTargetId}/reject`, { method: 'POST' });
+      closeRejectModal();
+      showToast('ไม่อนุมัติเรียบร้อย');
+      loadQueue();
+    } catch (err) {
+      showToast(err.message);
+    }
   }
 
   function showToast(msg) {

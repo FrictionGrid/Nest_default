@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import type { Request, Response } from 'express';
 import { User } from '../database/entities/user.entity';
+import { EmployeeProfile } from '../database/entities/employee_profile.entity';
 import { AuthGuard } from '../auth/guards/auth.guard';
 
 @UseGuards(AuthGuard)
@@ -11,15 +12,18 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 export class ProfileController {
   constructor(
     @InjectRepository(User) private readonly userRepo: Repository<User>,
+    @InjectRepository(EmployeeProfile) private readonly employeeProfileRepo: Repository<EmployeeProfile>,
   ) {}
 
   @Get()
   async getProfile(@Req() req: Request, @Res() res: Response) {
     const userId = (req.session as any).user?.id;
     const user = await this.userRepo.findOneBy({ id: userId });
+    const employeeProfile = await this.employeeProfileRepo.findOneBy({ user_id: userId });
     return res.render('profile', {
       pageTitle: 'Profile',
       user,
+      employeeProfile,
       success: null,
       error: null,
     });
@@ -27,7 +31,17 @@ export class ProfileController {
 
   @Post()
   async updateProfile(
-    @Body() body: { display_name?: string; username?: string; email?: string; password?: string },
+    @Body()
+    body: {
+      display_name?: string;
+      username?: string;
+      email?: string;
+      password?: string;
+      first_name?: string;
+      last_name?: string;
+      employee_title?: string;
+      employee_department?: string;
+    },
     @Req() req: Request,
     @Res() res: Response,
   ) {
@@ -45,9 +59,11 @@ export class ProfileController {
 
       if (conflict) {
         const user = await this.userRepo.findOneBy({ id: userId });
+        const employeeProfile = await this.employeeProfileRepo.findOneBy({ user_id: userId });
         return res.render('profile', {
           pageTitle: 'Profile',
           user,
+          employeeProfile,
           success: null,
           error: 'Username หรือ Email นี้มีผู้ใช้งานแล้ว',
         });
@@ -62,7 +78,21 @@ export class ProfileController {
 
     await this.userRepo.update(userId, update);
 
+    const employeeUpdate = {
+      first_name: body.first_name ?? '',
+      last_name: body.last_name ?? '',
+      employee_title: body.employee_title || null,
+      employee_department: body.employee_department || null,
+    };
+    const existingProfile = await this.employeeProfileRepo.findOneBy({ user_id: userId });
+    if (existingProfile) {
+      await this.employeeProfileRepo.update(existingProfile.id, employeeUpdate);
+    } else {
+      await this.employeeProfileRepo.save(this.employeeProfileRepo.create({ user_id: userId, ...employeeUpdate }));
+    }
+
     const updated = await this.userRepo.findOneBy({ id: userId });
+    const updatedEmployeeProfile = await this.employeeProfileRepo.findOneBy({ user_id: userId });
     if (updated) {
       (req.session as any).user = {
         ...(req.session as any).user,
@@ -74,6 +104,7 @@ export class ProfileController {
     return res.render('profile', {
       pageTitle: 'Profile',
       user: updated,
+      employeeProfile: updatedEmployeeProfile,
       success: 'บันทึกข้อมูลเรียบร้อยแล้ว',
       error: null,
     });

@@ -144,12 +144,14 @@ export class OverviewProjectService {
   }
 
   async getTypeStats() {
+    const year = new Date().getFullYear();
     const rows = await this.projectTypeRepo
       .createQueryBuilder('pt')
       .innerJoin('project_incoming_type', 'pit', 'pit.type_id = pt.id')
       .innerJoin('project_incoming', 'p', 'p.id = pit.project_id')
       .select('pt.name', 'name')
       .addSelect('COUNT(*)', 'total')
+      .where('EXTRACT(YEAR FROM p.created_at) = :year', { year })
       .groupBy('pt.name')
       .orderBy('total', 'DESC')
       .getRawMany();

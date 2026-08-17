@@ -29,13 +29,17 @@ import { ProfileModule } from './profile/profile.module';
 import { ActivityLogModule } from './activity_log/activity_log.module';
 import { ChatbotModule } from './chatbot/chatbot.module';
 import { FeedbackModule } from './feedback/feedback.module';
-import { OtModule } from './ot/ot.module';
+import { MyOtModule } from './my_ot/my_ot.module';
+import { OtApprovalModule } from './ot_approval/ot_approval.module';
+import { OtSummaryModule } from './ot_summary/ot_summary.module';
 import { UserContextMiddleware } from './common/middleware/user-context.middleware';
 import { DocumentType } from './database/entities/document_type.entity';
 import { ProjectDocument } from './database/entities/project_document.entity';
 import { ProjectDocumentFile } from './database/entities/project_document_file.entity';
 import { ProjectTypeCategory } from './database/entities/project_type_category.entity';
 import { Feedback } from './database/entities/feedback.entity';
+import { OvertimeRequest } from './database/entities/overtime_request.entity';
+import { EmployeeProfile } from './database/entities/employee_profile.entity';
 
 @Module({
   imports: [
@@ -51,7 +55,7 @@ import { Feedback } from './database/entities/feedback.entity';
         username: config.get('DB_USERNAME'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [ActivityLog, ProjectIncoming, ProjectType, Team, ProjectTeam, User, UsersTeam, TaskTeam, DocumentType, ProjectDocument, ProjectDocumentFile, PaymentInstallment, Feedback, ProjectTypeCategory],
+        entities: [ActivityLog, ProjectIncoming, ProjectType, Team, ProjectTeam, User, UsersTeam, TaskTeam, DocumentType, ProjectDocument, ProjectDocumentFile, PaymentInstallment, Feedback, ProjectTypeCategory, OvertimeRequest, EmployeeProfile],
         synchronize: false,
       }),
       inject: [ConfigService],
@@ -73,7 +77,9 @@ import { Feedback } from './database/entities/feedback.entity';
     ActivityLogModule,
     ChatbotModule,
     FeedbackModule,
-    OtModule,
+    MyOtModule,
+    OtApprovalModule,
+    OtSummaryModule,
   ],
   providers: [
     // ── 5. Rate Limiting Guard (global) ──────────────────────────────────────

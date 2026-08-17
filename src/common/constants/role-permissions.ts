@@ -31,6 +31,14 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'POST:/detail-project/:id/documents/:typeId/upload',
     'DELETE:/detail-project/documents/file/:fileId',
     'GET:/detail-project/documents/file/:fileId/download',
+    // My OT
+    'GET:/ot',
+    'GET:/ot/api/projects',
+    'GET:/ot/api/requests',
+    'POST:/ot/api/requests',
+    // OT Summary
+    'GET:/ot-summary',
+    'GET:/ot-summary/api/rows',
   ],
 
   // ── overview + detail + manage-project + manage-task + dashboard + timeline
@@ -64,6 +72,16 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'POST:/detail-project/:id/documents/:typeId/upload',
     'DELETE:/detail-project/documents/file/:fileId',
     'GET:/detail-project/documents/file/:fileId/download',
+    // My OT
+    'GET:/ot',
+    'GET:/ot/api/projects',
+    'GET:/ot/api/requests',
+    'POST:/ot/api/requests',
+    // OT Approval (ขั้น 1 — หัวหน้าทีม)
+    'GET:/ot-approval',
+    'GET:/ot-approval/api/queue',
+    'POST:/ot-approval/api/requests/:id/approve',
+    'POST:/ot-approval/api/requests/:id/reject',
   ],
 
   // ── dashboard-team + detail ──────────────────────────────────────────────
@@ -81,6 +99,11 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'POST:/detail-project/:id/documents/:typeId/upload',
     'DELETE:/detail-project/documents/file/:fileId',
     'GET:/detail-project/documents/file/:fileId/download',
+    // My OT
+    'GET:/ot',
+    'GET:/ot/api/projects',
+    'GET:/ot/api/requests',
+    'POST:/ot/api/requests',
   ],
 
   // ── overview only ────────────────────────────────────────────────────────
@@ -89,6 +112,11 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'POST:/feedback/api',
     'GET:/overview-project',
     'GET:/overview-project/api/team-stats',
+    // My OT
+    'GET:/ot',
+    'GET:/ot/api/projects',
+    'GET:/ot/api/requests',
+    'POST:/ot/api/requests',
   ],
 
   // ── executive: read-only overview + timeline + summary + chatbot ─────────
@@ -108,5 +136,10 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'POST:/feedback/api',
     'GET:/overview-project',
     'GET:/overview-project/api/team-stats',
+    // My OT
+    'GET:/ot',
+    'GET:/ot/api/projects',
+    'GET:/ot/api/requests',
+    'POST:/ot/api/requests',
   ],
 };
