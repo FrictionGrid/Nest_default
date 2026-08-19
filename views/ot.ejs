@@ -50,7 +50,7 @@
 
   <div class="card1">
     <div class="table-header">
-      <h3>My OT Request History</h3>
+      <h3>OT Request History</h3>
       <div class="table-count" id="reqCount">Loading...</div>
     </div>
     <div class="table-body">
@@ -75,7 +75,9 @@
     <div class="form-bar">
       <div class="form-group2">
         <label>Project</label>
-        <select id="fieldProject"></select>
+        <input type="text" id="fieldProject" list="projectOptions" placeholder="Type to search project" autocomplete="off" />
+        <input type="hidden" id="fieldProjectId" />
+        <datalist id="projectOptions"></datalist>
       </div>
       <div class="form-group2">
         <label>Customer</label>
@@ -98,11 +100,11 @@
     <div class="form-bar">
       <div class="form-group2">
         <label>Start Time</label>
-        <input type="time" id="fieldStart" />
+        <select id="fieldStart"></select>
       </div>
       <div class="form-group2">
         <label>End Time</label>
-        <input type="time" id="fieldEnd" />
+        <select id="fieldEnd"></select>
       </div>
       <div class="hours-preview" id="hoursPreview">Total Hours: -</div>
     </div>
@@ -161,10 +163,30 @@
     return body;
   }
 
+  let projectList = [];
+
   async function initProjectSelect() {
-    const projects = await fetchJson('/ot/api/projects');
-    document.getElementById('fieldProject').innerHTML = projects.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+    projectList = await fetchJson('/ot/api/projects');
+    document.getElementById('projectOptions').innerHTML = projectList.map(p => `<option value="${esc(p.name)}"></option>`).join('');
   }
+
+  function syncProjectId() {
+    const name = document.getElementById('fieldProject').value.trim();
+    const match = projectList.find(p => p.name === name);
+    document.getElementById('fieldProjectId').value = match ? match.id : '';
+  }
+  document.getElementById('fieldProject').addEventListener('input', syncProjectId);
+
+  function populateHourSelect(selectEl) {
+    let opts = '<option value="">--:--</option>';
+    for (let h = 0; h < 24; h++) {
+      const v = String(h).padStart(2, '0') + ':00';
+      opts += `<option value="${v}">${v}</option>`;
+    }
+    selectEl.innerHTML = opts;
+  }
+  populateHourSelect(document.getElementById('fieldStart'));
+  populateHourSelect(document.getElementById('fieldEnd'));
 
   function updateHoursPreview() {
     const s = document.getElementById('fieldStart').value;
@@ -172,8 +194,8 @@
     const el = document.getElementById('hoursPreview');
     el.textContent = (s && e) ? 'Total Hours: ' + computeHours(s, e) + ' hrs' : 'Total Hours: -';
   }
-  document.getElementById('fieldStart').addEventListener('input', updateHoursPreview);
-  document.getElementById('fieldEnd').addEventListener('input', updateHoursPreview);
+  document.getElementById('fieldStart').addEventListener('change', updateHoursPreview);
+  document.getElementById('fieldEnd').addEventListener('change', updateHoursPreview);
 
   function populateYears(rows) {
     const years = [...new Set(rows.map(r => Number(fmtDate(r.otDate).slice(0, 4))))].sort((a, b) => b - a);
@@ -239,7 +261,7 @@
     const steps = [];
 
     if (req.supervisorApprovedAt) {
-      steps.push({ level: 1, state: 'approved', decidedAt: req.supervisorApprovedAt, label: 'Approved (Supervisor)' });
+      steps.push({ level: 1, state: 'approved', decidedAt: req.supervisorApprovedAt, label: 'Approved (Manager)' });
     } else if (req.status === 'rejected') {
       steps.push({ level: 1, state: 'rejected', decidedAt: null, label: 'Rejected (Supervisor)' });
     } else {
@@ -247,7 +269,7 @@
     }
 
     if (req.managerApprovedAt) {
-      steps.push({ level: 2, state: 'approved', decidedAt: req.managerApprovedAt, label: 'Approved (Manager)' });
+      steps.push({ level: 2, state: 'approved', decidedAt: req.managerApprovedAt, label: 'Approved (HeadTeam)' });
     } else if (req.status === 'rejected' && req.supervisorApprovedAt) {
       steps.push({ level: 2, state: 'rejected', decidedAt: null, label: 'Rejected (Manager)' });
     } else if (req.status === 'pending_level2') {
@@ -283,7 +305,7 @@
   }
 
   function clearFields() {
-    ['fieldCustomer','fieldDate','fieldStart','fieldEnd','fieldReason'].forEach(id => document.getElementById(id).value = '');
+    ['fieldProject','fieldProjectId','fieldCustomer','fieldDate','fieldStart','fieldEnd','fieldReason'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('fieldType').value = 'weekday';
     updateHoursPreview();
   }
@@ -293,14 +315,15 @@
   document.getElementById('addBtn').addEventListener('click', openAdd);
 
   document.getElementById('saveBtn').addEventListener('click', async () => {
-    const projectId = Number(document.getElementById('fieldProject').value);
+    syncProjectId();
+    const projectId = Number(document.getElementById('fieldProjectId').value);
     const customerName = document.getElementById('fieldCustomer').value.trim();
     const otDate = document.getElementById('fieldDate').value;
     const startTime = document.getElementById('fieldStart').value;
     const endTime = document.getElementById('fieldEnd').value;
     const otType = document.getElementById('fieldType').value;
     const reason = document.getElementById('fieldReason').value.trim();
-    if (!projectId || !customerName || !otDate || !otType || !startTime || !endTime || !reason) { showToast('Please fill in all fields'); return; }
+    if (!projectId || !customerName || !otDate || !otType || !startTime || !endTime || !reason) { showToast('Please select a valid project and fill in all fields'); return; }
 
     // Hours are always calculated by the backend from start/end time, initial status is pending_level1,
     // and supervisor_approved_at / manager_approved_at are set from the /ot-approval page when an approver approves

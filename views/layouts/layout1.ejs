@@ -70,13 +70,13 @@
           <a href="/feedback/inbox" class="<%= pageTitle === 'Feedback Inbox' ? 'active' : '' %>">Feedback Inbox</a>
         <% } %>
         <% if (locals.visibleMenus?.['ot']) { %>
-          <a href="/ot" class="<%= pageTitle === 'My OT' ? 'active' : '' %>">My OT</a>
+          <a href="/ot" class="<%= pageTitle === 'OT Request' ? 'active' : '' %>">OT Request</a>
         <% } %>
         <% if (locals.visibleMenus?.['ot-approval']) { %>
-          <a href="/ot-approval" class="<%= pageTitle === 'Approve OT' ? 'active' : '' %>">Approve OT</a>
+          <a href="/ot-approval" class="<%= pageTitle === 'OT Approve' ? 'active' : '' %>">OT Approve</a>
         <% } %>
         <% if (locals.visibleMenus?.['ot-summary']) { %>
-          <a href="/ot-summary" class="<%= pageTitle === 'OT Summary' ? 'active' : '' %>">OT Summary</a>
+          <a href="/ot-summary" class="<%= pageTitle === 'OT Monthly' ? 'active' : '' %>">OT Monthly</a>
         <% } %>
       </nav>
     </aside>

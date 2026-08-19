@@ -85,19 +85,6 @@
       <input type="text" id="searchInput" placeholder="Search project name, team name..." />
     </div>
 
-    <select id="filterStatus" class="filter-box">
-      <option value="">All Status</option>
-      <option value="in_progress">In Progress</option>
-      <option value="delayed">Delayed</option>
-      <option value="completed">Completed</option>
-    </select>
-    <select id="filterTeam" class="filter-box">
-      <option value="">All Teams</option>
-      <% teamList.forEach(function(t) { %>
-        <option value="<%= t.id %>"><%= t.name %></option>
-      <% }); %>
-    </select>
-
     <select id="filterYear" class="filter-box">
       <option value="">All Years</option>
     </select>
@@ -115,6 +102,20 @@
       <option value="10">October</option>
       <option value="11">November</option>
       <option value="12">December</option>
+    </select>
+
+    <select id="filterTeam" class="filter-box">
+      <option value="">All Teams</option>
+      <% teamList.forEach(function(t) { %>
+        <option value="<%= t.id %>"><%= t.name %></option>
+      <% }); %>
+    </select>
+
+    <select id="filterStatus" class="filter-box">
+      <option value="">All Status</option>
+      <option value="in_progress">In Progress</option>
+      <option value="delayed">Delayed</option>
+      <option value="completed">Completed</option>
     </select>
 
     <button class="add-table-box" id="addBtn">

@@ -19,7 +19,7 @@ export class OtApprovalService {
   ) {}
 
   getPageMeta() {
-    return { pageTitle: 'Approve OT', pageSubtitle: 'Overtime approval queue' };
+    return { pageTitle: 'OT Approve', pageSubtitle: 'Overtime approval queue' };
   }
 
   private async teamIdsOf(userId: number): Promise<number[]> {

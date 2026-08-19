@@ -257,6 +257,22 @@ tbody tr:hover {
     border-color: #4179bf;
 }
 
+.form-group2 select {
+    height: 40px;
+    border: 1px solid #cdd9e8;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    background: #fff;
+    transition: border 0.2s;
+}
+
+.form-group2 select:focus {
+    border-color: #4179bf;
+}
+
 .modal-spacing {
     display: flex;
     gap: 12px;

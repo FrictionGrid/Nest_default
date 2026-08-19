@@ -24,7 +24,7 @@ export class OtSummaryService {
   ) {}
 
   getSummaryPageMeta() {
-    return { pageTitle: 'OT Summary', pageSubtitle: 'Overtime fully approved for the current cycle' };
+    return { pageTitle: 'OT Monthly', pageSubtitle: 'Overtime fully approved for the current cycle' };
   }
 
   getDocumentPageMeta() {

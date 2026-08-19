@@ -112,31 +112,11 @@
       </svg>
       <input type="text" id="searchTask" placeholder="Search task, user, project..." />
     </div>
-    <select id="filterTaskStatus" class="filter-box">
-      <option value="">All Status</option>
-      <option value="in_progress">In Progress</option>
-      <option value="problem">Problem</option>
-      <option value="completed">Completed</option>
-      <option value="replanned">Replanned</option>
-    </select>
     <select id="filterProject" class="filter-box">
       <option value="">All Projects</option>
       <% projectList.forEach(function(pj) { %>
         <option value="<%= pj.id %>"><%= pj.project_name %></option>
       <% }); %>
-    </select>
-    <select id="filterTeam" class="filter-box">
-      <option value="">All Teams</option>
-      <% teamList.forEach(function(tm) { %>
-        <option value="<%= tm.id %>"><%= tm.name %></option>
-      <% }); %>
-    </select>
-    <select id="filterPriority" class="filter-box">
-      <option value="">All Priority</option>
-      <option value="overdue">Overdue</option>
-      <option value="urgent">Critical (≤3 days)</option>
-      <option value="near">Warning (≤7 days)</option>
-      <option value="general">In Progress</option>
     </select>
     <select id="filterYear" class="filter-box">
       <option value="">All Years</option>
@@ -155,6 +135,26 @@
       <option value="10">October</option>
       <option value="11">November</option>
       <option value="12">December</option>
+    </select>
+    <select id="filterTeam" class="filter-box">
+      <option value="">All Teams</option>
+      <% teamList.forEach(function(tm) { %>
+        <option value="<%= tm.id %>"><%= tm.name %></option>
+      <% }); %>
+    </select>
+    <select id="filterTaskStatus" class="filter-box">
+      <option value="">All Status</option>
+      <option value="in_progress">In Progress</option>
+      <option value="problem">Problem</option>
+      <option value="completed">Completed</option>
+      <option value="replanned">Replanned</option>
+    </select>
+    <select id="filterPriority" class="filter-box">
+      <option value="">All Priority</option>
+      <option value="overdue">Overdue</option>
+      <option value="urgent">Critical (≤3 days)</option>
+      <option value="near">Warning (≤7 days)</option>
+      <option value="general">In Progress</option>
     </select>
 
     <button class="add-table-box" id="addTaskBtn">

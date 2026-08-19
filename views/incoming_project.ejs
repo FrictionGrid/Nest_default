@@ -139,6 +139,13 @@
       <option value="12">December</option>
     </select>
 
+    <select id="filterProjectStatus" class="filter-box">
+      <option value="">All Status</option>
+      <option value="in_progress">In Progress</option>
+      <option value="delayed">Delayed</option>
+      <option value="completed">Completed</option>
+    </select>
+
     <button class="add-table-box" id="addBtn">
       <span style="font-size:20px;line-height:1;">+</span>
       Add New Item
@@ -383,11 +390,13 @@
   document.getElementById('searchInput').addEventListener('input', applyFilters);
   document.getElementById('filterYear').addEventListener('change', applyFilters);
   document.getElementById('filterStatus').addEventListener('change', applyFilters);
+  document.getElementById('filterProjectStatus').addEventListener('change', applyFilters);
 
   function applyFilters() {
-    const q     = document.getElementById('searchInput').value.trim().toLowerCase();
-    const year  = document.getElementById('filterYear').value;
-    const month = document.getElementById('filterStatus').value;
+    const q      = document.getElementById('searchInput').value.trim().toLowerCase();
+    const year   = document.getElementById('filterYear').value;
+    const month  = document.getElementById('filterStatus').value;
+    const status = document.getElementById('filterProjectStatus').value;
 
     const filtered = allRows.filter((r) => {
       const matchSearch = !q ||
@@ -401,18 +410,21 @@
       const matchMonth = !month ||
         (r.created_at && new Date(r.created_at).getMonth() + 1 === Number(month));
 
-      return matchSearch && matchYear && matchMonth;
+      const matchStatus = !status || r.status === status;
+
+      return matchSearch && matchYear && matchMonth && matchStatus;
     });
 
     renderTable(filtered);
-    syncURL({ q, year, month });
+    syncURL({ q, year, month, status });
   }
 
   function syncURL(filters) {
     const p = new URLSearchParams();
-    if (filters.q)     p.set('q',     filters.q);
-    if (filters.year)  p.set('year',  filters.year);
-    if (filters.month) p.set('month', filters.month);
+    if (filters.q)      p.set('q',      filters.q);
+    if (filters.year)   p.set('year',   filters.year);
+    if (filters.month)  p.set('month',  filters.month);
+    if (filters.status) p.set('status', filters.status);
     history.replaceState(null, '', p.toString() ? '?' + p.toString() : location.pathname);
   }
 
@@ -550,8 +562,9 @@
   // restore search & month from URL before load (year restored inside populateYears)
   (function() {
     const p = new URLSearchParams(location.search);
-    if (p.get('q'))     document.getElementById('searchInput').value = p.get('q');
-    if (p.get('month')) document.getElementById('filterStatus').value = p.get('month');
+    if (p.get('q'))      document.getElementById('searchInput').value = p.get('q');
+    if (p.get('month'))  document.getElementById('filterStatus').value = p.get('month');
+    if (p.get('status')) document.getElementById('filterProjectStatus').value = p.get('status');
   })();
 
   loadProjects();
