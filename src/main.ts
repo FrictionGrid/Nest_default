@@ -10,12 +10,19 @@ const expressLayouts = require('express-ejs-layouts');
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // อยู่หลัง Nginx reverse proxy: ให้ Express เชื่อ header X-Forwarded-* เพื่อให้ req.ip (rate limit) และ cookie secure ทำงานถูกต้อง
+  app.set('trust proxy', 1);
+
   app.use(
     session({
       secret: process.env.SESSION_SECRET ?? 'change-this-secret',
       resave: false,
       saveUninitialized: false,
-      cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 * 8 }, // 8 hours
+      cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 1000 * 60 * 60 * 8,
+      }, // 8 hours
     }),
   );
 
