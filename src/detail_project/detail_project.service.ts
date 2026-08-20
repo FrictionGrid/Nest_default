@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ProjectMain } from '../database/entities/project_main.entity';
 import { ProjectIncoming } from '../database/entities/project_incoming.entity';
 import { ProjectTeam } from '../database/entities/project_team.entity';
 import { TaskTeam } from '../database/entities/task_team.entity';
@@ -10,8 +11,10 @@ import { calcTaskProgress } from '../common/utils/task-progress.util';
 @Injectable()
 export class DetailProjectService {
   constructor(
+    @InjectRepository(ProjectMain)
+    private readonly projectRepo: Repository<ProjectMain>,
     @InjectRepository(ProjectIncoming)
-    private readonly projectRepo: Repository<ProjectIncoming>,
+    private readonly poRepo: Repository<ProjectIncoming>,
     @InjectRepository(ProjectTeam)
     private readonly projectTeamRepo: Repository<ProjectTeam>,
     @InjectRepository(TaskTeam)
@@ -26,6 +29,8 @@ export class DetailProjectService {
       relations: ['types'],
     });
     if (!project) throw new NotFoundException('Project not found');
+
+    const pos = await this.poRepo.find({ where: { project_main_id: id }, order: { id: 'ASC' } });
 
     const projectTeams = await this.projectTeamRepo.find({
       where: { project_id: id },
@@ -55,6 +60,13 @@ export class DetailProjectService {
       }
     }
 
+    function fmtDate(d: Date | null) {
+      if (!d) return '—';
+      return new Date(d).toLocaleDateString('en-GB', {
+        day: '2-digit', month: 'short', year: 'numeric',
+      });
+    }
+
     const name = project.project_name || '';
     const avatarText = name
       .split(' ')
@@ -62,13 +74,6 @@ export class DetailProjectService {
       .map((w) => w[0] || '')
       .join('')
       .toUpperCase() || '?';
-
-    function fmtDate(d: Date | null) {
-      if (!d) return '—';
-      return new Date(d).toLocaleDateString('en-GB', {
-        day: '2-digit', month: 'short', year: 'numeric',
-      });
-    }
 
     const statusMap = {
       in_progress: { label: 'In Progress', cls: 'b-processing' },
@@ -89,18 +94,23 @@ export class DetailProjectService {
         avatarText,
         projectName: project.project_name,
         item:        project.item ?? '—',
-        dateIn:      fmtDate(project.start_date),
-        endDate:     fmtDate(project.end_date),
         salesName:   project.sales_name || '—',
-        poValue:     project.po_value
-          ? '฿' + Number(project.po_value).toLocaleString('en-US', { minimumFractionDigits: 2 })
-          : '—',
-        poNo:        project.po_no || '—',
         status:      project.status,
         statusLabel: statusInfo.label,
         statusCls:   statusInfo.cls,
         types:       project.types?.map((t) => t.name) ?? [],
       },
+      pos: pos.map((po) => ({
+        id:      po.id,
+        poNo:    po.po_no || '—',
+        poValue: po.po_value
+          ? '฿' + Number(po.po_value).toLocaleString('en-US', { minimumFractionDigits: 2 })
+          : '—',
+        poDate:  fmtDate(po.created_at),
+      })),
+      poCount: pos.length,
+      poTotal: '฿' + pos.reduce((sum, po) => sum + (Number(po.po_value) || 0), 0)
+        .toLocaleString('en-US', { minimumFractionDigits: 2 }),
       teams: projectTeams.map((pt) => ({
         id:        pt.id,
         team_id:   pt.team_id,

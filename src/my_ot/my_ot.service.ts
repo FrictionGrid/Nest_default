@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { OvertimeRequest, OvertimeType } from '../database/entities/overtime_request.entity';
-import { ProjectIncoming } from '../database/entities/project_incoming.entity';
+import { ProjectMain } from '../database/entities/project_main.entity';
 
 export interface CreateOtRequestInput {
   project_id: number;
@@ -27,8 +27,8 @@ export class MyOtService {
   constructor(
     @InjectRepository(OvertimeRequest)  
     private readonly repo: Repository<OvertimeRequest>,
-    @InjectRepository(ProjectIncoming)
-    private readonly projectRepo: Repository<ProjectIncoming>,
+    @InjectRepository(ProjectMain)
+    private readonly projectRepo: Repository<ProjectMain>,
   ) {}
 
   async listProjects() {

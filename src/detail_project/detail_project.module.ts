@@ -7,6 +7,7 @@ import { DetailProjectController } from './detail_project.controller';
 import { DocumentService } from './service/document.service';
 import { SynologyService } from './service/synology.service';
 import { ProjectIncoming } from '../database/entities/project_incoming.entity';
+import { ProjectMain } from '../database/entities/project_main.entity';
 import { ProjectTeam } from '../database/entities/project_team.entity';
 import { TaskTeam } from '../database/entities/task_team.entity';
 import { UsersTeam } from '../database/entities/users_team.entity';
@@ -18,12 +19,12 @@ import { ProjectTypeCategory } from '../database/entities/project_type_category.
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      ProjectIncoming, ProjectTeam, TaskTeam, UsersTeam,
+      ProjectIncoming, ProjectMain, ProjectTeam, TaskTeam, UsersTeam,
       DocumentType, ProjectDocument, ProjectDocumentFile, ProjectTypeCategory,
     ]),
     MulterModule.register({
       storage: memoryStorage(),
-      limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
+      limits: { fileSize: 20 * 1024 * 1024 * 1024 }, // 20GB
     }),
   ],
   controllers: [DetailProjectController],

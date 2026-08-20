@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
-import { ProjectIncoming } from './project_incoming.entity';
+import { ProjectMain } from './project_main.entity';
 
 export enum TaskStatus {
   IN_PROGRESS = 'in_progress',
@@ -67,9 +67,9 @@ export class TaskTeam {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToOne(() => ProjectIncoming, { onDelete: 'CASCADE' })
+  @ManyToOne(() => ProjectMain, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'project_id' })
-  project: ProjectIncoming;
+  project: ProjectMain;
 
   @CreateDateColumn()
   created_at: Date;

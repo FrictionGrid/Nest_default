@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { DocumentType } from '../../database/entities/document_type.entity';
 import { ProjectDocument } from '../../database/entities/project_document.entity';
 import { ProjectDocumentFile } from '../../database/entities/project_document_file.entity';
-import { ProjectIncoming } from '../../database/entities/project_incoming.entity';
+import { ProjectMain } from '../../database/entities/project_main.entity';
 import { ProjectTypeCategory } from '../../database/entities/project_type_category.entity';
 import { SynologyService } from './synology.service';
 import { ActivityLogService } from '../../activity_log/service/activity_log.service';
@@ -18,8 +18,8 @@ export class DocumentService {
     private readonly projectDocRepo: Repository<ProjectDocument>,
     @InjectRepository(ProjectDocumentFile)
     private readonly fileRepo: Repository<ProjectDocumentFile>,
-    @InjectRepository(ProjectIncoming)
-    private readonly projectRepo: Repository<ProjectIncoming>,
+    @InjectRepository(ProjectMain)
+    private readonly projectRepo: Repository<ProjectMain>,
     @InjectRepository(ProjectTypeCategory)
     private readonly projectTypeCategoryRepo: Repository<ProjectTypeCategory>,
     private readonly nas: SynologyService,

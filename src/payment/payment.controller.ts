@@ -13,7 +13,7 @@ export class PaymentController {
   index() {
     return {
       pageTitle: 'Payment',
-      pageSubtitle: 'ภาพรวมแผนการชำระเงินโครงการ',
+      pageSubtitle: 'Project Payment Plan Overview',
     };
   }
 

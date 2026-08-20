@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ProjectMain } from '../../database/entities/project_main.entity';
 import { ProjectIncoming } from '../../database/entities/project_incoming.entity';
 import { ProjectTeam } from '../../database/entities/project_team.entity';
 import { ProjectType } from '../../database/entities/project_type.entity';
@@ -10,8 +11,10 @@ import { PaymentInstallment } from '../../database/entities/payment_installment.
 @Injectable()
 export class SummaryYearService {
   constructor(
+    @InjectRepository(ProjectMain)
+    private readonly mainRepo: Repository<ProjectMain>,
     @InjectRepository(ProjectIncoming)
-    private readonly projectRepo: Repository<ProjectIncoming>,
+    private readonly poRepo: Repository<ProjectIncoming>,
     @InjectRepository(ProjectTeam)
     private readonly projectTeamRepo: Repository<ProjectTeam>,
     @InjectRepository(ProjectType)
@@ -23,7 +26,7 @@ export class SummaryYearService {
   ) {}
 
   async getAvailableYears(): Promise<number[]> {
-    const rows = await this.projectRepo
+    const rows = await this.mainRepo
       .createQueryBuilder('p')
       .select('DISTINCT EXTRACT(YEAR FROM p.created_at)::int', 'year')
       .orderBy('year', 'DESC')
@@ -36,22 +39,29 @@ export class SummaryYearService {
   }
 
   async getSummary(year: number) {
-    const projectResult = await this.projectRepo
+    const projectResult = await this.mainRepo
       .createQueryBuilder('p')
       .select('COUNT(*)', 'total_projects')
       .addSelect("COUNT(*) FILTER (WHERE p.status = 'completed')", 'completed')
       .addSelect("COUNT(*) FILTER (WHERE p.status != 'completed')", 'not_completed')
-      .addSelect('COALESCE(SUM(p.po_value), 0)', 'total_po_value')
+      .where('EXTRACT(YEAR FROM p.created_at) = :year', { year })
+      .getRawOne();
+
+    const poResult = await this.poRepo
+      .createQueryBuilder('po')
+      .innerJoin('po.projectMain', 'p')
+      .select('COALESCE(SUM(po.po_value), 0)', 'total_po_value')
       .where('EXTRACT(YEAR FROM p.created_at) = :year', { year })
       .getRawOne();
 
     const paymentResult = await this.paymentRepo
       .createQueryBuilder('pi')
-      .innerJoin('pi.project', 'p', 'EXTRACT(YEAR FROM p.created_at) = :year', { year })
+      .innerJoin('pi.project', 'p')
+      .innerJoin('p.projectMain', 'pm', 'EXTRACT(YEAR FROM pm.created_at) = :year', { year })
       .select("COALESCE(SUM(pi.amount) FILTER (WHERE pi.status = 'paid'), 0)", 'paid_amount')
       .getRawOne();
 
-    const totalPO = Number(projectResult.total_po_value);
+    const totalPO = Number(poResult.total_po_value);
     const paidPO  = Number(paymentResult.paid_amount);
 
     return {
@@ -67,11 +77,11 @@ export class SummaryYearService {
   async getTypeStats(year: number) {
     const rows = await this.projectTypeRepo
       .createQueryBuilder('pt')
-      .innerJoin('project_incoming_type', 'pit', 'pit.type_id = pt.id')
+      .innerJoin('project_main_type', 'pmt', 'pmt.type_id = pt.id')
       .innerJoin(
-        'project_incoming',
+        'project_main',
         'p',
-        'p.id = pit.project_id AND EXTRACT(YEAR FROM p.created_at) = :year',
+        'p.id = pmt.project_main_id AND EXTRACT(YEAR FROM p.created_at) = :year',
         { year },
       )
       .select('pt.name', 'name')
@@ -83,37 +93,22 @@ export class SummaryYearService {
     return rows.map((r) => ({ name: r.name, count: Number(r.count) }));
   }
 
-  async getRegionStats(year: number) {
-    const rows = await this.projectRepo
-      .createQueryBuilder('p')
-      .select('p.region', 'region')
-      .addSelect('COUNT(*)', 'count')
-      .where('EXTRACT(YEAR FROM p.created_at) = :year', { year })
-      .andWhere('p.region IS NOT NULL')
-      .andWhere("p.region != ''")
-      .groupBy('p.region')
-      .orderBy('count', 'DESC')
-      .getRawMany();
-
-    return rows.map((r) => ({ region: r.region, count: Number(r.count) }));
-  }
-
   async getValueRangeStats(year: number) {
-    const rows = await this.projectRepo
-      .createQueryBuilder('p')
+    const rows = await this.poRepo
+      .createQueryBuilder('po')
       .select(
         `CASE
-          WHEN p.po_value < 100000        THEN '< 100K'
-          WHEN p.po_value < 1000000       THEN '100K–1M'
-          WHEN p.po_value < 5000000       THEN '1M–5M'
-          WHEN p.po_value < 10000000      THEN '5M–10M'
+          WHEN po.po_value < 100000        THEN '< 100K'
+          WHEN po.po_value < 1000000       THEN '100K–1M'
+          WHEN po.po_value < 5000000       THEN '1M–5M'
+          WHEN po.po_value < 10000000      THEN '5M–10M'
           ELSE '10M+'
         END`,
         'range_label',
       )
       .addSelect('COUNT(*)', 'count')
-      .where('EXTRACT(YEAR FROM p.created_at) = :year', { year })
-      .andWhere('p.po_value IS NOT NULL')
+      .where('EXTRACT(YEAR FROM po.created_at) = :year', { year })
+      .andWhere('po.po_value IS NOT NULL')
       .groupBy('range_label')
       .getRawMany();
 
@@ -129,7 +124,7 @@ export class SummaryYearService {
       'Sep', 'Oct', 'Nov', 'Dec',
     ];
 
-    const rows = await this.projectRepo
+    const rows = await this.mainRepo
       .createQueryBuilder('p')
       .select('EXTRACT(MONTH FROM p.created_at)', 'month_num')
       .addSelect('COUNT(*)', 'total')
@@ -160,7 +155,7 @@ export class SummaryYearService {
       .createQueryBuilder('t')
       .leftJoin(ProjectTeam, 'pt', 'pt.team_id = t.id')
       .leftJoin(
-        ProjectIncoming,
+        ProjectMain,
         'p',
         'pt.project_id = p.id AND EXTRACT(YEAR FROM p.created_at) = :year',
         { year },

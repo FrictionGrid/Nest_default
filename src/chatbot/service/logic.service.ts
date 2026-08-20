@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ProjectIncoming } from '../../database/entities/project_incoming.entity';
+import { ProjectMain } from '../../database/entities/project_main.entity';
 import { TaskTeam } from '../../database/entities/task_team.entity';
 import { Team } from '../../database/entities/team.entity';
 import { UsersTeam } from '../../database/entities/users_team.entity';
@@ -15,7 +15,7 @@ export interface BotResponse {
 @Injectable()
 export class LogicService {
   constructor(
-    @InjectRepository(ProjectIncoming) private readonly projectRepo: Repository<ProjectIncoming>,
+    @InjectRepository(ProjectMain) private readonly projectRepo: Repository<ProjectMain>,
     @InjectRepository(TaskTeam) private readonly taskRepo: Repository<TaskTeam>,
     @InjectRepository(Team) private readonly teamRepo: Repository<Team>,
     @InjectRepository(UsersTeam) private readonly usersTeamRepo: Repository<UsersTeam>,

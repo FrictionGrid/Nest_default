@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToMany } from 'typeorm';
-import { ProjectIncoming } from './project_incoming.entity';
+import { ProjectMain } from './project_main.entity';
 
 @Entity('project_type')
 export class ProjectType {
@@ -9,6 +9,6 @@ export class ProjectType {
   @Column({ length: 100, unique: true })
   name: string;
 
-  @ManyToMany(() => ProjectIncoming, (project) => project.types)
-  projects: ProjectIncoming[];
+  @ManyToMany(() => ProjectMain, (project) => project.types)
+  projects: ProjectMain[];
 }

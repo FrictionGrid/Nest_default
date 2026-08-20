@@ -1,5 +1,11 @@
 <link rel="stylesheet" href="/css/tools/table.css" />
 <style>
+  #modalOverlay .modal {
+    width: 640px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
   .project-name-link {
     color: var(--primary);
     text-decoration: none;
@@ -39,7 +45,18 @@
     color: var(--text);
     cursor: pointer;
   }
-  #fieldRegion {
+  .po-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .po-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  .po-row input {
     height: 40px;
     border: 1px solid #cdd9e8;
     border-radius: 10px;
@@ -49,9 +66,39 @@
     outline: none;
     transition: border 0.2s;
     background: #fff;
-    width: 100%;
+    box-sizing: border-box;
+    flex: 1 1 100px;
+    min-width: 0;
   }
-  #fieldRegion:focus { border-color: #4179bf; }
+  .po-row input.po-created-at {
+    flex: 1 1 130px;
+  }
+  .po-row input:focus { border-color: #4179bf; }
+  .btn-remove-po {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1.5px solid rgba(220,53,69,0.35);
+    background: rgba(220,53,69,0.1);
+    color: #b91c1c;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+  }
+  .btn-remove-po:hover { background: rgba(220,53,69,0.2); }
+  .btn-add-po {
+    align-self: flex-start;
+    border: 1.5px dashed #4179bf;
+    background: transparent;
+    color: #4179bf;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-add-po:hover { background: rgba(65,121,191,0.08); }
 
   .type-checkbox-item input[type="checkbox"] {
     width: 15px;
@@ -174,8 +221,8 @@
             <th>Project Name</th>
             <th>Type</th>
             <th>Sales Name</th>
-            <th>PO Value</th>
-            <th>PO Nos.</th>
+            <th>PO Total</th>
+            <th>PO Count</th>
             <th>Status</th>
             <th>Action</th>
           </tr>
@@ -223,31 +270,9 @@
       </div>
     </div>
     <div class="form-bar">
-      <div class="form-group2">
+      <div class="form-group2 form-group1">
         <label>Sales Name</label>
         <input type="text" id="fieldSalesName" placeholder="Enter sales name" />
-      </div>
-      <div class="form-group2">
-        <label>PO Value</label>
-        <input type="text" id="fieldPoValue" placeholder="Enter PO value" />
-      </div>
-    </div>
-    <div class="form-bar">
-      <div class="form-group2">
-        <label>PO Nos.</label>
-        <input type="text" id="fieldPoNos" placeholder="Enter PO number" />
-      </div>
-      <div class="form-group2">
-        <label>Region</label>
-        <select id="fieldRegion">
-          <option value="">-- Select Region --</option>
-          <option value="bangkok">Bangkok</option>
-          <option value="central">Central</option>
-          <option value="north">North</option>
-          <option value="east">East</option>
-          <option value="west">West</option>
-          <option value="south">South</option>
-        </select>
       </div>
     </div>
     <div class="form-bar" id="createdDateGroup">
@@ -255,9 +280,12 @@
         <label>Created Date</label>
         <input type="date" id="fieldCreatedAt" lang="en" />
       </div>
-      <div class="form-group2">
-        <label>End Date</label>
-        <input type="date" id="fieldEndDate" lang="en" />
+    </div>
+    <div class="form-bar">
+      <div class="form-group2 form-group1">
+        <label>PO (Purchase Orders)</label>
+        <div class="po-list" id="poList"></div>
+        <button type="button" class="btn-add-po" id="addPoBtn">+ Add PO</button>
       </div>
     </div>
     <div class="modal-spacing">
@@ -363,8 +391,8 @@
           <td><a href="/detail-project/${row.id}" class="project-name-link"><strong>${esc(row.project_name)}</strong></a></td>
           <td>${renderTypeBadges(row.types)}</td>
           <td>${esc(row.sales_name)}</td>
-          <td>${fmtValue(row.po_value)}</td>
-          <td>${esc(row.po_no)}</td>
+          <td>${fmtValue(row.po_total)}</td>
+          <td>${row.po_count || 0} PO</td>
           <td><span class="badge ${s.cls}">${s.label}</span></td>
           <td>
             <div class="button-spacing">
@@ -429,6 +457,39 @@
   }
 
   const overlay = document.getElementById('modalOverlay');
+  const poList = document.getElementById('poList');
+
+  function addPoRow(po) {
+    po = po || {};
+    const createdVal = po.created_at ? new Date(po.created_at).toLocaleDateString('en-CA') : '';
+    const row = document.createElement('div');
+    row.className = 'po-row';
+    row.dataset.poId = po.id || '';
+    row.innerHTML = `
+      <input type="text" class="po-no" placeholder="PO No." value="${esc(po.po_no || '')}" />
+      <input type="text" class="po-value" placeholder="PO Value" value="${po.po_value != null ? po.po_value : ''}" />
+      <input type="date" class="po-created-at" lang="en" value="${createdVal}" />
+      <button type="button" class="btn-remove-po" onclick="this.closest('.po-row').remove()">×</button>
+    `;
+    poList.appendChild(row);
+  }
+
+  function collectPos() {
+    return Array.from(poList.querySelectorAll('.po-row')).map((row) => {
+      const po_no = row.querySelector('.po-no').value.trim();
+      const po_value = row.querySelector('.po-value').value.trim();
+      const created_at = row.querySelector('.po-created-at').value;
+      const id = row.dataset.poId ? Number(row.dataset.poId) : undefined;
+      return {
+        ...(id ? { id } : {}),
+        po_no,
+        po_value: po_value ? Number(po_value) : null,
+        ...(created_at ? { created_at } : {}),
+      };
+    }).filter((po) => po.po_no || po.po_value);
+  }
+
+  document.getElementById('addPoBtn').addEventListener('click', () => addPoRow());
 
   function openAdd() {
     document.getElementById('modalTitle').textContent = 'Add New Item';
@@ -436,6 +497,7 @@
     clearFields();
     document.getElementById('fieldCreatedAt').value = new Date().toISOString().split('T')[0];
     document.getElementById('itemGroup').style.display = 'none';
+    addPoRow();
     overlay.classList.add('open');
   }
 
@@ -448,13 +510,12 @@
     document.getElementById('fieldItem').value = row.item || '';
     document.getElementById('fieldProjectName').value = row.project_name || '';
     document.getElementById('fieldSalesName').value = row.sales_name || '';
-    document.getElementById('fieldPoValue').value = row.po_value || '';
-    document.getElementById('fieldPoNos').value = row.po_no || '';
-    document.getElementById('fieldRegion').value = row.region || '';
 
     const createdVal = row.created_at ? new Date(row.created_at).toLocaleDateString('en-CA') : '';
     document.getElementById('fieldCreatedAt').value = createdVal;
-    document.getElementById('fieldEndDate').value = row.end_date ? new Date(row.end_date).toLocaleDateString('en-CA') : '';
+
+    poList.innerHTML = '';
+    (row.pos && row.pos.length ? row.pos : [{}]).forEach((po) => addPoRow(po));
 
     const checkedIds = (row.types || []).map((t) => String(t.id));
     document.querySelectorAll('input[name="projectType"]').forEach((cb) => {
@@ -465,10 +526,10 @@
   }
 
   function clearFields() {
-    ['fieldItem', 'fieldProjectName', 'fieldSalesName', 'fieldPoValue', 'fieldPoNos', 'fieldCreatedAt', 'fieldEndDate']
+    ['fieldItem', 'fieldProjectName', 'fieldSalesName', 'fieldCreatedAt']
       .forEach((id) => { document.getElementById(id).value = ''; });
     document.querySelectorAll('input[name="projectType"]').forEach((cb) => { cb.checked = false; });
-    document.getElementById('fieldRegion').value = '';
+    poList.innerHTML = '';
   }
 
   document.getElementById('cancelBtn').addEventListener('click', () => overlay.classList.remove('open'));
@@ -483,16 +544,11 @@
       item: document.getElementById('fieldItem').value.trim(),
       project_name: document.getElementById('fieldProjectName').value.trim(),
       sales_name: document.getElementById('fieldSalesName').value.trim(),
-      po_value: document.getElementById('fieldPoValue').value.trim() || null,
-      po_no: document.getElementById('fieldPoNos').value.trim(),
-      region: document.getElementById('fieldRegion').value,
       type_ids: typeIds,
+      pos: collectPos(),
     };
     if (document.getElementById('fieldCreatedAt').value) {
       dto.created_at = document.getElementById('fieldCreatedAt').value;
-    }
-    if (document.getElementById('fieldEndDate').value) {
-      dto.end_date = document.getElementById('fieldEndDate').value;
     }
 
     try {

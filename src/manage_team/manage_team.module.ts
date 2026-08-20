@@ -6,12 +6,12 @@ import { UsersTeam } from '../database/entities/users_team.entity';
 import { User } from '../database/entities/user.entity';
 import { Team } from '../database/entities/team.entity';
 import { TaskTeam } from '../database/entities/task_team.entity';
-import { ProjectIncoming } from '../database/entities/project_incoming.entity';
+import { ProjectMain } from '../database/entities/project_main.entity';
 import { ProjectTeam } from '../database/entities/project_team.entity';
 import { ActivityLogModule } from '../activity_log/activity_log.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UsersTeam, User, Team, TaskTeam, ProjectIncoming, ProjectTeam]), ActivityLogModule],
+  imports: [TypeOrmModule.forFeature([UsersTeam, User, Team, TaskTeam, ProjectMain, ProjectTeam]), ActivityLogModule],
   controllers: [ManageTeamController],
   providers: [ManageTeamService],
 })

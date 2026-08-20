@@ -1,6 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from './user.entity';
-import { ProjectIncoming } from './project_incoming.entity';
+import { ProjectMain } from './project_main.entity';
 
 export enum OvertimeType {
   WEEKDAY = 'weekday',
@@ -29,9 +29,9 @@ export class OvertimeRequest {
   @Column({ type: 'int', nullable: true })
   project_id: number | null;
 
-  @ManyToOne(() => ProjectIncoming, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => ProjectMain, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'project_id' })
-  project: ProjectIncoming | null;
+  project: ProjectMain | null;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   customer_name: string | null;

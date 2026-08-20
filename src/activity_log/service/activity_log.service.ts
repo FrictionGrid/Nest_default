@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ActivityLog, LogAction, LogStatus } from '../../database/entities/activity_log.entity';
 import { ProjectTeam } from '../../database/entities/project_team.entity';
-import { ProjectIncoming } from '../../database/entities/project_incoming.entity';
+import { ProjectMain } from '../../database/entities/project_main.entity';
 import { TaskTeam } from '../../database/entities/task_team.entity';
 import { User } from '../../database/entities/user.entity';
 import { ProjectDocumentFile } from '../../database/entities/project_document_file.entity';
@@ -23,7 +23,7 @@ export class ActivityLogService {
   constructor(
     @InjectRepository(ActivityLog)         private readonly repo: Repository<ActivityLog>,
     @InjectRepository(ProjectTeam)         private readonly projectTeamRepo: Repository<ProjectTeam>,
-    @InjectRepository(ProjectIncoming)     private readonly projectRepo: Repository<ProjectIncoming>,
+    @InjectRepository(ProjectMain)         private readonly projectRepo: Repository<ProjectMain>,
     @InjectRepository(TaskTeam)            private readonly taskRepo: Repository<TaskTeam>,
     @InjectRepository(User)                private readonly userRepo: Repository<User>,
     @InjectRepository(ProjectDocumentFile) private readonly fileRepo: Repository<ProjectDocumentFile>,

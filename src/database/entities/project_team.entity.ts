@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { ProjectIncoming } from './project_incoming.entity';
+import { ProjectMain } from './project_main.entity';
 import { Team } from './team.entity';
 
 export enum ProjectTeamStatus {
@@ -33,9 +33,9 @@ export class ProjectTeam {
   @Column({ type: 'date', nullable: true })
   end_date: Date;
 
-  @ManyToOne(() => ProjectIncoming, { onDelete: 'CASCADE' })
+  @ManyToOne(() => ProjectMain, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'project_id' })
-  project: ProjectIncoming;
+  project: ProjectMain;
 
   @ManyToOne(() => Team, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'team_id' })

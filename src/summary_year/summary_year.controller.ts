@@ -14,11 +14,10 @@ export class SummaryYearController {
     const availableYears = await this.summaryYearService.getAvailableYears();
     const year = yearStr ? Number(yearStr) : (availableYears[0] ?? new Date().getFullYear());
 
-    const [summary, typeStats, regionStats, valueRangeStats, monthlySummary, teamSummary] =
+    const [summary, typeStats, valueRangeStats, monthlySummary, teamSummary] =
       await Promise.all([
         this.summaryYearService.getSummary(year),
         this.summaryYearService.getTypeStats(year),
-        this.summaryYearService.getRegionStats(year),
         this.summaryYearService.getValueRangeStats(year),
         this.summaryYearService.getMonthlySummary(year),
         this.summaryYearService.getTeamSummary(year),
@@ -31,7 +30,6 @@ export class SummaryYearController {
       availableYears,
       summary,
       typeStats,
-      regionStats,
       valueRangeStats,
       monthlySummary,
       teamSummary,

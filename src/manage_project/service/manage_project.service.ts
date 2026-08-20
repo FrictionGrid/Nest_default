@@ -2,7 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProjectTeam, ProjectTeamStatus } from '../../database/entities/project_team.entity';
-import { ProjectIncoming } from '../../database/entities/project_incoming.entity';
+import { ProjectMain } from '../../database/entities/project_main.entity';
 import { Team } from '../../database/entities/team.entity';
 import { UsersTeam } from '../../database/entities/users_team.entity';
 import { CreateManageProjectDto } from '../dto/create-manage_project.dto';
@@ -14,8 +14,8 @@ export class ManageProjectService {
   constructor(
     @InjectRepository(ProjectTeam)
     private readonly projectTeamRepo: Repository<ProjectTeam>,
-    @InjectRepository(ProjectIncoming)
-    private readonly projectRepo: Repository<ProjectIncoming>,
+    @InjectRepository(ProjectMain)
+    private readonly projectRepo: Repository<ProjectMain>,
     @InjectRepository(Team)
     private readonly teamRepo: Repository<Team>,
     @InjectRepository(UsersTeam)

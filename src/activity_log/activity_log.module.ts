@@ -6,7 +6,7 @@ import { ActivityLogService } from './service/activity_log.service';
 import { ActivityLogInterceptor } from '../common/interceptors/activity_log.interceptor';
 import { ActivityLog } from '../database/entities/activity_log.entity';
 import { ProjectTeam } from '../database/entities/project_team.entity';
-import { ProjectIncoming } from '../database/entities/project_incoming.entity';
+import { ProjectMain } from '../database/entities/project_main.entity';
 import { TaskTeam } from '../database/entities/task_team.entity';
 import { User } from '../database/entities/user.entity';
 import { ProjectDocumentFile } from '../database/entities/project_document_file.entity';
@@ -17,7 +17,7 @@ import { ProjectDocumentFile } from '../database/entities/project_document_file.
     TypeOrmModule.forFeature([
       ActivityLog,
       ProjectTeam,
-      ProjectIncoming,
+      ProjectMain,
       TaskTeam,
       User,
       ProjectDocumentFile,

@@ -14,16 +14,19 @@ export class PaymentService {
   ) {}
 
   async getAllProjects(search?: string, status?: string, year?: number, month?: number, sale?: string) {
-    let qb = this.projectRepo.createQueryBuilder('p').orderBy('p.created_at', 'DESC');
-    
+    let qb = this.projectRepo
+      .createQueryBuilder('p')
+      .leftJoinAndSelect('p.projectMain', 'pm')
+      .orderBy('p.created_at', 'DESC');
+
     const conditions: string[] = [];
     const params: Record<string, any> = {};
 
-    if (search)  { conditions.push('p.project_name ILIKE :s'); params.s = `%${search}%`; }
-    if (status)  { conditions.push('p.status = :status');       params.status = status; }
+    if (search)  { conditions.push('pm.project_name ILIKE :s'); params.s = `%${search}%`; }
+    if (status)  { conditions.push('pm.status = :status');       params.status = status; }
     if (year)    { conditions.push('EXTRACT(YEAR  FROM p.created_at) = :year');  params.year  = year; }
     if (month)   { conditions.push('EXTRACT(MONTH FROM p.created_at) = :month'); params.month = month; }
-    if (sale)    { conditions.push('p.sales_name = :sale');     params.sale = sale; }
+    if (sale)    { conditions.push('pm.sales_name = :sale');     params.sale = sale; }
 
     if (conditions.length) {
       qb = qb.where(conditions[0], params);
@@ -50,7 +53,7 @@ export class PaymentService {
   }
 
   async getProjectById(id: number) {
-    const project = await this.projectRepo.findOne({ where: { id } });
+    const project = await this.projectRepo.findOne({ where: { id }, relations: ['projectMain'] });
     if (!project) return null;
 
     const insts = await this.installmentRepo.find({
@@ -80,11 +83,11 @@ export class PaymentService {
 
     return {
       id: p.id,
-      project_name: p.project_name,
-      sales_name: p.sales_name ?? '',
+      project_name: p.projectMain?.project_name ?? '',
+      sales_name: p.projectMain?.sales_name ?? '',
       po_no: p.po_no ?? '',
       po_value: Number(p.po_value) || 0,
-      status: p.status,
+      status: p.projectMain?.status ?? '',
       created_at: p.created_at,
       paidAmount,
       allocatedAmount,

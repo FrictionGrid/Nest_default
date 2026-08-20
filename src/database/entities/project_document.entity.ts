@@ -2,7 +2,7 @@ import {
   Entity, Column, PrimaryGeneratedColumn,
   ManyToOne, OneToMany, JoinColumn,
 } from 'typeorm';
-import { ProjectIncoming } from './project_incoming.entity';
+import { ProjectMain } from './project_main.entity';
 import { DocumentType } from './document_type.entity';
 import { ProjectDocumentFile } from './project_document_file.entity';
 import { User } from './user.entity';
@@ -32,9 +32,9 @@ export class ProjectDocument {
   @Column({ type: 'timestamp', nullable: true })
   approved_at: Date | null;
 
-  @ManyToOne(() => ProjectIncoming, { onDelete: 'CASCADE' })
+  @ManyToOne(() => ProjectMain, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'project_id' })
-  project: ProjectIncoming;
+  project: ProjectMain;
 
   @ManyToOne(() => DocumentType, (dt) => dt.projectDocuments, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'document_type_id' })

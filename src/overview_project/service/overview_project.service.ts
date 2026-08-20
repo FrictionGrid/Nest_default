@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ProjectIncoming } from '../../database/entities/project_incoming.entity';
+import { ProjectMain } from '../../database/entities/project_main.entity';
 import { ProjectTeam } from '../../database/entities/project_team.entity';
 import { Team } from '../../database/entities/team.entity';
 import { ProjectType } from '../../database/entities/project_type.entity';
@@ -11,8 +11,8 @@ import { calcTaskProgress } from '../../common/utils/task-progress.util';
 @Injectable()
 export class OverviewProjectService {
   constructor(
-    @InjectRepository(ProjectIncoming)
-    private readonly projectRepo: Repository<ProjectIncoming>,
+    @InjectRepository(ProjectMain)
+    private readonly projectRepo: Repository<ProjectMain>,
     @InjectRepository(ProjectTeam)
     private readonly projectTeamRepo: Repository<ProjectTeam>,
     @InjectRepository(Team)
@@ -27,10 +27,11 @@ export class OverviewProjectService {
     const year = new Date().getFullYear();
     const result = await this.projectRepo
       .createQueryBuilder('p')
-      .select('COUNT(*)', 'total_projects')
-      .addSelect('COALESCE(SUM(p.po_value), 0)', 'total_revenue')
-      .addSelect("COUNT(*) FILTER (WHERE p.status = 'completed')", 'completed')
-      .addSelect("COUNT(*) FILTER (WHERE p.status = 'delayed')", 'delayed')
+      .leftJoin('project_incoming', 'po', 'po.project_main_id = p.id')
+      .select('COUNT(DISTINCT p.id)', 'total_projects')
+      .addSelect('COALESCE(SUM(po.po_value), 0)', 'total_revenue')
+      .addSelect("COUNT(DISTINCT p.id) FILTER (WHERE p.status = 'completed')", 'completed')
+      .addSelect("COUNT(DISTINCT p.id) FILTER (WHERE p.status = 'delayed')", 'delayed')
       .where('EXTRACT(YEAR FROM p.created_at) = :year', { year })
       .getRawOne();
 
@@ -82,16 +83,22 @@ export class OverviewProjectService {
 
   async getTopValueProjects() {
     const year = new Date().getFullYear();
-    const projects = await this.projectRepo
+    const rows = await this.projectRepo
       .createQueryBuilder('p')
-      .select(['p.id', 'p.project_name', 'p.status'])
+      .innerJoin('project_incoming', 'po', 'po.project_main_id = p.id')
+      .select('p.id', 'id')
+      .addSelect('p.project_name', 'project_name')
+      .addSelect('p.status', 'status')
+      .addSelect('SUM(po.po_value)', 'total_value')
       .where('EXTRACT(YEAR FROM p.created_at) = :year', { year })
-      .andWhere('p.po_value IS NOT NULL')
-      .orderBy('p.po_value', 'DESC')
+      .groupBy('p.id')
+      .addGroupBy('p.project_name')
+      .addGroupBy('p.status')
+      .orderBy('total_value', 'DESC')
       .limit(12)
-      .getMany();
+      .getRawMany();
 
-    const projectIds = projects.map((p) => p.id);
+    const projectIds = rows.map((r) => Number(r.id));
     const allTasks = projectIds.length
       ? await this.taskTeamRepo
           .createQueryBuilder('t')
@@ -108,47 +115,21 @@ export class OverviewProjectService {
 
     return {
       year,
-      projects: projects.map((p) => ({
-        id: p.id,
-        project_name: p.project_name,
-        status: p.status,
-        progress: calcTaskProgress(tasksByProject.get(p.id) ?? []),
+      projects: rows.map((r) => ({
+        id: Number(r.id),
+        project_name: r.project_name,
+        status: r.status,
+        progress: calcTaskProgress(tasksByProject.get(Number(r.id)) ?? []),
       })),
     };
-  }
-
-  async getRegionStats() {
-    const regionLabels = [
-      { key: 'bangkok', label: 'Bangkok' },
-      { key: 'central', label: 'Central' },
-      { key: 'north',   label: 'North'   },
-      { key: 'east',    label: 'East'    },
-      { key: 'west',    label: 'West'    },
-      { key: 'south',   label: 'South'   },
-    ];
-
-    const rows = await this.projectRepo
-      .createQueryBuilder('p')
-      .select('p.region', 'region')
-      .addSelect('COUNT(*)', 'total')
-      .where('p.region IS NOT NULL')
-      .groupBy('p.region')
-      .getRawMany();
-
-    const dataMap = new Map(rows.map((r) => [r.region, Number(r.total)]));
-    return regionLabels.map((r) => ({
-      region: r.key,
-      label: r.label,
-      total: dataMap.get(r.key) ?? 0,
-    }));
   }
 
   async getTypeStats() {
     const year = new Date().getFullYear();
     const rows = await this.projectTypeRepo
       .createQueryBuilder('pt')
-      .innerJoin('project_incoming_type', 'pit', 'pit.type_id = pt.id')
-      .innerJoin('project_incoming', 'p', 'p.id = pit.project_id')
+      .innerJoin('project_main_type', 'pmt', 'pmt.type_id = pt.id')
+      .innerJoin('project_main', 'p', 'p.id = pmt.project_main_id')
       .select('pt.name', 'name')
       .addSelect('COUNT(*)', 'total')
       .where('EXTRACT(YEAR FROM p.created_at) = :year', { year })

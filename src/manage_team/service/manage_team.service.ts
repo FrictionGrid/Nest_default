@@ -6,7 +6,7 @@ import { UsersTeam } from '../../database/entities/users_team.entity';
 import { User } from '../../database/entities/user.entity';
 import { Team } from '../../database/entities/team.entity';
 import { TaskTeam } from '../../database/entities/task_team.entity';
-import { ProjectIncoming } from '../../database/entities/project_incoming.entity';
+import { ProjectMain } from '../../database/entities/project_main.entity';
 import { ProjectTeam } from '../../database/entities/project_team.entity';
 import { CreateManageTeamDto } from '../dto/create-manage_team.dto';
 import { UpdateManageTeamDto } from '../dto/update-manage_team.dto';
@@ -22,8 +22,8 @@ export class ManageTeamService {
     private readonly teamRepo: Repository<Team>,
     @InjectRepository(TaskTeam)
     private readonly taskRepo: Repository<TaskTeam>,
-    @InjectRepository(ProjectIncoming)
-    private readonly projectRepo: Repository<ProjectIncoming>,
+    @InjectRepository(ProjectMain)
+    private readonly projectRepo: Repository<ProjectMain>,
     @InjectRepository(ProjectTeam)
     // อันนี้ที่ต้องเเก้ //
     private readonly projectTeamRepo: Repository<ProjectTeam>,

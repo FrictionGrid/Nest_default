@@ -87,8 +87,8 @@ export class DashboardTeamService {
       project_name: pt.project?.project_name || '—',
       project_id:   pt.project_id,
       sales_name:   pt.project?.sales_name   || '—',
-      start_date:   pt.project?.start_date   || null,
-      end_date:     pt.project?.end_date     || null,
+      start_date:   pt.start_date            || null,
+      end_date:     pt.end_date              || null,
       status:       pt.project?.status       || '—',
     }));
   }
